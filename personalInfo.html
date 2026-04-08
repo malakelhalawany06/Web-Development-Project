@@ -1,0 +1,162 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="project web.css">
+        <script src="personalInfo.js"></script>
+
+
+       <style>
+        input,select{
+            background-color: var(--bg);
+            height: 30px;
+            padding: 0.9rem;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            color: white;
+            
+        }
+       </style>
+       
+    </head>
+    <body>
+         <div class="layout">
+
+            <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item" href="project web trail 1.html" target="_self">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item active" href="profile.html" target="_self">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Academic</div>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">🎓</span> GPA Calculator
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">✅</span> To-Do List
+        <span class="nav-badge">5</span>
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">⏰</span> Reminders
+        <span class="nav-badge warn">2</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Resources</div>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">📂</span> Notes & Files
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">🔗</span> Shared Materials
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">👥</span> Study Groups
+        <span class="nav-badge green">3</span>
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">🗂</span> Project Manager
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">💬</span> Q&amp;A Forum
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Admin Panel</div>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">🛡</span> User Management
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">🔍</span> Content Moderation
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">📊</span> Analytics
+      </a>
+    </div>
+
+    <div class="sidebar-profile">
+      <div class="avatar">AK</div>
+      <div class="profile-info">
+        <div class="name">Ahmed Khalid</div>
+        <div class="role">Computer Science · Yr 3</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">My Profile</div>
+        <div class="topbar-subtitle">Wednesday, April 8, 2026</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-bar">🔍 Search anything…</div>
+        <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+        <div class="icon-btn">⚙️</div>
+        <div class="avatar sm">AK</div>
+      </div>
+    </header>
+
+    <div class="content">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Personal Information</span>
+            </div>
+
+            <div class="info-form">
+                <form>
+                    <label for="fname" >First Name:</label><br>
+                    <input id="fname" type="text" ><br>
+
+                    <label for="lname">Last Name:</label><br>
+                    <input id="lname" type="text"><br>
+
+                    <label for="major">Major:</label><br>
+                    <select id="major">
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Business">Business</option>
+                        <option value="Dentistry">Dentistry</option>
+                        <option value="Pharmacy">Pharmacy</option>
+                        <option value="Business Informatics">Business Informatics</option>
+                        <option value="Law">Law</option>
+                    </select><br>
+
+                    <label for="year">Year:</label><br>
+                    <input id="year" type="text"><br>
+
+                    <label for="uni">University:</label><br>
+                    <select id="uni">
+                        <option>MIU</option>
+                        <option>BUE</option>
+                        <option>AUC</option>
+                        <option>MSA</option>
+                    </select>
+
+                </form>
+            </div>
+        </div>
+    </div>
+   
+    </body>
+</html>

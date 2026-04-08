@@ -155,7 +155,7 @@
 
     .profile-info .name  { font-size: 13px; font-weight: 500; }
     .profile-info .role  { font-size: 11px; color: var(--text3); }
-
+   
     /* ===== MAIN AREA ===== */
     .main {
       flex: 1;
@@ -725,3 +725,8 @@
     }
 
     .tab.active { background: var(--bg3); color: var(--text); font-weight: 500; }
+     
+
+
+
+    
