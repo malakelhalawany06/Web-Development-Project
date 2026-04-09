@@ -534,4 +534,30 @@
         </div>
       </div>
 
+      <!-- MAIN REMINDER CARD -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 My reminders</span>
+          <button class="btn btn-ghost" id="clearCompletedBtn" style="font-size:12px;">🗑️ Clear completed</button>
+        </div>
+
+        <!-- Reminders dynamic list -->
+        <div id="remindersContainer" class="reminders-list">
+          <!-- injected by JS -->
+        </div>
+
+        <!-- Add reminder form with priority dropdown -->
+        <div class="add-reminder-form">
+          <input type="text" id="reminderInput" placeholder="e.g., Submit final project, Review chapter 5" autocomplete="off" />
+          <select id="prioritySelect">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟠 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+          <button class="btn btn-primary" id="addReminderBtn">+ Add reminder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </html>
