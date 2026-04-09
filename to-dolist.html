@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="project web.css">
   
-  
+  <script src="to-dolist.js"></script>
 
 </head>
 <body>
@@ -115,9 +115,9 @@
             <div class="card-header">
                 <span class="card-title" style="font-size: larger;">To-Do List</span>
             </div>
-            <div class="task-item">
+            <div class="task-item" style="display:flex; flex-direction: column;">
                 <div class="task-item">
-            <button onclick="checkOrUncheck()"class="task-check done">✓</button>
+            <button onclick="checkOrUncheck(this)"class="task-check done">✓</button>
             <div class="task-text">
               <div class="task-name done">Submit Lab Report #3</div>
               <div class="task-meta">Data Structures · Completed</div>
@@ -125,7 +125,7 @@
             <span class="task-tag tag-green">Done</span>
           </div>
           <div class="task-item">
-            <div class="task-check"></div>
+            <button onclick="checkOrUncheck(this)"class="task-check"></button>
             <div class="task-text">
               <div class="task-name">Quiz Prep — Chapter 7</div>
               <div class="task-meta">Calculus II · Due tomorrow</div>
@@ -133,7 +133,7 @@
             <span class="task-tag tag-danger">Urgent</span>
           </div>
           <div class="task-item">
-            <div class="task-check"></div>
+            <button onclick="checkOrUncheck(this)" class="task-check"></button>
             <div class="task-text">
               <div class="task-name">ERD Diagram for Project</div>
               <div class="task-meta">Database Systems · Due Apr 10</div>
@@ -141,7 +141,7 @@
             <span class="task-tag tag-warn">Soon</span>
           </div>
           <div class="task-item">
-            <div class="task-check"></div>
+            <button onclick="checkOrUncheck(this)" class="task-check"></button>
             <div class="task-text">
               <div class="task-name">Read Networks Ch. 9–11</div>
               <div class="task-meta">Networks · Due Apr 14</div>
@@ -149,13 +149,17 @@
             <span class="task-tag tag-blue">Pending</span>
           </div>
           <div class="task-item">
-            <div class="task-check done">✓</div>
+            <button onclick="checkOrUncheck(this)" class="task-check done">✓</button>
             <div class="task-text">
               <div class="task-name done">Weekly group sync</div>
               <div class="task-meta">Project Manager · Completed</div>
             </div>
             <span class="task-tag tag-green">Done</span>
           </div>
-            </div>
+            <div style="margin-top:1rem;">
+            <button onclick="addTask()" class="btn btn-primary" style="width:100%;justify-content:center;">+ Add New Task</button>
+          </div>
+        </div>
+        </div>
         </div>
     </div>
