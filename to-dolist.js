@@ -96,34 +96,34 @@ window.checkOrUncheck = function(button) {
   const check = taskItem.querySelector('.task-check');
   const task = taskItem.querySelector('.task-name');
   const tag = taskItem.querySelector('.task-tag');
+  const meta = taskItem.querySelector('.task-meta');
   
-  // Toggle state
   const isNowDone = !check.classList.contains('done');
   
   if (isNowDone) {
+    // Mark as done
     check.classList.add('done');
     check.innerHTML = "✓";
     task.classList.add('done');
     tag.className = 'task-tag tag-green';
     tag.textContent = 'Done';
-    // Update meta text to reflect completion (optional)
-    const meta = taskItem.querySelector('.task-meta');
+    // Change only the status part in meta (keep due date)
     if (meta && !meta.textContent.includes('Completed')) {
       meta.textContent = meta.textContent.replace('Pending', 'Completed');
     }
   } else {
+    // Mark as not done
     check.classList.remove('done');
     check.innerHTML = "";
     task.classList.remove('done');
     tag.className = 'task-tag tag-blue';
     tag.textContent = 'Pending';
-    const meta = taskItem.querySelector('.task-meta');
     if (meta && meta.textContent.includes('Completed')) {
       meta.textContent = meta.textContent.replace('Completed', 'Pending');
     }
   }
   
-  saveTasks();  // Persist changes
+  saveTasks();
 };
 
 // ======================== ADD NEW TASK (with due date & custom meta) ========================
