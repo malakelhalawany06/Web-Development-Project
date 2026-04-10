@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+    <head>
+         <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="project web.css">
+         <style>
+             .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-bar input {
+      background: none;
+      border: none;
+      color: var(--text);
+      flex:1;
+      outline:none;
+      min-width: 0;
+    width: 100%;
+    }
+
+    .btn-primary {
+      background-color: blueviolet;
+      color: white;
+
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+     .filter-section {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      padding: 0.4rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .groups-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .group-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      transition: all 0.2s;
+    }
+
+    .group-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .group-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .group-icon.blue { background: rgba(108, 139, 255, 0.15); }
+    .group-icon.green { background: rgba(52, 211, 153, 0.15); }
+    .group-icon.purple { background: rgba(167, 139, 250, 0.15); }
+    .group-icon.orange { background: rgba(251, 191, 36, 0.15); }
+    .group-icon.pink { background: rgba(236, 72, 153, 0.15); }
+    .group-icon.cyan { background: rgba(6, 182, 212, 0.15); }
+
+    .group-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .group-info p {
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .group-stats {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    flex-direction: row !important;
+}
+
+.stat {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+    color: var(--text2) !important;
+    list-style: none !important;
+}
+
+.stat::before {
+    content: none !important;
+}
+
+    .group-description {
+      font-size: 13px;
+      color: var(--text2);
+      margin: 1rem 0;
+      line-height: 1.5;
+    }
+
+    .group-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 1rem;
+    }
+         </style>
+    </head>
+    <body>
+        <div class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item active" href="#">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item" href="profile.html" target="_self">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Academic</div>
+      <a class="nav-item" href="Gpa-calculator.html">
+        <span class="nav-icon">🎓</span> GPA Calculator
+      </a>
+      <a class="nav-item" href="to-dolist.html" target="_self">
+        <span class="nav-icon">✅</span> To-Do List
+        <span class="nav-badge">5</span>
+      </a>
+      <a class="nav-item" href="reminders.html">
+        <span class="nav-icon">⏰</span> Reminders
+        <span class="nav-badge warn">2</span>
+      </a>
+    </div>
+
+   <div class="sidebar-section">
+    <div class="sidebar-label">Resources</div>
+    <a class="nav-item" href="#">
+        <span class="nav-icon">📂</span> Notes & Files
+    </a>
+    <a class="nav-item" href="sharedMaterials.html">
+        <span class="nav-icon">🔗</span> Shared Materials
+    </a>
+</div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">👥</span> Study Groups
+        <span class="nav-badge green">3</span>
+      </a>
+      <a class="nav-item" href="project-manager.html">
+        <span class="nav-icon">🗂</span> Project Manager
+      </a>
+      <a class="nav-item" href="Q&A.html">
+        <span class="nav-icon">💬</span> Q&amp;A Forum
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Admin Panel</div>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">🛡</span> User Management
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">🔍</span> Content Moderation
+      </a>
+      <a class="nav-item" href="#">
+        <span class="nav-icon">📊</span> Analytics
+      </a>
+    </div>
+
+    <div class="sidebar-profile">
+      <div class="avatar">AK</div>
+      <div class="profile-info">
+        <div class="name">Ahmed Khalid</div>
+        <div class="role">Computer Science · Yr 3</div>
+        
+      </div>
+    </div>
+  </aside>
+<div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">Study Groups</div>
+        <div class="topbar-subtitle">Wednesday, April 8, 2026</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-bar">🔍 Search anything…</div>
+        <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+        <div class="icon-btn">⚙️</div>
+        <div class="avatar sm">AK</div>
+      </div>
+    </header>
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">👥 My Study Groups</h1>
+            <button class="btn btn-primary">+ Create New Group</button>
+        </div>
+         <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" id="groupSearchInput" placeholder="Search groups...">
+         </div>
+         <div class="filter-section">
+            <div class="filter-chip active" data-filter="all">All Groups</div>
+            <div class="filter-chip" data-filter="available">Available to Join</div>
+            <div class="filter-chip" data-filter="cs">Computer Science</div>
+            <div class="filter-chip" data-filter="math">Mathematics</div>
+            <div class="filter-chip" data-filter="engineering">Engineering</div>
+         </div>
+                  <div class="groups-grid" id="groupsGrid">
+            <!-- Group 1 - CS Algorithm -->
+            <div class="group-card" data-status="joined" data-category="cs">
+                <div class="group-header">
+                    <div class="group-icon blue">💻</div>
+                    <div class="group-info">
+                        <h3>CS Algorithm Group</h3>
+                        <p>Data Structures & Algorithms</p>
+                    </div>
+                </div>
+                <div class="group-stats">
+                    <div class="stat">👥 8 members</div>
+                    <div class="stat">📝 12 resources</div>
+                    <div class="stat">💬 45 messages</div>
+                </div>
+                <div class="group-description">
+                    Weekly Algorithm practice and exam preparations for DS & Algorithms. Meeting every Wednesday at 3 PM.
+                </div>
+                <div class="group-actions">
+                    <button class="btn btn-outline btn-sm">View Details</button>
+                    <button class="btn btn-primary btn-sm">✓ Joined</button>
+                </div>
+            </div>
+
+            <!-- Group 2 - Networks -->
+              <div class="group-card" data-status="available" data-category="math">
+                <div class="group-header">
+                    <div class="group-icon purple">📡</div>
+                    <div class="group-info">
+                        <h3>Network Study Circle</h3>
+                        <p>Computer Networks</p>
+                    </div>
+                </div>
+                <div class="group-stats">
+                    <div class="stat">👥 5 members</div>
+                    <div class="stat">📝 8 resources</div>
+                    <div class="stat">💬 23 messages</div>
+                </div>
+                <div class="group-description">
+                    Understanding TCP/IP, routing protocols, and network security concepts. Group project collaboration.
+                </div>
+                <div class="group-actions">
+                    <button class="btn btn-outline btn-sm">View Details</button>
+                    <button class="btn btn-primary btn-sm">✓ Joined</button>
+                </div>
+            </div>
+            
+
+            <!-- Group 3 - Calculus -->
+            <div class="group-card" data-status="available" data-category="math">
+                <div class="group-header">
+                    <div class="group-icon purple">🧮</div>
+                    <div class="group-info">
+                        <h3>Calculus Study Group</h3>
+                        <p>Calculus II</p>
+                    </div>
+                </div>
+                <div class="group-stats">
+                    <div class="stat">👥 12 members</div>
+                    <div class="stat">📝 20 resources</div>
+                    <div class="stat">💬 67 messages</div>
+                </div>
+                <div class="group-description">
+                    Integration techniques, series, and practice problems for final exam. Daily problem-solving sessions.
+                </div>
+                <div class="group-actions">
+                    <button class="btn btn-outline btn-sm">View Details</button>
+                    <button class="btn btn-primary btn-sm">Join Group</button>
+                </div>
+            </div>
+         </div>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('groupSearchInput');
+        const groupCards = document.querySelectorAll('.group-card');
+
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            groupCards.forEach(card => {
+                const title = card.querySelector('h3')?.innerText.toLowerCase() || '';
+                const course = card.querySelector('.group-info p')?.innerText.toLowerCase() || '';
+                
+                if (title.includes(searchTerm) || course.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Filter functionality
+        const filterChips = document.querySelectorAll('.filter-chip');
+        
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', function() {
+                filterChips.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filterValue = this.dataset.filter;
+                
+                groupCards.forEach(card => {
+                    if (filterValue === 'all') {
+                        card.style.display = '';
+                    } else if (filterValue === 'available') {
+                        if (card.dataset.status === 'available') {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    } else if (filterValue === 'cs') {
+                        if (card.dataset.category === 'cs') {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    } else if (filterValue === 'math') {
+                        if (card.dataset.category === 'math') {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    } else if (filterValue === 'engineering') {
+                        if (card.dataset.category === 'engineering') {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    </body>
+</html>
