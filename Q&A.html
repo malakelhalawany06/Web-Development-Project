@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoomHub — Q&A Forum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET & BASE (same as reminders page) ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f14;
+      --bg2:       #13161e;
+      --bg3:       #1a1e2a;
+      --surface:   #1f2333;
+      --surface2:  #252a3a;
+      --border:    rgba(255,255,255,0.07);
+      --border2:   rgba(255,255,255,0.13);
+
+      --accent:    #6c8bff;
+      --accent2:   #a78bfa;
+      --accent3:   #34d399;
+      --warn:      #fbbf24;
+      --danger:    #f87171;
+
+      --text:      #eef0f7;
+      --text2:     #9499b5;
+      --text3:     #5a6080;
+
+      --radius-sm: 8px;
+      --radius:    12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+
+      --font:      'Sora', sans-serif;
+      --mono:      'JetBrains Mono', monospace;
+
+      --sidebar-w: 240px;
+      --header-h:  60px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+    .layout { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding-bottom: 1.5rem;
+    }
+
+    .sidebar-logo {
+      padding: 1.25rem 1.25rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-text { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+    .logo-text span { color: var(--accent); }
+
+    .sidebar-section {
+      padding: 1rem 0.75rem 0.25rem;
+    }
+
+    .sidebar-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 0 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.52rem 0.75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text2);
+      font-size: 13.5px;
+      font-weight: 400;
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background: var(--surface); color: var(--text); }
+    .nav-item.active { background: rgba(108,139,255,0.12); color: var(--accent); font-weight: 500; }
+
+    .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+
+    .sidebar-profile {
+      margin-top: auto;
+      padding: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: #fff;
+      flex-shrink: 0;
+    }
+
+    .avatar.sm { width: 28px; height: 28px; font-size: 11px; }
+    .profile-info .name  { font-size: 13px; font-weight: 500; }
+    .profile-info .role  { font-size: 11px; color: var(--text3); }
+
+    /* ===== MAIN ===== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .topbar {
+      height: var(--header-h);
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .topbar-title { font-size: 16px; font-weight: 600; }
+    .topbar-subtitle { font-size: 12px; color: var(--text3); margin-top: 1px; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+    .search-bar {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 0.4rem 0.75rem;
+      font-size: 13px;
+      color: var(--text2);
+      width: 200px;
+    }
+
+    .icon-btn {
+      width: 34px; height: 34px;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      color: var(--text2);
+      position: relative;
+    }
+
+    .notif-dot {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ===== FILTER TABS ===== */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-tab {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 40px;
+      padding: 0.3rem 1rem;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text2);
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .filter-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    /* ===== QUESTION ITEM ===== */
+    .question-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      transition: 0.15s;
+    }
+    .question-item:hover { border-color: var(--accent); }
+
+    .question-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .question-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .question-title:hover { color: var(--accent); }
+    .question-tag {
+      font-size: 10px;
+      padding: 2px 10px;
+      border-radius: 99px;
+      background: rgba(108,139,255,0.15);
+      color: var(--accent);
+    }
+    .question-meta {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 8px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .vote-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .vote-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 40px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.15s;
+      color: var(--text2);
+    }
+    .vote-btn:hover { background: var(--surface2); }
+    .vote-btn.upvoted { background: var(--accent); color: white; border-color: var(--accent); }
+    .answer-count {
+      font-size: 12px;
+      color: var(--accent3);
+    }
+    .expand-icon {
+      margin-left: auto;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text3);
+    }
+
+    /* Answers section (hidden by default) */
+    .answers-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .answers-section.open { display: block; }
+    .answer-item {
+      background: var(--bg3);
+      border-radius: var(--radius-sm);
+      padding: 0.8rem;
+      margin-bottom: 10px;
+    }
+    .answer-text {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+    .answer-meta {
+      font-size: 10px;
+      color: var(--text3);
+      display: flex;
+      justify-content: space-between;
+    }
+    .add-answer-form {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .add-answer-form input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 0.8rem;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+    }
+    .add-answer-form button {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1rem;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* Ask question modal (simple inline form) */
+    .ask-form {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border2);
+    }
+    .ask-form input, .ask-form select, .ask-form textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+    }
+    .ask-form textarea { resize: vertical; min-height: 80px; }
+    .ask-form button {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1rem;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text3);
+    }
+
+    @media (max-width: 700px) {
+      .sidebar { width: 80px; }
+      .logo-text, .sidebar-label, .profile-info, .nav-item span:not(.nav-icon) { display: none; }
+      .nav-item { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item" href="#"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-item" href="#"><span class="nav-icon">👤</span> My Profile</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Academic</div>
+      <a class="nav-item" href="#"><span class="nav-icon">🎓</span> GPA Calculator</a>
+      <a class="nav-item" href="#"><span class="nav-icon">✅</span> To-Do List</a>
+      <a class="nav-item" href="#"><span class="nav-icon">⏰</span> Reminders</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      <a class="nav-item active" href="#"><span class="nav-icon">💬</span> Q&A Forum</a>
+      <a class="nav-item" href="#"><span class="nav-icon">👥</span> Study Groups</a>
+    </div>
+    <div class="sidebar-profile">
+      <div class="avatar">AK</div>
+      <div class="profile-info">
+        <div class="name">Ahmed Khalid</div>
+        <div class="role">CS · Year 3</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN Q&A FORUM -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">💬 Q&A Forum</div>
+        <div class="topbar-subtitle">Ask, answer, upvote</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-bar" id="searchPlaceholder">🔍 Search questions</div>
+        <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+        <div class="avatar sm">AK</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📢 Questions & Discussions</span>
+          <button class="btn-ghost" id="showAskBtn">+ Ask a Question</button>
+        </div>
+
+        <!-- Inline ask form (hidden initially) -->
+        <div id="askFormContainer" style="display: none;" class="ask-form">
+          <input type="text" id="questionTitleInput" placeholder="Question title" />
+          <textarea id="questionBodyInput" placeholder="Describe your question in detail..."></textarea>
+          <select id="questionTagInput">
+            <option value="Data Structures">Data Structures</option>
+            <option value="Calculus">Calculus</option>
+            <option value="Networks">Networks</option>
+            <option value="Database">Database</option>
+            <option value="General">General</option>
+          </select>
+          <button id="submitQuestionBtn">Post Question</button>
+          <button id="cancelAskBtn" class="btn-ghost" style="margin-left: 8px;">Cancel</button>
+        </div>
+
+        <!-- Filter tabs by tag -->
+        <div class="filter-tabs" id="filterTabs">
+          <div class="filter-tab active" data-tag="all">All</div>
+          <div class="filter-tab" data-tag="Data Structures">Data Structures</div>
+          <div class="filter-tab" data-tag="Calculus">Calculus</div>
+          <div class="filter-tab" data-tag="Networks">Networks</div>
+          <div class="filter-tab" data-tag="Database">Database</div>
+        </div>
+
+        <!-- Questions list -->
+        <div id="questionsContainer">
+          <!-- dynamic -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // ----- Q&A DATA MODEL -----
+  let questions = [];
+
+  // Load from localStorage
+  function loadData() {
+    const stored = localStorage.getItem("loomhub_qa_forum");
+    if (stored) {
+      questions = JSON.parse(stored);
+    } else {
+      // Sample questions
+      questions = [
+        {
+          id: 1001,
+          title: "How does Dijkstra's algorithm handle negative weights?",
+          body: "I know Dijkstra works for positive weights, but what happens if there are negative edges?",
+          tag: "Data Structures",
+          author: "Yusuf R.",
+          upvotes: 12,
+          answers: [
+            { text: "It fails because negative weights can cause infinite loops. Use Bellman-Ford instead.", author: "Prof. Lee", timestamp: Date.now() - 86400000 },
+            { text: "Dijkstra assumes all weights are non-negative, so negative edges break the greedy property.", author: "Ahmed", timestamp: Date.now() - 43200000 }
+          ],
+          timestamp: Date.now() - 172800000
+        },
+        {
+          id: 1002,
+          title: "Best resources for understanding JOIN types in SQL?",
+          body: "I'm struggling with INNER, LEFT, RIGHT, and FULL OUTER JOINs. Any recommended tutorials?",
+          tag: "Database",
+          author: "Nadia M.",
+          upvotes: 8,
+          answers: [
+            { text: "Check out W3Schools SQL JOIN section, very clear examples.", author: "Sara", timestamp: Date.now() - 172800000 }
+          ],
+          timestamp: Date.now() - 259200000
+        },
+        {
+          id: 1003,
+          title: "Difference between TCP and UDP?",
+          body: "When should I use one over the other?",
+          tag: "Networks",
+          author: "Sara O.",
+          upvotes: 15,
+          answers: [
+            { text: "TCP is reliable but slower, UDP is faster but no guaranteed delivery.", author: "Ali", timestamp: Date.now() - 43200000 }
+          ],
+          timestamp: Date.now() - 345600000
+        }
+      ];
+    }
+    renderAll();
+  }
+
+  function saveData() {
+    localStorage.setItem("loomhub_qa_forum", JSON.stringify(questions));
+  }
+
+  let currentFilter = "all";
+
+  function renderQuestions() {
+    const container = document.getElementById("questionsContainer");
+    if (!container) return;
+
+    let filtered = questions.filter(q => {
+      if (currentFilter === "all") return true;
+      return q.tag === currentFilter;
+    });
+    // sort by newest first
+    filtered.sort((a,b) => b.timestamp - a.timestamp);
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty-state">✨ No questions yet. Be the first to ask! ✨</div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(q => {
+      const answerCount = q.answers.length;
+      const isUpvoted = false; // we'll manage per user but simple version: store in memory? we'll use localStorage for upvote status per question? For simplicity, upvote is just +1 per click (can be undone). We'll track upvoted state in memory.
+      // we'll add a data attribute for upvote status
+      return `
+        <div class="question-item" data-id="${q.id}">
+          <div class="question-header">
+            <div class="question-title" data-id="${q.id}">${escapeHtml(q.title)}</div>
+            <div class="question-tag">${escapeHtml(q.tag)}</div>
+            <div class="expand-icon" data-id="${q.id}">▼</div>
+          </div>
+          <div class="question-meta">
+            <span>👤 ${escapeHtml(q.author)}</span>
+            <span>📅 ${new Date(q.timestamp).toLocaleDateString()}</span>
+            <span class="answer-count">💬 ${answerCount} answers</span>
+          </div>
+          <div class="vote-area">
+            <button class="vote-btn" data-id="${q.id}" data-vote="up">▲ ${q.upvotes}</button>
+          </div>
+          <div class="answers-section" id="answers-${q.id}">
+            <div class="answers-list">
+              ${q.answers.map(a => `
+                <div class="answer-item">
+                  <div class="answer-text">${escapeHtml(a.text)}</div>
+                  <div class="answer-meta">
+                    <span>— ${escapeHtml(a.author)}</span>
+                    <span>${new Date(a.timestamp).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="add-answer-form">
+              <input type="text" placeholder="Write an answer..." id="answerInput-${q.id}" />
+              <button class="submit-answer" data-id="${q.id}">Answer</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // attach event listeners
+    document.querySelectorAll('.question-title').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const id = parseInt(el.getAttribute('data-id'));
+        toggleAnswers(id);
+      });
+    });
+    document.querySelectorAll('.expand-icon').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const id = parseInt(el.getAttribute('data-id'));
+        toggleAnswers(id);
+      });
+    });
+    document.querySelectorAll('.vote-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.getAttribute('data-id'));
+        upvoteQuestion(id);
+      });
+    });
+    document.querySelectorAll('.submit-answer').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        const input = document.getElementById(`answerInput-${id}`);
+        const answerText = input.value.trim();
+        if (answerText) {
+          addAnswer(id, answerText);
+          input.value = '';
+        } else {
+          alert("Please enter an answer.");
+        }
+      });
+    });
+  }
+
+  function toggleAnswers(questionId) {
+    const section = document.getElementById(`answers-${questionId}`);
+    if (section) {
+      section.classList.toggle('open');
+    }
+  }
+
+  function upvoteQuestion(id) {
+    const q = questions.find(q => q.id === id);
+    if (q) {
+      q.upvotes = (q.upvotes || 0) + 1;
+      saveData();
+      renderAll();
+    }
+  }
+
+  function addAnswer(questionId, text) {
+    const q = questions.find(q => q.id === questionId);
+    if (q) {
+      q.answers.push({
+        text: text,
+        author: "You", // in a real app would be logged-in user
+        timestamp: Date.now()
+      });
+      saveData();
+      renderAll();
+      // auto-expand the answers section after adding
+      const section = document.getElementById(`answers-${questionId}`);
+      if (section) section.classList.add('open');
+    }
+  }
+
+  function addQuestion(title, body, tag) {
+    if (!title.trim()) {
+      alert("Please enter a title.");
+      return false;
+    }
+    const newId = Date.now();
+    questions.unshift({
+      id: newId,
+      title: title.trim(),
+      body: body.trim(),
+      tag: tag,
+      author: "You", // could be dynamic
+      upvotes: 0,
+      answers: [],
+      timestamp: Date.now()
+    });
+    saveData();
+    renderAll();
+    return true;
+  }
+
+  function renderAll() {
+    renderQuestions();
+    updateFilterActive();
+  }
+
+  function updateFilterActive() {
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      if (tab.getAttribute('data-tag') === currentFilter) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // Setup search
+  function setupSearch() {
+    const searchDiv = document.getElementById("searchPlaceholder");
+    if (!searchDiv) return;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "🔍 Search questions...";
+    input.style.cssText = "background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 0.4rem 0.75rem; font-size: 13px; color: var(--text2); width: 200px; outline: none;";
+    input.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase();
+      const items = document.querySelectorAll(".question-item");
+      items.forEach(item => {
+        const titleEl = item.querySelector(".question-title");
+        const title = titleEl ? titleEl.innerText.toLowerCase() : "";
+        item.style.display = title.includes(query) ? "flex" : "none";
+        // change display of flex parent? Actually .question-item is block by default, we need to set display to block/none
+        item.style.display = title.includes(query) ? "block" : "none";
+      });
+    });
+    searchDiv.replaceWith(input);
+  }
+
+  // Event listeners for ask form
+  function setupAskForm() {
+    const showBtn = document.getElementById("showAskBtn");
+    const formContainer = document.getElementById("askFormContainer");
+    const cancelBtn = document.getElementById("cancelAskBtn");
+    const submitBtn = document.getElementById("submitQuestionBtn");
+    const titleInput = document.getElementById("questionTitleInput");
+    const bodyInput = document.getElementById("questionBodyInput");
+    const tagSelect = document.getElementById("questionTagInput");
+
+    showBtn.addEventListener("click", () => {
+      formContainer.style.display = "block";
+      showBtn.style.display = "none";
+    });
+    cancelBtn.addEventListener("click", () => {
+      formContainer.style.display = "none";
+      showBtn.style.display = "inline-block";
+      titleInput.value = "";
+      bodyInput.value = "";
+    });
+    submitBtn.addEventListener("click", () => {
+      if (addQuestion(titleInput.value, bodyInput.value, tagSelect.value)) {
+        formContainer.style.display = "none";
+        showBtn.style.display = "inline-block";
+        titleInput.value = "";
+        bodyInput.value = "";
+      }
+    });
+  }
+
+  // Filter tabs
+  function setupFilters() {
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        currentFilter = tab.getAttribute('data-tag');
+        renderAll();
+      });
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadData();
+    setupSearch();
+    setupAskForm();
+    setupFilters();
+  });
+</script>
+</body>
+</html>
