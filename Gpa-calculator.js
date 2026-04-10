@@ -1,5 +1,6 @@
-let courses = [];
+let courses = JSON.parse(localStorage.getItem("courses")) || [];
 
+// ===== ADD COURSE =====
 function addCourse() {
     let name = document.getElementById("courseName").value;
     let credits = parseFloat(document.getElementById("credits").value);
@@ -19,6 +20,9 @@ function addCourse() {
 
     courses.push(course);
 
+    // SAVE to localStorage 🔥
+    localStorage.setItem("courses", JSON.stringify(courses));
+
     displayCourses();
     calculateGPA();
 
@@ -28,6 +32,7 @@ function addCourse() {
     document.getElementById("grade").value = "";
 }
 
+// ===== DISPLAY COURSES =====
 function displayCourses() {
     let table = document.getElementById("courseTable");
     table.innerHTML = "";
@@ -40,7 +45,7 @@ function displayCourses() {
             <td>${course.grade}</td>
             <td>${(course.grade * course.credits).toFixed(2)}</td>
             <td>
-                <button onclick="deleteCourse(${index})">❌</button>
+                <button onclick="deleteCourse(${index})">❌ Delete</button>
             </td>
         </tr>
         `;
@@ -48,6 +53,7 @@ function displayCourses() {
     });
 }
 
+// ===== CALCULATE GPA =====
 function calculateGPA() {
     let totalPoints = 0;
     let totalCredits = 0;
@@ -64,10 +70,23 @@ function calculateGPA() {
     // progress bar
     let percentage = (gpa / 4) * 100;
     document.getElementById("gpaBar").style.width = percentage + "%";
+
+    // SAVE update (important)
+    localStorage.setItem("courses", JSON.stringify(courses));
 }
 
+// ===== DELETE COURSE =====
 function deleteCourse(index) {
     courses.splice(index, 1);
+
+    localStorage.setItem("courses", JSON.stringify(courses));
+
     displayCourses();
     calculateGPA();
 }
+
+// ===== LOAD ON REFRESH =====
+window.onload = function () {
+    displayCourses();
+    calculateGPA();
+};
