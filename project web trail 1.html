@@ -388,54 +388,29 @@
         </div>
 
         <!-- Q&A FORUM -->
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">💬 Q&amp;A Forum</span>
-            <button class="btn btn-primary" style="padding:4px 10px;font-size:12px;">Ask Question</button>
-          </div>
+       <div class="card">
+  <div class="card-header">
+    <span class="card-title">💬 Q&amp;A Forum</span>
+    <button class="btn btn-primary" onclick="toggleDashQAForm()" style="padding:4px 10px;font-size:12px;">Ask Question</button>
+  </div>
 
-          <div class="qa-item">
-            <div class="qa-top">
-              <div class="avatar sm purple">YR</div>
-              <div>
-                <div class="qa-q">How does Dijkstra's algorithm handle negative weights?</div>
-                <div class="qa-meta">Yusuf R. · Data Structures · 2h ago · <strong style="color:var(--accent3);">3 answers</strong></div>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px;margin-top:6px;">
-              <div class="vote-btn active">▲ 12</div>
-              <span class="task-tag tag-blue">Data Structures</span>
-            </div>
-          </div>
+  <div id="dash-qa-form" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+    <input type="text" id="dashQATitle" placeholder="What's your question?" style="background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: var(--radius-sm); outline: none; font-size: 13px; font-family: var(--font); width: 100%;">
+    
+    <div style="display: flex; gap: 8px;">
+      <select id="dashQATag" style="flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px; border-radius: var(--radius-sm); outline: none; font-size: 12px; font-family: var(--font);">
+        <option value="Data Structures">Data Structures</option>
+        <option value="Database Systems">Database Systems</option>
+        <option value="Networks">Networks</option>
+        <option value="General">General</option>
+      </select>
+      <button class="btn btn-primary" onclick="submitDashQuestion()" style="padding: 6px 12px; font-size: 12px;">Post</button>
+    </div>
+  </div>
 
-          <div class="qa-item">
-            <div class="qa-top">
-              <div class="avatar sm green">NM</div>
-              <div>
-                <div class="qa-q">Best resources for understanding JOIN types in SQL?</div>
-                <div class="qa-meta">Nadia M. · Database Systems · 5h ago · <strong style="color:var(--accent3);">7 answers</strong></div>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px;margin-top:6px;">
-              <div class="vote-btn">▲ 8</div>
-              <span class="task-tag tag-green">Database Systems</span>
-            </div>
-          </div>
-
-          <div class="qa-item">
-            <div class="qa-top">
-              <div class="avatar sm warn">SO</div>
-              <div>
-                <div class="qa-q">Can someone explain the difference between TCP and UDP?</div>
-                <div class="qa-meta">Sara O. · Networks · 1d ago · <strong style="color:var(--accent3);">5 answers</strong></div>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px;margin-top:6px;">
-              <div class="vote-btn">▲ 15</div>
-              <span class="task-tag tag-warn">Networks</span>
-            </div>
-          </div>
-        </div>
+  <div id="dashQAContainer"></div>
+  
+</div>
 
       </div><!-- /main-grid -->
 
