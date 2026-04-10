@@ -416,7 +416,10 @@
       border-radius: 99px;
       font-weight: 500;
     }
-
+    .tag-blue   { background: rgba(108,139,255,0.12); color: var(--accent);  }
+    .tag-green  { background: rgba(52,211,153,0.12);  color: var(--accent3); }
+    .tag-warn   { background: rgba(251,191,36,0.12);  color: var(--warn);    }
+    .tag-danger { background: rgba(248,113,113,0.12); color: var(--danger);  }
 .tag-priority-high { background: rgba(248,113,113,0.15); color: #f87171; }
 .tag-priority-medium { background: rgba(251,191,36,0.15); color: #fbbf24; }
 .tag-priority-low { background: rgba(52,211,153,0.15); color: #34d399; }
