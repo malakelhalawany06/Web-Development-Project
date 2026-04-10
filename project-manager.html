@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Project Manager</title>
 
-  <!-- Your CSS -->
   <link rel="stylesheet" href="project web.css">
 </head>
 
@@ -13,7 +12,7 @@
 
 <div class="layout">
 
-  <!-- ===== SIDEBAR ===== -->
+ <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">📚</div>
@@ -22,7 +21,7 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Overview</div>
-      <a class="nav-item" href="project web trail 1.html" target="_self">
+      <a class="nav-item active" href="#">
         <span class="nav-icon">🏠</span> Dashboard
       </a>
       <a class="nav-item" href="profile.html" target="_self">
@@ -32,28 +31,28 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Academic</div>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="Gpa-calculator.html">
         <span class="nav-icon">🎓</span> GPA Calculator
       </a>
-      <a class="nav-item active" href="to-dolist.html" target="_self">
+      <a class="nav-item" href="to-dolist.html" target="_self">
         <span class="nav-icon">✅</span> To-Do List
         <span class="nav-badge">5</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="reminders.html">
         <span class="nav-icon">⏰</span> Reminders
         <span class="nav-badge warn">2</span>
       </a>
     </div>
 
-    <div class="sidebar-section">
-      <div class="sidebar-label">Resources</div>
-      <a class="nav-item" href="#">
+   <div class="sidebar-section">
+    <div class="sidebar-label">Resources</div>
+    <a class="nav-item" href="#">
         <span class="nav-icon">📂</span> Notes & Files
-      </a>
-      <a class="nav-item" href="#">
+    </a>
+    <a class="nav-item" href="sharedMaterials.html">
         <span class="nav-icon">🔗</span> Shared Materials
-      </a>
-    </div>
+    </a>
+</div>
 
     <div class="sidebar-section">
       <div class="sidebar-label">Collaborate</div>
@@ -61,10 +60,10 @@
         <span class="nav-icon">👥</span> Study Groups
         <span class="nav-badge green">3</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="project-manager.html">
         <span class="nav-icon">🗂</span> Project Manager
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="Q&A.html">
         <span class="nav-icon">💬</span> Q&amp;A Forum
       </a>
     </div>
@@ -92,10 +91,10 @@
     </div>
   </aside>
 
-  <!--main-->
+  <!-- ===== MAIN ===== -->
   <div class="main">
 
-    <!--topbar-->
+    <!-- Topbar -->
     <header class="topbar">
         <div>
             <div class="topbar-title">Project Manager</div>
@@ -103,81 +102,69 @@
         </div>
     </header>
 
-    <!--content-->
+    <!-- Content -->
     <div class="content">
-        <!--create task-->
+
+        <!-- ADD TASK -->
         <div class="card">
             <div class="card-header">
-                <span class="card-title">🗂 create project task</span>
+                <span class="card-title">🗂 Create Project Task</span>
             </div>
-        
-        <input type="text" placeholder="task name" class="btn-ghost" style ="width:100%;margin-bottom: 10px;">
-        <input type="text" placeholder="Assign to (member)" class="btn-ghost" style="width:100%;margin-bottom:10px ;">
-        <input type="date" class="btn-ghost" style="width:100%;margin-bottom:10px ;">
-        <input type="number" placeholder="progress %" class="btn-ghost" style="width:100%;margin-bottom:10px ;">
-        <button class="btn btn-primary">+Add Task</button>
+
+            <!-- ✅ IDs added -->
+            <input type="text" id="taskName" placeholder="Task name" class="btn-ghost" style="width:100%;margin-bottom:10px;">
+            <input type="text" id="assignedTo" placeholder="Assign to (member)" class="btn-ghost" style="width:100%;margin-bottom:10px;">
+            <input type="date" id="deadline" class="btn-ghost" style="width:100%;margin-bottom:10px;">
+            <input type="number" id="progress" placeholder="Progress %" class="btn-ghost" style="width:100%;margin-bottom:10px;">
+
+            <!-- ✅ onclick added -->
+            <button class="btn btn-primary" onclick="addTask()">+ Add Task</button>
         </div>
 
-        <!--project tasks-->
+        <!-- TASK TABLE -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">📋 Project Tasks</span>
             </div>
-        
-        <!--task 1-->
-        <div class=""project-item>
-            <div class="project-top">
-                <span class="project-name">web project</span>
-                <span class="project-pct">70%<span>
-                </div>
 
-                <div class="prog-bar">
-                    <div class="prog-fill fill-accent" style="width:70%"></div>
-                </div>
+            <!-- ✅ THIS is where JS will insert tasks -->
+            <table class="gpa-table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Member</th>
+                        <th>Deadline</th>
+                        <th>Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
 
-                <div class="project-meta">
-                    <span>👤 Ahmed</span>
-                    <span>📅 Apr 15</span>
-                </div>
+                <tbody id="taskTable"></tbody>
+            </table>
         </div>
-        
-        <!-- Task 2 -->
-         <div class="project-item">
-           <div class="project-top">
-             <span class="project-name">Frontend </span>
-             <span class="project-pct">45%</span>
-           </div>
 
-           <div class="prog-bar">
-             <div class="prog-fill fill-warn" style="width:45%"></div>
+        <!-- PROJECT PROGRESS -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📊 Project Progress</span>
             </div>
 
-                <div class="project-meta">
-                   <span>👤 osama</span>
-                   <span>📅 Apr 20</span>
-                </div>
-        </div>
-        
-         <!-- Task 3 -->
-        <div class="project-item">
-          <div class="project-top">
-            <span class="project-name">Backend</span>
-            <span class="project-pct">85%</span>
-          </div>
+            <div style="margin-bottom:10px;">
+                Overall Progress:
+                <strong id="projectProgressText">0%</strong>
+            </div>
 
-          <div class="prog-bar">
-            <div class="prog-fill fill-green" style="width:85%"></div>
-          </div>
-
-          <div class="project-meta">
-            <span>👤 Yusuf</span>
-            <span>📅 Apr 25</span>
-          </div>
+            <div class="prog-bar">
+                <div id="projectProgressBar" class="prog-fill fill-accent" style="width:0%"></div>
+            </div>
         </div>
 
-        </div>
     </div>
   </div>
+</div>
+
+
+<script src="project-manager.js"></script>
 
 </body>
 </html>

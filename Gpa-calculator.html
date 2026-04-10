@@ -8,9 +8,10 @@
     <link rel="stylesheet" href="project web.css">
 </head>
 <body>
-    <div class="layout">
 
-    <!-- ===== SIDEBAR ===== -->
+<div class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">📚</div>
@@ -36,21 +37,21 @@
         <span class="nav-icon">✅</span> To-Do List
         <span class="nav-badge">5</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="reminders.html">
         <span class="nav-icon">⏰</span> Reminders
         <span class="nav-badge warn">2</span>
       </a>
     </div>
 
-    <div class="sidebar-section">
-      <div class="sidebar-label">Resources</div>
-      <a class="nav-item" href="#">
+   <div class="sidebar-section">
+    <div class="sidebar-label">Resources</div>
+    <a class="nav-item" href="#">
         <span class="nav-icon">📂</span> Notes & Files
-      </a>
-      <a class="nav-item" href="#">
+    </a>
+    <a class="nav-item" href="sharedMaterials.html">
         <span class="nav-icon">🔗</span> Shared Materials
-      </a>
-    </div>
+    </a>
+</div>
 
     <div class="sidebar-section">
       <div class="sidebar-label">Collaborate</div>
@@ -61,7 +62,7 @@
       <a class="nav-item" href="project-manager.html">
         <span class="nav-icon">🗂</span> Project Manager
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="Q&A.html">
         <span class="nav-icon">💬</span> Q&amp;A Forum
       </a>
     </div>
@@ -89,10 +90,10 @@
     </div>
   </aside>
 
-  <!--main-->
+  <!-- ===== MAIN ===== -->
   <div class="main">
 
-    <!--topbar-->
+    <!-- TOPBAR -->
     <header class="topbar">
         <div>
             <div class="topbar-title">GPA Calculator</div>
@@ -100,20 +101,20 @@
         </div>
     </header>
 
-    <!--content-->
+    <!-- CONTENT -->
     <div class="content">
 
-        <!--add course-->
+        <!-- ADD COURSE -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">➕ Add Course</span>
             </div>
 
-            <input type="text" id="coursename" placeholder="course name" class="btn-ghost">
-            <input type="number" id="credits" placeholder="credit hours" class="btn-ghost">
+            <input type="text" id="courseName" placeholder="Course Name" class="btn-ghost">
+            <input type="number" id="credits" placeholder="Credit Hours" class="btn-ghost">
 
             <select id="grade" class="btn-ghost">
-                <option value="">select grade</option>
+                <option value="">Select Grade</option>
                 <option value="4.0">A</option>
                 <option value="3.7">A-</option>
                 <option value="3.3">B+</option>
@@ -125,10 +126,10 @@
                 <option value="0.0">F</option>
             </select>
 
-            <button class="btn btn-primary" onclick="addcourse()">+ Add Course</button>
+            <button class="btn btn-primary" onclick="addCourse()">+ Add Course</button>
         </div>
 
-        <!--table-->
+        <!-- TABLE -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">📊 Courses</span>
@@ -148,23 +149,30 @@
                 <tbody id="courseTable"></tbody>
             </table>
 
-            <!--gpa results-->
+            <!-- GPA RESULT -->
             <div class="gpa-result">
                 <div>
                     <div style="font-size:11px;color:var(--text3);">GPA</div>
                     <div class="gpa-val" id="gpaValue">0.00</div>
                 </div>
 
-                <div class="gpa-bar-fill" id="gpaBar" style="width:0%"></div>
+                <div class="gpa-bar-wrap">
+                    <div class="gpa-bar-fill" id="gpaBar" style="width:0%"></div>
+                </div>
+
+                <div>
+                    <div style="font-size:11px;color:var(--text3);">Scale</div>
+                    <div>4.0</div>
+                </div>
             </div>
 
-            <div>
-                <div style="font-size:11px;color:var(--text3);">Scale</div>
-                <div>4.0</div>
-            </div>
         </div>
+
     </div>
   </div>
 </div>
+
+<script src="Gpa-calculator.js"></script>
+
 </body>
 </html>

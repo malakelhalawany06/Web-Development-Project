@@ -3,12 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
+  <title>To-Do List</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="project web.css">
   
   <script src="to-dolist.js"></script>
 
+  <style>
+    .task-check:hover{
+      cursor: pointer;
+    }
+
+    .task-item {
+  margin-bottom: 16px;
+ 
+}
+.task-item:last-child {
+  margin-bottom: 0;
+}
+  </style>
 </head>
 <body>
 
@@ -33,14 +46,14 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Academic</div>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="Gpa-calculator.html">
         <span class="nav-icon">🎓</span> GPA Calculator
       </a>
       <a class="nav-item active" href="to-dolist.html" target="_self">
         <span class="nav-icon">✅</span> To-Do List
         <span class="nav-badge">5</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="reminders.html">
         <span class="nav-icon">⏰</span> Reminders
         <span class="nav-badge warn">2</span>
       </a>
@@ -51,7 +64,7 @@
       <a class="nav-item" href="#">
         <span class="nav-icon">📂</span> Notes & Files
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="sharedMaterials.html">
         <span class="nav-icon">🔗</span> Shared Materials
       </a>
     </div>
@@ -62,10 +75,10 @@
         <span class="nav-icon">👥</span> Study Groups
         <span class="nav-badge green">3</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="project-manager.html">
         <span class="nav-icon">🗂</span> Project Manager
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="Q&A.html">
         <span class="nav-icon">💬</span> Q&amp;A Forum
       </a>
     </div>
@@ -99,7 +112,7 @@
     <!-- Topbar -->
     <header class="topbar">
       <div>
-        <div class="topbar-title">Dashboard</div>
+        <div class="topbar-title">To-Do List</div>
         <div class="topbar-subtitle">Wednesday, April 8, 2026</div>
       </div>
       <div class="topbar-right">
@@ -115,12 +128,12 @@
             <div class="card-header">
                 <span class="card-title" style="font-size: larger;">To-Do List</span>
             </div>
-            <div class="task-item" style="display:flex; flex-direction: column;">
+            <div class="task-item" style="display:flex; flex-direction: row; flex-wrap: wrap;">
                 <div class="task-item">
             <button onclick="checkOrUncheck(this)"class="task-check done">✓</button>
             <div class="task-text">
               <div class="task-name done">Submit Lab Report #3</div>
-              <div class="task-meta">Data Structures · Completed</div>
+              <div class="task-meta">Data Structures</div>
             </div>
             <span class="task-tag tag-green">Done</span>
           </div>
@@ -128,7 +141,7 @@
             <button onclick="checkOrUncheck(this)"class="task-check"></button>
             <div class="task-text">
               <div class="task-name">Quiz Prep — Chapter 7</div>
-              <div class="task-meta">Calculus II · Due tomorrow</div>
+              <div class="task-meta">Calculus II </div>
             </div>
             <span class="task-tag tag-danger">Urgent</span>
           </div>
@@ -152,14 +165,15 @@
             <button onclick="checkOrUncheck(this)" class="task-check done">✓</button>
             <div class="task-text">
               <div class="task-name done">Weekly group sync</div>
-              <div class="task-meta">Project Manager · Completed</div>
+              <div class="task-meta">Project Manager </div>
             </div>
             <span class="task-tag tag-green">Done</span>
           </div>
-            <div style="margin-top:1rem;">
+            
+        </div>
+        <div style="margin-top:1rem;">
             <button onclick="addTask()" class="btn btn-primary" style="width:100%;justify-content:center;">+ Add New Task</button>
           </div>
-        </div>
         </div>
         </div>
     </div>
