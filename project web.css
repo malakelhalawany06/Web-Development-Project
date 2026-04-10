@@ -728,3 +728,11 @@
 
     .tab.active { background: var(--bg3); color: var(--text); font-weight: 500; }
      
+
+    .task-edit-btn:hover, .task-delete-btn:hover {
+  background: #f0f2f5 !important;
+  transform: scale(1.05);
+}
+.task-controls {
+  margin-left: auto;
+}

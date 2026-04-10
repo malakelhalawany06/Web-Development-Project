@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
+  <title>To-Do List</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="project web.css">
   
@@ -13,6 +13,14 @@
     .task-check:hover{
       cursor: pointer;
     }
+
+    .task-item {
+  margin-bottom: 16px;
+ 
+}
+.task-item:last-child {
+  margin-bottom: 0;
+}
   </style>
 </head>
 <body>
@@ -125,7 +133,7 @@
             <button onclick="checkOrUncheck(this)"class="task-check done">✓</button>
             <div class="task-text">
               <div class="task-name done">Submit Lab Report #3</div>
-              <div class="task-meta">Data Structures · Completed</div>
+              <div class="task-meta">Data Structures</div>
             </div>
             <span class="task-tag tag-green">Done</span>
           </div>
@@ -133,7 +141,7 @@
             <button onclick="checkOrUncheck(this)"class="task-check"></button>
             <div class="task-text">
               <div class="task-name">Quiz Prep — Chapter 7</div>
-              <div class="task-meta">Calculus II · Due tomorrow</div>
+              <div class="task-meta">Calculus II </div>
             </div>
             <span class="task-tag tag-danger">Urgent</span>
           </div>
@@ -157,7 +165,7 @@
             <button onclick="checkOrUncheck(this)" class="task-check done">✓</button>
             <div class="task-text">
               <div class="task-name done">Weekly group sync</div>
-              <div class="task-meta">Project Manager · Completed</div>
+              <div class="task-meta">Project Manager </div>
             </div>
             <span class="task-tag tag-green">Done</span>
           </div>
