@@ -520,46 +520,7 @@
     if (stored) {
       questions = JSON.parse(stored);
     } else {
-      // Sample questions
-      questions = [
-        {
-          id: 1001,
-          title: "How does Dijkstra's algorithm handle negative weights?",
-          body: "I know Dijkstra works for positive weights, but what happens if there are negative edges?",
-          tag: "Data Structures",
-          author: "Yusuf R.",
-          upvotes: 12,
-          answers: [
-            { text: "It fails because negative weights can cause infinite loops. Use Bellman-Ford instead.", author: "Prof. Lee", timestamp: Date.now() - 86400000 },
-            { text: "Dijkstra assumes all weights are non-negative, so negative edges break the greedy property.", author: "Ahmed", timestamp: Date.now() - 43200000 }
-          ],
-          timestamp: Date.now() - 172800000
-        },
-        {
-          id: 1002,
-          title: "Best resources for understanding JOIN types in SQL?",
-          body: "I'm struggling with INNER, LEFT, RIGHT, and FULL OUTER JOINs. Any recommended tutorials?",
-          tag: "Database",
-          author: "Nadia M.",
-          upvotes: 8,
-          answers: [
-            { text: "Check out W3Schools SQL JOIN section, very clear examples.", author: "Sara", timestamp: Date.now() - 172800000 }
-          ],
-          timestamp: Date.now() - 259200000
-        },
-        {
-          id: 1003,
-          title: "Difference between TCP and UDP?",
-          body: "When should I use one over the other?",
-          tag: "Networks",
-          author: "Sara O.",
-          upvotes: 15,
-          answers: [
-            { text: "TCP is reliable but slower, UDP is faster but no guaranteed delivery.", author: "Ali", timestamp: Date.now() - 43200000 }
-          ],
-          timestamp: Date.now() - 345600000
-        }
-      ];
+      
     }
     renderAll();
   }
