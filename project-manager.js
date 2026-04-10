@@ -1,4 +1,4 @@
-let tasks = [];
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
 /* =======================
    ADD TASK
@@ -24,6 +24,9 @@ function addTask() {
 
     tasks.push(task);
 
+    // SAVE 🔥
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+
     displayTasks();
     updateProjectProgress();
 
@@ -39,6 +42,9 @@ function addTask() {
 ======================= */
 function displayTasks() {
     let table = document.getElementById("taskTable");
+
+    if (!table) return; // safety check
+
     table.innerHTML = "";
 
     tasks.forEach((task, index) => {
@@ -63,6 +69,9 @@ function displayTasks() {
 ======================= */
 function deleteTask(index) {
     tasks.splice(index, 1);
+
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+
     displayTasks();
     updateProjectProgress();
 }
@@ -80,6 +89,8 @@ function editTask(index) {
 
     tasks.splice(index, 1);
 
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+
     displayTasks();
     updateProjectProgress();
 }
@@ -96,13 +107,24 @@ function updateProjectProgress() {
 
     let avg = tasks.length === 0 ? 0 : total / tasks.length;
 
-    // update text
-    document.getElementById("projectProgressText").innerText =
-        avg.toFixed(0) + "%";
+    let text = document.getElementById("projectProgressText");
+    if (text) {
+        text.innerText = avg.toFixed(0) + "%";
+    }
 
-    // update bar safely
     let bar = document.getElementById("projectProgressBar");
     if (bar) {
         bar.style.width = avg + "%";
     }
+
+    // SAVE 🔥
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 }
+
+/* =======================
+   LOAD ON REFRESH
+======================= */
+window.onload = function () {
+    displayTasks();
+    updateProjectProgress();
+};
