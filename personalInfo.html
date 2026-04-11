@@ -4,20 +4,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="project web.css">
+        <title>LoomHub — Personal Information</title>
         <script src="personalInfo.js"></script>
 
 
        <style>
-        input,select{
-            background-color: var(--bg);
-            height: 30px;
-            padding: 0.9rem;
-            background: var(--surface);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            color: white;
-            
-        }
+        /* Input fields + select dropdowns – only styles for fields inside the card */
+    input, select {
+      background-color: #ffffff;
+      height: 44px;
+      padding: 0 1rem;
+      border-radius: 14px;
+      border: 1px solid #cfdde6;
+      color: #0f172a;
+      font-family: 'Sora', sans-serif;
+      width: 100%;
+      margin-bottom: 0.5rem;
+      transition: 0.15s ease;
+      box-sizing: border-box;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+
+    /* Save button inside card */
+    button {
+      background: #3b82f6;
+      border: none;
+      padding: 0.75rem 1.6rem;
+      border-radius: 40px;
+      font-weight: 600;
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 1.2rem;
+      width: 100%;
+      transition: background 0.2s;
+      font-family: 'Sora', sans-serif;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
        </style>
        
     </head>
@@ -42,14 +73,14 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Academic</div>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="Gpa-calculator.html">
         <span class="nav-icon">🎓</span> GPA Calculator
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="to-dolist.html">
         <span class="nav-icon">✅</span> To-Do List
         <span class="nav-badge">5</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="reminders.html">
         <span class="nav-icon">⏰</span> Reminders
         <span class="nav-badge warn">2</span>
       </a>
@@ -60,21 +91,21 @@
       <a class="nav-item" href="#">
         <span class="nav-icon">📂</span> Notes & Files
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="sharedMaterials.html">
         <span class="nav-icon">🔗</span> Shared Materials
       </a>
     </div>
 
     <div class="sidebar-section">
       <div class="sidebar-label">Collaborate</div>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="studygroups.html">
         <span class="nav-icon">👥</span> Study Groups
         <span class="nav-badge green">3</span>
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="project-manager.html">
         <span class="nav-icon">🗂</span> Project Manager
       </a>
-      <a class="nav-item" href="#">
+      <a class="nav-item" href="Q&A.html">
         <span class="nav-icon">💬</span> Q&amp;A Forum
       </a>
     </div>
@@ -106,7 +137,7 @@
     <!-- Topbar -->
     <header class="topbar">
       <div>
-        <div class="topbar-title">My Profile</div>
+        <div class="topbar-title">Personal Information</div>
         <div class="topbar-subtitle">Wednesday, April 8, 2026</div>
       </div>
       <div class="topbar-right">
@@ -120,11 +151,11 @@
     <div class="content">
         <div class="card">
             <div class="card-header">
-                <span class="card-title">Personal Information</span>
+                <span class="card-title">✏️ Edit your profile</span>
             </div>
 
             <div class="info-form">
-                <form>
+                
                     <label for="fname" >First Name:</label><br>
                     <input id="fname" type="text" ><br>
 
@@ -146,16 +177,16 @@
                     <input id="year" type="text"><br>
 
                     <label for="uni">University:</label><br>
-                    <select id="uni" style="color:white">
+                    <select id="uni">
                         <option value="MIU">MIU</option>
                         <option value="BUE">BUE</option>
                         <option value="AUC">AUC</option>
                         <option>MSA</option>
                     </select><br>
 
-                    <button>Save Changes</button>
+                    <button onclick="saveProfileChanges()" id="saveChangesBtn">💾 Save Changes</button>
 
-                </form>
+                
             </div>
         </div>
     </div>
