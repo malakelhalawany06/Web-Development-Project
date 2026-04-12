@@ -3,66 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LoomHub — Reminders with Priority</title>
+  <title>Tasks & Reminders</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="reminders.css" />
 </head>
 <body>
 <div class="layout">
 
-  <!-- SIDEBAR (Reminders active) -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">📚</div>
       <div class="logo-text">Loom<span>Hub</span></div>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">Overview</div>
-      <a class="nav-item" href="project web trail 1.html">
-        <span class="nav-icon">🏠</span> Dashboard
-      </a>
-      <a class="nav-item" href="profile.html" target="_self">
-        <span class="nav-icon">👤</span> My Profile
-      </a>
+      <a class="nav-item" href="project web trail 1.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-item" href="profile.html"><span class="nav-icon">👤</span> My Profile</a>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">Academic</div>
-      <a class="nav-item" href="Gpa-calculator.html">
-        <span class="nav-icon">🎓</span> GPA Calculator
-      </a>
-      <a class="nav-item" href="to-dolist.html" target="_self">
-        <span class="nav-icon">✅</span> To-Do List
-        <span class="nav-badge">5</span>
-      </a>
-      <a class="nav-item active" href="reminders.html">
-        <span class="nav-icon">⏰</span> Reminders
-        <span class="nav-badge warn" id="reminderBadge">0</span>
-      </a>
+      <a class="nav-item" href="Gpa-calculator.html"><span class="nav-icon">🎓</span> GPA Calculator</a>
+      <a class="nav-item active" href="reminders.html"><span class="nav-icon">⏰</span> Tasks & Reminders <span class="nav-badge warn" id="reminderBadge">0</span></a>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">Resources</div>
       <a class="nav-item" href="#"><span class="nav-icon">📂</span> Notes & Files</a>
       <a class="nav-item" href="sharedMaterials.html"><span class="nav-icon">🔗</span> Shared Materials</a>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">Collaborate</div>
       <a class="nav-item" href="#"><span class="nav-icon">👥</span> Study Groups</a>
       <a class="nav-item" href="project-manager.html"><span class="nav-icon">🗂</span> Project Manager</a>
-      <a class="nav-item" href="Q&A.html"><span class="nav-icon">💬</span> Q&amp;A Forum</a>
+      <a class="nav-item" href="Q&A.html"><span class="nav-icon">💬</span> Q&A Forum</a>
     </div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-label">Admin Panel</div>
-      <a class="nav-item" href="#"><span class="nav-icon">🛡</span> User Management</a>
-      <a class="nav-item" href="#"><span class="nav-icon">🔍</span> Content Moderation</a>
-      <a class="nav-item" href="#"><span class="nav-icon">📊</span> Analytics</a>
-    </div>
-
-     <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='profile.html'">
+   <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='profile.html'">
       <div class="avatar">AK</div>
       <div class="profile-info">
         <div class="name">Ahmed Khalid</div>
@@ -71,12 +45,10 @@
     </div>
   </aside>
 
-  <!-- MAIN REMINDERS PAGE -->
   <div class="main">
     <header class="topbar">
       <div>
-        <div class="topbar-title">⏰ Reminders</div>
-        <div class="topbar-subtitle">Assignments with priority</div>
+        <div class="topbar-title">⏰ Tasks & Reminders</div>
       </div>
       <div class="topbar-right">
         <div class="search-bar" id="searchPlaceholder">🔍 Search reminders</div>
@@ -86,49 +58,30 @@
     </header>
 
     <div class="content">
-      <!-- STATS CARDS -->
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">📌</div>
-          <div class="stat-val" id="totalReminders">0</div>
-          <div class="stat-label">Total reminders</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">✅</div>
-          <div class="stat-val" id="completedReminders">0</div>
-          <div class="stat-label">Completed</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">⏳</div>
-          <div class="stat-val" id="pendingReminders">0</div>
-          <div class="stat-label">Pending</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">⚠️</div>
-          <div class="stat-val" id="urgentReminders">0</div>
-          <div class="stat-label">High priority</div>
-        </div>
+        <div class="stat-card"><div class="stat-icon">📌</div><div class="stat-val" id="totalReminders">0</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val" id="completedReminders">0</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val" id="pendingReminders">0</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-val" id="urgentReminders">0</div><div class="stat-label">High priority</div></div>
       </div>
 
-      <!-- MAIN REMINDER CARD -->
       <div class="card">
         <div class="card-header">
           <span class="card-title">📋 My reminders</span>
-          <button class="btn btn-ghost" id="clearCompletedBtn" style="font-size:12px;">🗑️ Clear completed</button>
+          <button class="btn btn-ghost" id="clearCompletedBtn">🗑️ Clear completed</button>
         </div>
-
-        <div id="remindersContainer" class="reminders-list">
-          <!-- dynamic content -->
-        </div>
+        <div id="remindersContainer" class="reminders-list"></div>
 
         <div class="add-reminder-form">
-          <input type="text" id="reminderInput" placeholder="e.g., Submit final project, Review chapter 5" autocomplete="off" />
+          <input type="text" id="reminderInput" placeholder="Task title" autocomplete="off" />
           <select id="prioritySelect">
             <option value="high">🔴 High</option>
             <option value="medium" selected>🟠 Medium</option>
             <option value="low">🟢 Low</option>
           </select>
-          <button class="btn btn-primary" id="addReminderBtn">+ Add reminder</button>
+          <input type="datetime-local" id="dueDateTime" />
+          <textarea id="notesInput" placeholder="Notes (optional)" rows="1"></textarea>
+          <button class="btn btn-primary" id="addReminderBtn">+ Add</button>
         </div>
       </div>
     </div>
@@ -137,4 +90,4 @@
 
 <script src="reminders.js"></script>
 </body>
-</html>
+</html> 

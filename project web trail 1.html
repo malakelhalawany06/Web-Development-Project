@@ -35,12 +35,9 @@
       <a class="nav-item" href="Gpa-calculator.html">
         <span class="nav-icon">🎓</span> GPA Calculator
       </a>
-      <a class="nav-item" href="to-dolist.html" target="_self">
-        <span class="nav-icon">✅</span> To-Do List
-        <span class="nav-badge">5</span>
-      </a>
+     
       <a class="nav-item" href="reminders.html">
-        <span class="nav-icon">⏰</span> Reminders
+        <span class="nav-icon">⏰</span> Tasks & Reminders
         <span class="nav-badge warn">2</span>
       </a>
     </div>
@@ -217,46 +214,14 @@
         <div style="display:flex;flex-direction:column;gap:1.25rem;">
 
           <div class="card">
-            <div class="card-header">
-              <span class="card-title">⏰ Upcoming Deadlines</span>
-              <span class="card-action">View all</span>
-            </div>
-            <div class="deadline-list">
-              <div class="deadline-item">
-                <div class="deadline-date">
-                  <div class="day">09</div>
-                  <div class="month">APR</div>
-                </div>
-                <div class="deadline-info">
-                  <div class="title">Calculus Quiz</div>
-                  <div class="sub">Chapter 7 · 10:00 AM</div>
-                </div>
-                <div class="urgency-dot dot-danger"></div>
-              </div>
-              <div class="deadline-item">
-                <div class="deadline-date">
-                  <div class="day">10</div>
-                  <div class="month">APR</div>
-                </div>
-                <div class="deadline-info">
-                  <div class="title">DB Project ERD</div>
-                  <div class="sub">Database Systems · 11:59 PM</div>
-                </div>
-                <div class="urgency-dot dot-warn"></div>
-              </div>
-              <div class="deadline-item">
-                <div class="deadline-date">
-                  <div class="day">15</div>
-                  <div class="month">APR</div>
-                </div>
-                <div class="deadline-info">
-                  <div class="title">Midterm Exam</div>
-                  <div class="sub">Networks · Hall B</div>
-                </div>
-                <div class="urgency-dot dot-green"></div>
-              </div>
-            </div>
-          </div>
+  <div class="card-header">
+    <span class="card-title">⏰ Upcoming Deadlines</span>
+    <span class="card-action" onclick="window.location.href='reminders.html'">View all</span>
+  </div>
+  <div id="deadlinesList" class="deadline-list">
+    <!-- dynamic deadlines will appear here -->
+  </div>
+</div>
 
           <!-- NOTES QUICK ACCESS -->
           <div class="card">
@@ -552,6 +517,7 @@
     localStorage.setItem("loomhub_reminders_priority", JSON.stringify(reminders));
     updateSidebarBadge();
     updateStatsCards();
+    renderUpcomingDeadlines();
   }
 
   function getPriorityTag(priority) {
@@ -670,10 +636,68 @@
   }
 
   function updateSidebarBadge() {
-    const pending = reminders.filter(r => !r.completed).length;
-    const badge = document.getElementById("reminderBadge");
-    if (badge) badge.innerText = pending;
+  const badge = document.getElementById("reminderBadge");
+  if (!badge) return;
+  const pending = reminders.filter(r => !r.completed).length;
+  badge.innerText = pending;
+}
+
+  function renderUpcomingDeadlines() {
+  const container = document.getElementById("deadlinesList");
+  if (!container) return;
+
+  const stored = localStorage.getItem("loomhub_reminders_priority");
+  const allReminders = stored ? JSON.parse(stored) : [];
+
+  const now = new Date();
+  // Get today at midnight (start of day)
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // End of the day after tomorrow (i.e., within 2 full days)
+  const twoDaysLater = new Date(today);
+  twoDaysLater.setDate(today.getDate() + 2);
+  twoDaysLater.setHours(23, 59, 59, 999);
+
+  const upcoming = allReminders.filter(rem => {
+    if (rem.completed) return false;
+    if (!rem.dueDate) return false;
+    const due = new Date(rem.dueDate);
+    // Compare due date at start of its day (ignore time)
+    const dueStart = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    return dueStart >= today && dueStart <= twoDaysLater;
+  }).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+  if (upcoming.length === 0) {
+    container.innerHTML = `<div class="empty-message" style="padding:1rem; text-align:center;">🎉 No urgent deadlines!</div>`;
+    return;
   }
+
+  container.innerHTML = upcoming.map(rem => {
+    const due = new Date(rem.dueDate);
+    const day = due.getDate().toString().padStart(2, '0');
+    const month = due.toLocaleString('default', { month: 'short' }).toUpperCase();
+    const time = due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const dueStart = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    const diffDays = Math.round((dueStart - today) / (1000 * 60 * 60 * 24));
+    let urgencyDot = "dot-green";
+    if (diffDays === 0) urgencyDot = "dot-danger";      // today
+    else if (diffDays === 1) urgencyDot = "dot-warn";   // tomorrow
+
+    return `
+      <div class="deadline-item">
+        <div class="deadline-date">
+          <div class="day">${day}</div>
+          <div class="month">${month}</div>
+        </div>
+        <div class="deadline-info">
+          <div class="title">${escapeHtml(rem.text)}</div>
+          <div class="sub">${rem.priority === 'high' ? '🔴 High priority' : '📌 ' + (rem.priority || 'medium')} · ${time}</div>
+        </div>
+        <div class="urgency-dot ${urgencyDot}"></div>
+      </div>
+    `;
+  }).join('');
+}
 
   function escapeHtml(str) {
     if (!str) return "";
@@ -701,11 +725,20 @@
     loadReminders();
     renderTasks();
     updateStatsCards();
+    updateSidebarBadge();
     setupTabs();
     document.getElementById("addTaskBtn").addEventListener("click", addNewTask);
+    renderUpcomingDeadlines();
   });
 
-  
+window.addEventListener('storage', (e) => {
+  if (e.key === 'loomhub_reminders_priority') {
+    loadReminders();
+    renderTasks();
+    updateStatsCards();
+    renderUpcomingDeadlines();
+  }
+});  
 </script>
 <script src="personalInfo.js"></script>
 
