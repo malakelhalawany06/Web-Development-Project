@@ -607,21 +607,57 @@
   }
 
   function addNewTask() {
-    let newText = prompt("Enter new task/reminder:", "Study for exam");
-    if (newText && newText.trim()) {
-      let priority = prompt("Priority? (high/medium/low)", "medium");
-      if (!["high","medium","low"].includes(priority)) priority = "medium";
-      reminders.unshift({
-        id: Date.now(),
-        text: newText.trim(),
-        completed: false,
-        priority: priority
-      });
-      saveReminders();
-      renderTasks();
-      updateStatsCards();
+  const modal = document.getElementById("taskModal");
+  const titleInput = document.getElementById("modalTaskTitle");
+  const prioritySelect = document.getElementById("modalPriority");
+  
+  // Clear previous input
+  titleInput.value = "";
+  prioritySelect.value = "medium";
+  
+  modal.style.display = "flex";
+  titleInput.focus();
+  
+  const confirmBtn = document.getElementById("confirmModalBtn");
+  const cancelBtn = document.getElementById("cancelModalBtn");
+  const closeBtn = document.getElementById("closeModalBtn");
+  
+  const closeModal = () => {
+    modal.style.display = "none";
+    confirmBtn.removeEventListener("click", handleConfirm);
+    cancelBtn.removeEventListener("click", closeModal);
+    closeBtn.removeEventListener("click", closeModal);
+    document.removeEventListener("keydown", escHandler);
+  };
+  
+  const handleConfirm = () => {
+    const text = titleInput.value.trim();
+    const priority = prioritySelect.value;
+    if (text === "") {
+      alert("Please enter a task.");
+      return;
     }
-  }
+    reminders.unshift({
+      id: Date.now(),
+      text: text,
+      completed: false,
+      priority: priority
+    });
+    saveReminders();
+    renderTasks();
+    updateStatsCards();
+    closeModal();
+  };
+  
+  const escHandler = (e) => {
+    if (e.key === "Escape") closeModal();
+  };
+  
+  confirmBtn.addEventListener("click", handleConfirm);
+  cancelBtn.addEventListener("click", closeModal);
+  closeBtn.addEventListener("click", closeModal);
+  document.addEventListener("keydown", escHandler);
+}
 
   function updateStatsCards() {
     const completed = reminders.filter(r => r.completed).length;
@@ -668,7 +704,37 @@
     setupTabs();
     document.getElementById("addTaskBtn").addEventListener("click", addNewTask);
   });
+
+  
 </script>
 <script src="personalInfo.js"></script>
+
+<!-- Custom Modal for Adding Task -->
+<div id="taskModal" class="modal-overlay" style="display: none;">
+  <div class="modal-container">
+    <div class="modal-header">
+      <span class="modal-title">➕ Add New Task</span>
+      <button class="modal-close" id="closeModalBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label for="modalTaskTitle">Task title</label>
+        <input type="text" id="modalTaskTitle" placeholder="e.g., Study for exam" autocomplete="off" />
+      </div>
+      <div class="modal-field">
+        <label for="modalPriority">Priority</label>
+        <select id="modalPriority">
+          <option value="high">🔴 High</option>
+          <option value="medium" selected>🟠 Medium</option>
+          <option value="low">🟢 Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+      <button class="btn btn-primary" id="confirmModalBtn">Add Task</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
