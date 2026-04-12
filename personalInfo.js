@@ -124,13 +124,51 @@
         const year = document.getElementById('year')?.value.trim();
         const university = document.getElementById('uni')?.value;
 
-        if (!firstName || !lastName) {
-            alert('Please enter both first and last name.');
+        // Validations 
+        if (!firstName) {
+             document.getElementById('fnameError').innerHTML="You must enter a first name";
+            document.getElementById('fnameError').setAttribute('style','color: red');
+           // alert('Please enter both first and last name.');
+            return false;
+        }else{
+            document.getElementById('fnameError').innerHTML="";
+            
+        } 
+        if(firstName.length< 3){
+            document.getElementById('fnameError').innerHTML="Name must be more than 3 characters";
+            document.getElementById('fnameError').setAttribute('style','color: red');
             return false;
         }
-        if (!year || isNaN(parseInt(year))) {
-            alert('Please enter a valid year (e.g., 1, 2, 3, 4).');
+        else{  document.getElementById('fnameError').innerHTML="";
+
+        }
+
+        if(!lastName){
+            document.getElementById('lnameError').innerHTML="You must enter a last name";
+            document.getElementById('lnameError').setAttribute('style','color: red');
             return false;
+        }else{
+              document.getElementById('lnameError').innerHTML="";
+        }
+
+        if(lastName.length< 3){
+
+         document.getElementById('lnameError').innerHTML="Name must be more than 3 characters";
+            document.getElementById('lnameError').setAttribute('style','color: red');
+            return false;
+        }
+        else{  document.getElementById('lnameError').innerHTML="";
+
+        }
+
+
+        if (!year || isNaN(parseInt(year)) || year<0 || year==0) {
+            document.getElementById('yearError').innerHTML="Please enter a valid year (e.g., 1, 2, 3, 4).";
+            document.getElementById('yearError').setAttribute('style','color: red');
+           // alert('Please enter a valid year (e.g., 1, 2, 3, 4).');
+            return false;
+        }else if(year > 0){
+            document.getElementById('yearError').innerHTML="";
         }
 
         const updatedUser = {
