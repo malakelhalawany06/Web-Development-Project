@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <title>LoomHub — Sign Up</title>
+        <link rel="stylesheet" href="project web.css">
+         <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+   <link rel="stylesheet" href="logIn.css">
+  
+</head>
+    <body>
+        <h2>Welcome to </h2>
+         <div class="main-logo"> <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div id="details">
+        
+        <label for="fname">First Name:</label><br><span id="fnameError"></span>
+        <input type="text" id="fname" placeholder="Enter First Name"><br>
+
+        <label for="lname">Last Name:</label><br><span id="lnameError"></span>
+        <input id="lname" type="text" placeholder="Enter Last Name"><br>
+
+        <label for="email">Email:</label><br><span id="emailError"></span>
+        <input id="email" type="email" placeholder="Enter Email"><br>
+
+        <label for="uni">University:</label><br>
+        <input type="text" id="uni" placeholder="Enter University"><br>
+
+        <label for="year">Academic Year:</label><br><span id="'yearError"></span>
+        <input type="number" id="year" placeholder="Enter Academic year"><br>
+
+        <label for="username">Create Username:</label><br><span id="usernameError"></span>
+        <input type="text" id="username" placeholder="Enter Username"><br>
+
+        <label for="pass">Password:</label><br><span id="passError"></span>
+        <input type="password" id="pass" placeholder="Enter Password"><br>
+
+        <label for="confirm">Re-enter Password:</label><br><span id="confirmError"></span>
+        <input type="password" id="confirm" placeholder="Re-enter Password"><br>
+
+
+        <button onclick="validateSignUp()">Sign Up</button>
+        <span>Have an account already? <a href="logIn.html">login</a></span>
+    </div>
+
+    </body>
+</html>
