@@ -7,7 +7,7 @@
       border: 1px solid #cfdde6;
       color: #0f172a;
       font-family: 'Sora', sans-serif;
-      width: 100%;
+      width:40%;
       margin-bottom: 0.5rem;
       transition: 0.15s ease;
       box-sizing: border-box;
@@ -17,6 +17,14 @@
       outline: none;
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+
+    .info-form{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0px;
     }
 
     /* Save button inside card */
@@ -30,7 +38,7 @@
       font-size: 0.9rem;
       cursor: pointer;
       margin-top: 1.2rem;
-      width: 100%;
+      width: 40%;
       transition: background 0.2s;
       font-family: 'Sora', sans-serif;
     }

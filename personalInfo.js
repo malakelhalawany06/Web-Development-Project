@@ -123,13 +123,19 @@
         const major = document.getElementById('major')?.value;
         const year = document.getElementById('year')?.value.trim();
         const university = document.getElementById('uni')?.value;
+        const email=document.getElementById('email')?.value;
+
+        let emailRegex=/^\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/;
+
+        let valid=true;
+
 
         // Validations 
         if (!firstName) {
              document.getElementById('fnameError').innerHTML="You must enter a first name";
             document.getElementById('fnameError').setAttribute('style','color: red');
            // alert('Please enter both first and last name.');
-            return false;
+            valid= false;
         }else{
             document.getElementById('fnameError').innerHTML="";
             
@@ -137,7 +143,7 @@
         if(firstName.length< 3){
             document.getElementById('fnameError').innerHTML="Name must be more than 3 characters";
             document.getElementById('fnameError').setAttribute('style','color: red');
-            return false;
+            valid= false;
         }
         else{  document.getElementById('fnameError').innerHTML="";
 
@@ -146,7 +152,7 @@
         if(!lastName){
             document.getElementById('lnameError').innerHTML="You must enter a last name";
             document.getElementById('lnameError').setAttribute('style','color: red');
-            return false;
+            valid= false;
         }else{
               document.getElementById('lnameError').innerHTML="";
         }
@@ -155,7 +161,7 @@
 
          document.getElementById('lnameError').innerHTML="Name must be more than 3 characters";
             document.getElementById('lnameError').setAttribute('style','color: red');
-            return false;
+            valid= false;
         }
         else{  document.getElementById('lnameError').innerHTML="";
 
@@ -166,9 +172,20 @@
             document.getElementById('yearError').innerHTML="Please enter a valid year (e.g., 1, 2, 3, 4).";
             document.getElementById('yearError').setAttribute('style','color: red');
            // alert('Please enter a valid year (e.g., 1, 2, 3, 4).');
-            return false;
+            valid= false;
         }else if(year > 0){
             document.getElementById('yearError').innerHTML="";
+        }
+
+       /*if(!email.test('emailRegex') || email=="")
+        {
+            document.getElementById('emailError').innerHTML="Invalid email format";
+            document.getElementById('emailError').setAttribute('style','color: red');
+            valid=false;
+        }*/
+
+        if(!valid){
+            return;
         }
 
         const updatedUser = {
