@@ -1,0 +1,40 @@
+ /* Input fields + select dropdowns – only styles for fields inside the card */
+    input, select {
+      background-color: #ffffff;
+      height: 44px;
+      padding: 0 1rem;
+      border-radius: 14px;
+      border: 1px solid #cfdde6;
+      color: #0f172a;
+      font-family: 'Sora', sans-serif;
+      width: 100%;
+      margin-bottom: 0.5rem;
+      transition: 0.15s ease;
+      box-sizing: border-box;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+
+    /* Save button inside card */
+    button {
+      background: #3b82f6;
+      border: none;
+      padding: 0.75rem 1.6rem;
+      border-radius: 40px;
+      font-weight: 600;
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 1.2rem;
+      width: 100%;
+      transition: background 0.2s;
+      font-family: 'Sora', sans-serif;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
