@@ -1,17 +1,17 @@
+// Load tasks from local storage, or start empty
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
 /* =======================
    ADD TASK
 ======================= */
 function addTask() {
-    let name = document.getElementById("taskName").value;
-    let member = document.getElementById("assignedTo").value;
+    let name = document.getElementById("taskName").value.trim();
+    let member = document.getElementById("assignedTo").value.trim();
     let deadline = document.getElementById("deadline").value;
-    let progress = parseInt(document.getElementById("progress").value);
 
-    // validation
-    if (name === "" || member === "" || deadline === "" || isNaN(progress)) {
-        alert("Please fill all fields correctly!");
+    // validation (progress is removed since it defaults to 0)
+    if (name === "" || member === "" || deadline === "") {
+        alert("Please fill all fields (Task Name, Member, Deadline)!");
         return;
     }
 
@@ -19,7 +19,7 @@ function addTask() {
         name: name,
         member: member,
         deadline: deadline,
-        progress: progress
+        progress: 0 // Default to 0% when created
     };
 
     tasks.push(task);
@@ -28,40 +28,76 @@ function addTask() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 
     displayTasks();
-    updateProjectProgress();
 
     // clear inputs
     document.getElementById("taskName").value = "";
     document.getElementById("assignedTo").value = "";
     document.getElementById("deadline").value = "";
-    document.getElementById("progress").value = "";
 }
 
 /* =======================
-   DISPLAY TASKS
+   DISPLAY TASKS (Cards instead of Table)
 ======================= */
 function displayTasks() {
-    let table = document.getElementById("taskTable");
+    let container = document.getElementById("taskTable");
 
-    if (!table) return; // safety check
+    if (!container) return; // safety check
 
-    table.innerHTML = "";
+    container.innerHTML = "";
 
     tasks.forEach((task, index) => {
-        let row = `
-        <tr>
-            <td>${task.name}</td>
-            <td>${task.member}</td>
-            <td>${task.deadline}</td>
-            <td>${task.progress}%</td>
-            <td>
-                <button onclick="deleteTask(${index})">❌ Delete</button>
-                <button onclick="editTask(${index})">✏️ Edit</button>
-            </td>
-        </tr>
+        // Build the card UI
+        let card = `
+        <div class="task-card">
+            <div class="task-card-header">
+                <div class="task-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                <div class="task-info">
+                    <h3>${task.name}</h3>
+                    <p>Assigned to: ${task.member}</p>
+                </div>
+            </div>
+            <div class="task-meta">
+                <div class="date">Due: ${task.deadline}</div>
+            </div>
+            <div class="progress-section">
+                <div class="progress-header">${task.progress}%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill fill-blue" style="width: ${task.progress}%;"></div>
+                </div>
+            </div>
+            
+            <div class="task-card-actions">
+                <div class="progress-update">
+                    <input type="number" id="update-prog-${index}" value="${task.progress}" min="0" max="100">
+                    <button class="btn btn-small" onclick="updateTaskProgress(${index})">Set %</button>
+                </div>
+                <button class="btn btn-small btn-danger" onclick="deleteTask(${index})">Delete</button>
+            </div>
+        </div>
         `;
-        table.innerHTML += row;
+        container.innerHTML += card;
     });
+
+    // Update overall progress whenever tasks are displayed
+    updateProjectProgress();
+}
+
+/* =======================
+   UPDATE INDIVIDUAL TASK PROGRESS
+======================= */
+function updateTaskProgress(index) {
+    let newProgress = parseInt(document.getElementById(`update-prog-${index}`).value);
+    
+    // Safety check for valid percentage
+    if (isNaN(newProgress) || newProgress < 0) newProgress = 0;
+    if (newProgress > 100) newProgress = 100;
+
+    tasks[index].progress = newProgress;
+
+    // SAVE 🔥
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+
+    displayTasks();
 }
 
 /* =======================
@@ -70,33 +106,14 @@ function displayTasks() {
 function deleteTask(index) {
     tasks.splice(index, 1);
 
+    // SAVE 🔥
     localStorage.setItem("tasks", JSON.stringify(tasks));
 
     displayTasks();
-    updateProjectProgress();
 }
 
 /* =======================
-   EDIT TASK
-======================= */
-function editTask(index) {
-    let task = tasks[index];
-
-    document.getElementById("taskName").value = task.name;
-    document.getElementById("assignedTo").value = task.member;
-    document.getElementById("deadline").value = task.deadline;
-    document.getElementById("progress").value = task.progress;
-
-    tasks.splice(index, 1);
-
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-
-    displayTasks();
-    updateProjectProgress();
-}
-
-/* =======================
-   PROJECT PROGRESS
+   PROJECT PROGRESS (Updated for Circular Ring)
 ======================= */
 function updateProjectProgress() {
     let total = 0;
@@ -105,20 +122,21 @@ function updateProjectProgress() {
         total += task.progress;
     });
 
-    let avg = tasks.length === 0 ? 0 : total / tasks.length;
+    let avg = tasks.length === 0 ? 0 : Math.round(total / tasks.length);
 
-    let text = document.getElementById("projectProgressText");
-    if (text) {
-        text.innerText = avg.toFixed(0) + "%";
+    // Update text elements
+    let textElement = document.getElementById("projectProgressText");
+    let valueElement = document.getElementById("projectProgressValue");
+    
+    if (textElement) textElement.innerText = avg + "%";
+    if (valueElement) valueElement.innerText = avg + "%";
+
+    // Update the circular gradient ring
+    let ring = document.getElementById("projectProgressRing");
+    if (ring) {
+        // 3.6 degrees per 1%
+        ring.style.background = `conic-gradient(#3b82f6 ${avg * 3.6}deg, #212631 0deg)`;
     }
-
-    let bar = document.getElementById("projectProgressBar");
-    if (bar) {
-        bar.style.width = avg + "%";
-    }
-
-    // SAVE 🔥
-    localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
 /* =======================
@@ -126,5 +144,4 @@ function updateProjectProgress() {
 ======================= */
 window.onload = function () {
     displayTasks();
-    updateProjectProgress();
 };

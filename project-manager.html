@@ -6,13 +6,15 @@
   <title>Project Manager</title>
 
   <link rel="stylesheet" href="project web.css">
+    <link rel="stylesheet" href="project-manager.css">
 </head>
 
 <body>
 
 <div class="layout">
 
-<!-- ===== SIDEBAR ===== -->
+
+  <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">📚</div>
@@ -21,7 +23,7 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Overview</div>
-      <a class="nav-item " href="project web trail 1.html">
+      <a class="nav-item active" href="project web trail 1.html">
         <span class="nav-icon">🏠</span> Dashboard
       </a>
       <a class="nav-item" href="profile.html" target="_self">
@@ -34,7 +36,7 @@
       <a class="nav-item" href="Gpa-calculator.html">
         <span class="nav-icon">🎓</span> GPA Calculator
       </a>
-      
+     
       <a class="nav-item" href="reminders.html">
         <span class="nav-icon">⏰</span> Tasks & Reminders
         <span class="nav-badge warn">2</span>
@@ -57,7 +59,7 @@
         <span class="nav-icon">👥</span> Study Groups
         <span class="nav-badge green">3</span>
       </a>
-      <a class="nav-item active" href="project-manager.html">
+      <a class="nav-item" href="project-manager.html">
         <span class="nav-icon">🗂</span> Project Manager
       </a>
       <a class="nav-item" href="Q&A.html">
@@ -69,9 +71,6 @@
       <div class="sidebar-label">Admin Panel</div>
       <a class="nav-item" href="#">
         <span class="nav-icon">🛡</span> User Management
-      </a>
-      <a class="nav-item" href="#">
-        <span class="nav-icon">🔍</span> Content Moderation
       </a>
       <a class="nav-item" href="#">
         <span class="nav-icon">📊</span> Analytics
@@ -100,59 +99,46 @@
     </header>
 
     <!-- Content -->
-    <div class="content">
+ <div class="content">
 
-        <!-- ADD TASK -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">🗂 Create Project Task</span>
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Create Project Task</h2>
             </div>
-
-            <!-- ✅ IDs added -->
-            <input type="text" id="taskName" placeholder="Task name" class="btn-ghost" style="width:100%;margin-bottom:10px;">
-            <input type="text" id="assignedTo" placeholder="Assign to (member)" class="btn-ghost" style="width:100%;margin-bottom:10px;">
-            <input type="date" id="deadline" class="btn-ghost" style="width:100%;margin-bottom:10px;">
-            <input type="number" id="progress" placeholder="Progress %" class="btn-ghost" style="width:100%;margin-bottom:10px;">
-
-            <!-- ✅ onclick added -->
-            <button class="btn btn-primary" onclick="addTask()">+ Add Task</button>
+            <div class="task-form-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="form-group">
+                    <label>Task Name</label>
+                    <input type="text" id="taskName" class="form-control" placeholder="Enter task name">
+                </div>
+                <div class="form-group">
+                    <label>Assign to (Member)</label>
+                    <input type="text" id="assignedTo" class="form-control" placeholder="E.g. Sam R.">
+                </div>
+                <div class="form-group">
+                    <label>Deadline</label>
+                    <input type="date" id="deadline" class="form-control">
+                </div>
+            </div>
+            <button class="btn" onclick="addTask()">+ Add Task</button>
         </div>
 
-        <!-- TASK TABLE -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">📋 Project Tasks</span>
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Project Tasks</h2>
             </div>
-
-            <!-- THIS is where JS will insert tasks -->
-            <table class="gpa-table">
-                <thead>
-                    <tr>
-                        <th>Task</th>
-                        <th>Member</th>
-                        <th>Deadline</th>
-                        <th>Progress</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody id="taskTable"></tbody>
-            </table>
+            
+            <div class="tasks-grid" id="taskTable">
+                </div>
         </div>
 
-        <!-- PROJECT PROGRESS -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">📊 Project Progress</span>
-            </div>
-
-            <div style="margin-bottom:10px;">
-                Overall Progress:
-                <strong id="projectProgressText">0%</strong>
-            </div>
-
-            <div class="prog-bar">
-                <div id="projectProgressBar" class="prog-fill fill-accent" style="width:0%"></div>
+        <div class="panel">
+            <h2 class="panel-title">Project Progress</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">Overall Progress: <strong id="projectProgressText" style="color: white;">0%</strong></p>
+            
+            <div class="progress-ring-container">
+                <div class="circular-progress" id="projectProgressRing" style="background: conic-gradient(#3b82f6 0deg, #212631 0deg);">
+                    <span class="progress-value" id="projectProgressValue">0%</span>
+                </div>
             </div>
         </div>
 
