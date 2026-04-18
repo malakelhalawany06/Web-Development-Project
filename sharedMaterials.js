@@ -8,6 +8,7 @@ let materials = JSON.parse(localStorage.getItem("materials")) || [];
 // =======================
 function displayMaterials() {
     const feedContainer = document.getElementById('feed-container');
+    if (!feedContainer) return;
     feedContainer.innerHTML = "";
 
     materials.forEach(post => {
@@ -29,12 +30,12 @@ function displayMaterials() {
 
             ${post.fileName ? `
             <div class="file-attachment">
-                <div style="font-size: 24px;">📄</div>
+                <div style="font-size: 24px;">${getFileIcon(post.fileName)}</div>
                 <div style="flex: 1;">
                     <div style="font-size: 13px; font-weight: 500;">${post.fileName}</div>
                     <div style="font-size: 11px; color: var(--text3);">Document • ${post.fileSize}</div>
                 </div>
-                <button class="btn btn-ghost">Download</button>
+                <button class="btn btn-ghost" onclick="downloadFile('${post.fileName}')">Download</button>
             </div>
             ` : ''}
 
@@ -51,10 +52,75 @@ function displayMaterials() {
 }
 
 // =======================
+// GET FILE ICON
+// =======================
+function getFileIcon(fileName) {
+    if (!fileName) return '📄';
+    const ext = fileName.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return '📘';
+    if (ext === 'zip') return '🗂️';
+    if (ext === 'docx' || ext === 'doc') return '📄';
+    if (ext === 'jpg' || ext === 'png' || ext === 'jpeg') return '🖼️';
+    return '📄';
+}
+
+// =======================
+// SAVE TO NOTES & FILES
+// =======================
+// Inside your upload button click handler, add this save function
+function saveToNotesFiles(title, desc, fileName, fileSize) {
+    let notesFiles = JSON.parse(localStorage.getItem('notesFiles') || '[]');
+    
+    // Determine course
+    let course = 'web';
+    let courseName = 'Web Development';
+    const text = (title + ' ' + desc).toLowerCase();
+    
+    if (text.includes('calculus')) {
+        course = 'calc';
+        courseName = 'Calculus II';
+    } else if (text.includes('database')) {
+        course = 'db';
+        courseName = 'Database Systems';
+    } else if (text.includes('network')) {
+        course = 'net';
+        courseName = 'Networks';
+    } else if (text.includes('data structure')) {
+        course = 'ds';
+        courseName = 'Data Structures';
+    }
+    
+    const fileIcon = '📄';
+    const now = new Date();
+    const dateStr = now.toLocaleDateString();
+    
+    notesFiles.unshift({
+        fileName: fileName,
+        fileMeta: `${courseName} • Uploaded by Ahmed K.`,
+        fileSize: fileSize,
+        fileIcon: fileIcon,
+        course: course,
+        date: dateStr
+    });
+    
+    localStorage.setItem('notesFiles', JSON.stringify(notesFiles));
+}
+
+// Call this in your upload button:
+// saveToNotesFiles(title, desc, file.name, (file.size / 1024 / 1024).toFixed(1) + ' MB');
+
+// =======================
 // SAVE MATERIALS
 // =======================
 function saveMaterials() {
     localStorage.setItem("materials", JSON.stringify(materials));
+}
+
+// =======================
+// DOWNLOAD FUNCTION
+// =======================
+function downloadFile(fileName) {
+    alert(`Downloading "${fileName}"...`);
 }
 
 // =======================
@@ -82,110 +148,142 @@ window.onload = function () {
     // =======================
     // SEARCH
     // =======================
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const posts = feedContainer.querySelectorAll('.post-card');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const posts = feedContainer.querySelectorAll('.post-card');
 
-        posts.forEach(post => {
-            const title = post.querySelector('.post-title').textContent.toLowerCase();
-            const text = post.querySelector('.post-text').textContent.toLowerCase();
+            posts.forEach(post => {
+                const title = post.querySelector('.post-title')?.textContent.toLowerCase() || '';
+                const text = post.querySelector('.post-text')?.textContent.toLowerCase() || '';
 
-            if (title.includes(searchTerm) || text.includes(searchTerm)) {
-                post.style.display = 'block';
-            } else {
-                post.style.display = 'none';
-            }
+                if (title.includes(searchTerm) || text.includes(searchTerm)) {
+                    post.style.display = 'block';
+                } else {
+                    post.style.display = 'none';
+                }
+            });
         });
-    });
+    }
 
     // =======================
     // FILE NAME DISPLAY
     // =======================
-    fileInput.addEventListener('change', function () {
-        if (this.files.length > 0) {
-            fileNameDisplay.textContent = this.files[0].name;
-        } else {
-            fileNameDisplay.textContent = "No file chosen";
-        }
-    });
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (this.files.length > 0) {
+                fileNameDisplay.textContent = this.files[0].name;
+            } else {
+                fileNameDisplay.textContent = "No file chosen";
+            }
+        });
+    }
 
     // =======================
     // COMMENTS
     // =======================
-    feedContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('send-comment-btn')) {
-            const inputField = e.target.previousElementSibling;
-            const commentText = inputField.value.trim();
+    if (feedContainer) {
+        feedContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('send-comment-btn')) {
+                const inputField = e.target.previousElementSibling;
+                const commentText = inputField.value.trim();
 
-            if (commentText !== "") {
-                const commentsContainer = e.target.closest('.post-card').querySelector('.comments-container');
+                if (commentText !== "") {
+                    const commentsContainer = e.target.closest('.post-card').querySelector('.comments-container');
 
-                const newComment = document.createElement('div');
-                newComment.classList.add('comment');
-                newComment.innerHTML = `
-                    <div class="avatar sm purple">AK</div>
-                    <div style="flex: 1;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-size: 12px; font-weight: 600;">Ahmed Khalid (You)</span>
-                            <span style="font-size: 10px;">Just now</span>
+                    const newComment = document.createElement('div');
+                    newComment.classList.add('comment');
+                    newComment.innerHTML = `
+                        <div class="avatar sm purple">AK</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-size: 12px; font-weight: 600;">Ahmed Khalid (You)</span>
+                                <span style="font-size: 10px;">Just now</span>
+                            </div>
+                            <div style="font-size: 12.5px;">${commentText}</div>
                         </div>
-                        <div style="font-size: 12.5px;">${commentText}</div>
-                    </div>
-                `;
+                    `;
 
-                commentsContainer.appendChild(newComment);
-                inputField.value = '';
+                    commentsContainer.appendChild(newComment);
+                    inputField.value = '';
+                }
             }
-        }
-    });
+        });
+    }
 
     // =======================
     // MODAL
     // =======================
     function showModal(message) {
-        modalMessage.textContent = message;
-        modal.style.display = 'flex';
+        if (modal && modalMessage) {
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        }
     }
 
-    closeModalBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            if (modal) modal.style.display = 'none';
+        });
+    }
 
-    // =======================
-    // UPLOAD
-    // =======================
-    uploadBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        const title = uploadTitleInput.value.trim();
-        const desc = uploadDescInput.value.trim();
-        const file = fileInput.files[0];
-
-        if (title === "") {
-            showModal("Please enter a Material Title.");
-            return;
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            if (modal) modal.style.display = 'none';
         }
+    }
 
-        let newMaterial = {
-            title: title,
-            desc: desc,
-            fileName: file ? file.name : "",
-            fileSize: file ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : "",
-            date: "Just now"
-        };
+    // =======================
+    // UPLOAD - SAVE TO BOTH PAGES
+    // =======================
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
 
-        materials.push(newMaterial);
-        saveMaterials();
+            const title = uploadTitleInput.value.trim();
+            const desc = uploadDescInput.value.trim();
+            const file = fileInput.files[0];
 
-        displayMaterials();
+            if (title === "") {
+                showModal("Please enter a Material Title.");
+                return;
+            }
 
-        // clear inputs
-        uploadTitleInput.value = '';
-        uploadDescInput.value = '';
-        fileInput.value = '';
-        fileNameDisplay.textContent = "No file chosen";
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-        showModal("Material Uploaded Successfully!");
-    });
+            let newMaterial = {
+                title: title,
+                desc: desc,
+                fileName: file ? file.name : "",
+                fileSize: file ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : "",
+                date: `${dateStr} at ${timeStr}`
+            };
+
+            materials.unshift(newMaterial);
+            saveMaterials();
+            displayMaterials();
+
+            // ===== SAVE TO NOTES & FILES PAGE =====
+            if (file) {
+                saveToNotesFiles(title, desc, file.name, (file.size / 1024 / 1024).toFixed(1) + ' MB');
+            }
+
+            // clear inputs
+            uploadTitleInput.value = '';
+            uploadDescInput.value = '';
+            fileInput.value = '';
+            if (fileNameDisplay) fileNameDisplay.textContent = "No file chosen";
+
+            showModal("Material Uploaded Successfully! Redirecting...");
+            
+            // Redirect to Notes & Files page after 1.5 seconds
+            setTimeout(function() {
+                window.location.href = 'notes&files.html';
+            }, 1500);
+        });
+    }
 
 };
