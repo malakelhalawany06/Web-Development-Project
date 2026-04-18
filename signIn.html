@@ -15,7 +15,7 @@
     </div>
 
     <div id="details">
-        
+
         <label for="fname">First Name:</label><br><span id="fnameError"></span>
         <input type="text" id="fname" placeholder="Enter First Name"><br>
 
@@ -25,14 +25,35 @@
         <label for="email">Email:</label><br><span id="emailError"></span>
         <input id="email" type="email" placeholder="Enter Email"><br>
 
-        <label for="uni">University:</label><br>
-        <input type="text" id="uni" placeholder="Enter University"><br>
+        <label for="uni">University:</label>
+        <select id="uni">
+            <option value="MIU">MIU</option>
+            <option value="AAST">AAST</option>
+            <option value="BUE">BUE</option>
+            <option value="MSA">MSA</option>
+            <option value="GUC">GUC</option>
+        </select>
 
         <label for="year">Academic Year:</label><br><span id="'yearError"></span>
-        <input type="number" id="year" placeholder="Enter Academic year"><br>
+       <select id="year">
+        <option value="First Year">First Year</option>
+        <option value="Second Year">Second Year</option>
+        <option value="Third Year">Third Year</option>
+        <option value="Fourth Year">Fourth Year</option>
+        <option value="Fifth Year">Fifth Year</option>
+        <option value="Sixth Year">Sixth Year</option>
+        <option value="Seventh Year">Seventh Year</option>
+       </select>
 
         <label for="major">Major:</label><br>
-        <input type="text" id="major" placeholder="Enter Major"><br>
+      <select id="major">
+            <option value="Computer Science">Computer Science</option>
+            <option value="Law">Law</option>
+            <option value="Business">Business</option>
+            <option value="Dentistry">Dentistry</option>
+            <option value="Arts">Arts</option>
+        </select>
+
 
         <label for="username">Create Username:</label><br><span id="usernameError"></span>
         <input type="text" id="username" placeholder="Enter Username"><br>
