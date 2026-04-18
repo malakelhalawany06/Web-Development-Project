@@ -1,9 +1,7 @@
-// Load tasks from local storage, or start empty
+
 let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-/* =======================
-   ADD TASK
-======================= */
+
 function addTask() {
     let name = document.getElementById("taskName").value.trim();
     let member = document.getElementById("assignedTo").value.trim();
@@ -19,12 +17,12 @@ function addTask() {
         name: name,
         member: member,
         deadline: deadline,
-        progress: 0 // Default to 0% when created
+        progress: 0 
     };
 
     tasks.push(task);
 
-    // SAVE 🔥
+    
     localStorage.setItem("tasks", JSON.stringify(tasks));
 
     displayTasks();
@@ -35,18 +33,16 @@ function addTask() {
     document.getElementById("deadline").value = "";
 }
 
-/* =======================
-   DISPLAY TASKS (Cards instead of Table)
-======================= */
+
 function displayTasks() {
     let container = document.getElementById("taskTable");
 
-    if (!container) return; // safety check
+    if (!container) return; 
 
     container.innerHTML = "";
 
     tasks.forEach((task, index) => {
-        // Build the card UI
+        
         let card = `
         <div class="task-card">
             <div class="task-card-header">
@@ -82,9 +78,7 @@ function displayTasks() {
     updateProjectProgress();
 }
 
-/* =======================
-   UPDATE INDIVIDUAL TASK PROGRESS
-======================= */
+
 function updateTaskProgress(index) {
     let newProgress = parseInt(document.getElementById(`update-prog-${index}`).value);
     
@@ -100,9 +94,7 @@ function updateTaskProgress(index) {
     displayTasks();
 }
 
-/* =======================
-   DELETE TASK
-======================= */
+
 function deleteTask(index) {
     tasks.splice(index, 1);
 
@@ -112,9 +104,7 @@ function deleteTask(index) {
     displayTasks();
 }
 
-/* =======================
-   PROJECT PROGRESS (Updated for Circular Ring)
-======================= */
+
 function updateProjectProgress() {
     let total = 0;
 
@@ -139,9 +129,7 @@ function updateProjectProgress() {
     }
 }
 
-/* =======================
-   LOAD ON REFRESH
-======================= */
+
 window.onload = function () {
     displayTasks();
 };
