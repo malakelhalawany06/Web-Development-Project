@@ -1,0 +1,221 @@
+
+.panel {
+    background-color: #181d27;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #2a313e;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.panel-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.btn {
+    background-color: #8b5cf6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.btn:hover { background-color: #7c3aed; }
+
+/* Grid Layout for Form */
+.task-form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.form-control {
+    background-color: #212631;
+    border: 1px solid #2a313e;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 6px;
+    outline: none;
+    width: 100%;
+}
+.form-control:focus { border-color: #8b5cf6; }
+
+/* --- Grid Layout for Task Cards --- */
+.tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.task-card {
+    background-color: #0d1117;
+    border: 1px solid #2a313e;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.task-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.task-icon {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.task-info h3 {
+    font-size: 1rem;
+    color: #f8fafc;
+    margin: 0 0 4px 0;
+}
+
+.task-info p {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.date { color: #94a3b8; }
+
+.progress-section { margin-top: 5px; }
+
+.progress-header {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.85rem;
+    color: #f8fafc;
+    margin-bottom: 5px;
+}
+
+.progress-bar {
+    height: 6px;
+    background-color: #212631;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 3px;
+}
+.fill-blue { background-color: #3b82f6; }
+
+/* --- Progress Ring --- */
+.progress-ring-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.circular-progress {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circular-progress::before {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background-color: #181d27;
+    border-radius: 50%;
+}
+
+.progress-value {
+    position: relative;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #f8fafc;
+}
+/* Card Actions (Update Progress & Delete) */
+.task-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #2a313e;
+}
+
+.progress-update {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-update input {
+    width: 70px;
+    padding: 6px;
+    border-radius: 4px;
+    background-color: #212631;
+    border: 1px solid #2a313e;
+    color: white;
+    outline: none;
+}
+
+.progress-update input:focus {
+    border-color: #8b5cf6;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+.btn-danger {
+    background-color: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+}
+
+.btn-danger:hover {
+    background-color: #ef4444;
+    color: white;
+}
