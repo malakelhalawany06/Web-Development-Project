@@ -8,7 +8,8 @@
         localStorage.setItem('userMajor', user.major);
         localStorage.setItem('userYear', user.year);
         localStorage.setItem('userUniversity', user.university);
-        
+        localStorage.setItem('userEmail',user.email);
+        localStorage.setItem('userUsername',user.username)
     }
 
     function loadFromLocalStorage() {
@@ -17,8 +18,11 @@
         const major = localStorage.getItem('userMajor');
         const year = localStorage.getItem('userYear');
         const university = localStorage.getItem('userUniversity');
-        if (firstName && lastName && major && year && university) {
-            return { firstName, lastName, major, year, university };
+        const email= localStorage.getItem('userEmail');
+        const username=localStorage.getItem('userUsername');
+
+        if (firstName && lastName && major && year && university && email && username) {
+            return { firstName, lastName, major, year, university,email,username };
         }
         return null;
     }
@@ -41,8 +45,14 @@
         // 3. Main profile display on profile.html (inside the card with .profile-info)
         const profileName = document.querySelector('.card .profile-info .name');
         const profileRole = document.querySelector('.card .profile-info .role');
+        const profileUni = document.querySelector('.card .profile-info .uni');
+        const profileUsername= document.querySelector('.card .profile-info .username');
+
+
         if (profileName) profileName.textContent = `${user.firstName} ${user.lastName}`;
         if (profileRole) profileRole.textContent = `${user.major} · Yr ${user.year}`;
+        if(profileUni)profileUni.textContent=`${user.university}`;
+        if(profileUsername)profileUsername.textContent=`${user.username}`;
 
         // 4. Update any form fields on the edit page (personalInfo.html)
         const fnameInput = document.getElementById('fname');
@@ -50,10 +60,14 @@
         const majorSelect = document.getElementById('major');
         const yearInput = document.getElementById('year');
         const uniSelect = document.getElementById('uni');
+        const emailInput=document.getElementById('email');
+        const usernameInput=document.getElementById('username');
 
         if (fnameInput) fnameInput.value = user.firstName;
         if (lnameInput) lnameInput.value = user.lastName;
         if (yearInput) yearInput.value = user.year;
+        if(emailInput) emailInput.value=user.email;
+        if(usernameInput)usernameInput.value=user.username;
 
         if (majorSelect) {
             for (let i = 0; i < majorSelect.options.length; i++) {
@@ -125,6 +139,8 @@
         const year = document.getElementById('year')?.value.trim();
         const university = document.getElementById('uni')?.value;
         const email=document.getElementById('email')?.value;
+        const username=document.getElementById('username')?.value;
+
 
         let emailRegex=/^[\w.-]+@([\w-]+\.)+[\w-]{2,}$/;
 
@@ -200,7 +216,8 @@
             major: major,
             year: year,
             university: university || 'MIU',
-            email: email
+            email: email,
+            username: username
         };
 
         saveToLocalStorage(updatedUser);
