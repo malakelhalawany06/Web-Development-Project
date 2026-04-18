@@ -649,49 +649,74 @@
   const stored = localStorage.getItem("loomhub_reminders_priority");
   const allReminders = stored ? JSON.parse(stored) : [];
 
-  const now = new Date();
-  // Get today at midnight (start of day)
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  // End of the day after tomorrow (i.e., within 2 full days)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const twoDaysLater = new Date(today);
   twoDaysLater.setDate(today.getDate() + 2);
   twoDaysLater.setHours(23, 59, 59, 999);
 
-  const upcoming = allReminders.filter(rem => {
-    if (rem.completed) return false;
-    if (!rem.dueDate) return false;
-    const due = new Date(rem.dueDate);
-    // Compare due date at start of its day (ignore time)
-    const dueStart = new Date(due.getFullYear(), due.getMonth(), due.getDate());
-    return dueStart >= today && dueStart <= twoDaysLater;
-  }).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  // Helper to check if a task is due within 2 days
+  function isDueSoon(dueDateStr) {
+    if (!dueDateStr) return false;
+    const due = new Date(dueDateStr);
+    if (isNaN(due.getTime())) return false;
+    return due >= today && due <= twoDaysLater;
+  }
 
-  if (upcoming.length === 0) {
-    container.innerHTML = `<div class="empty-message" style="padding:1rem; text-align:center;">🎉 No urgent deadlines!</div>`;
+  // Filter: high priority OR due within 2 days (and not completed)
+  let importantTasks = allReminders.filter(rem => {
+    if (rem.completed) return false;
+    if (rem.priority === "high") return true;
+    return isDueSoon(rem.dueDate);
+  });
+
+  // Remove duplicates (a high priority task due soon should appear once)
+  // Already handled by the OR condition.
+
+  // Sort: first by due date (soonest first), then high priority tasks without due date go last
+  importantTasks.sort((a, b) => {
+    const aDue = a.dueDate ? new Date(a.dueDate) : null;
+    const bDue = b.dueDate ? new Date(b.dueDate) : null;
+    if (aDue && bDue) return aDue - bDue;
+    if (aDue) return -1;  // a has due date, b doesn't → a comes first
+    if (bDue) return 1;   // b has due date, a doesn't → b comes first
+    return 0;             // both have no due date, keep order
+  });
+
+  if (importantTasks.length === 0) {
+    container.innerHTML = `<div class="empty-message" style="padding:1rem; text-align:center;">✅ No urgent tasks or high priority reminders!</div>`;
     return;
   }
 
-  container.innerHTML = upcoming.map(rem => {
-    const due = new Date(rem.dueDate);
-    const day = due.getDate().toString().padStart(2, '0');
-    const month = due.toLocaleString('default', { month: 'short' }).toUpperCase();
-    const time = due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  container.innerHTML = importantTasks.map(rem => {
+    const dueDate = rem.dueDate ? new Date(rem.dueDate) : null;
+    let day = "—", month = "", time = "", urgencyDot = "dot-green";
+    let dueLabel = "";
 
-    const dueStart = new Date(due.getFullYear(), due.getMonth(), due.getDate());
-    const diffDays = Math.round((dueStart - today) / (1000 * 60 * 60 * 24));
-    let urgencyDot = "dot-green";
-    if (diffDays === 0) urgencyDot = "dot-danger";      // today
-    else if (diffDays === 1) urgencyDot = "dot-warn";   // tomorrow
+    if (dueDate && !isNaN(dueDate.getTime())) {
+      day = dueDate.getDate().toString().padStart(2, '0');
+      month = dueDate.toLocaleString('default', { month: 'short' }).toUpperCase();
+      time = dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const diffDays = Math.floor((dueDate - today) / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) urgencyDot = "dot-danger";
+      else if (diffDays === 1) urgencyDot = "dot-warn";
+      dueLabel = `${day} ${month} · ${time}`;
+    } else {
+      dueLabel = "No due date";
+      urgencyDot = "dot-warn"; // high priority without due date gets orange dot
+    }
+
+    const priorityLabel = rem.priority === 'high' ? '🔴 High priority' : `📌 ${rem.priority || 'medium'}`;
 
     return `
       <div class="deadline-item">
         <div class="deadline-date">
-          <div class="day">${day}</div>
-          <div class="month">${month}</div>
+          <div class="day">${day !== "—" ? day : "--"}</div>
+          <div class="month">${month || ""}</div>
         </div>
         <div class="deadline-info">
           <div class="title">${escapeHtml(rem.text)}</div>
-          <div class="sub">${rem.priority === 'high' ? '🔴 High priority' : '📌 ' + (rem.priority || 'medium')} · ${time}</div>
+          <div class="sub">${priorityLabel} · ${dueLabel}</div>
         </div>
         <div class="urgency-dot ${urgencyDot}"></div>
       </div>

@@ -8,6 +8,7 @@
         localStorage.setItem('userMajor', user.major);
         localStorage.setItem('userYear', user.year);
         localStorage.setItem('userUniversity', user.university);
+        
     }
 
     function loadFromLocalStorage() {
@@ -125,7 +126,7 @@
         const university = document.getElementById('uni')?.value;
         const email=document.getElementById('email')?.value;
 
-        let emailRegex=/^\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/;
+        let emailRegex=/^[\w.-]+@([\w-]+\.)+[\w-]{2,}$/;
 
         let valid=true;
 
@@ -177,15 +178,20 @@
             document.getElementById('yearError').innerHTML="";
         }
 
-       /*if(!email.test('emailRegex') || email=="")
+       if(!email || email.trim() === "" || !emailRegex.test(email))
         {
             document.getElementById('emailError').innerHTML="Invalid email format";
             document.getElementById('emailError').setAttribute('style','color: red');
             valid=false;
-        }*/
+        }else {
+             document.getElementById('emailError').innerHTML="";
+        }
+
+        //validation of username for later when there are users 
+        //if()
 
         if(!valid){
-            return;
+            return valid;
         }
 
         const updatedUser = {
@@ -193,7 +199,8 @@
             lastName: lastName,
             major: major,
             year: year,
-            university: university || 'MIU'
+            university: university || 'MIU',
+            email: email
         };
 
         saveToLocalStorage(updatedUser);
