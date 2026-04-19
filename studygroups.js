@@ -1,18 +1,19 @@
   // Search functionality
-        const searchInput = document.getElementById('groupSearchInput');
-        const groupCards = document.querySelectorAll('.group-card');
+        const searchInput = document.getElementById('groupSearchInput'); //get the input field where the user types 
+        const groupCards = document.querySelectorAll('.group-card');// get all elements with class .group-card
 
-        searchInput.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
+        searchInput.addEventListener('input', function(e) { //runs function(e) whenever the user types anything in this input
+            const searchTerm = e.target.value.toLowerCase(); //get what the user typed in searchTerm, e.target->element that triggered the event, .value->element inside
             
-            groupCards.forEach(card => {
-                const title = card.querySelector('h3')?.innerText.toLowerCase() || '';
+            groupCards.forEach(card => { //loop through all cards 
+                //Extrating texts from each card
+                const title = card.querySelector('h3')?.innerText.toLowerCase() || ''; // ? (optional chaining) to prevent errors if element doesn't exist
                 const course = card.querySelector('.group-info p')?.innerText.toLowerCase() || '';
                 
-                if (title.includes(searchTerm) || course.includes(searchTerm)) {
-                    card.style.display = '';
+                if (title.includes(searchTerm) || course.includes(searchTerm)) { //so that the user can search by group title or group course
+                    card.style.display = ''; //shows the card
                 } else {
-                    card.style.display = 'none';
+                    card.style.display = 'none'; //hides the card 
                 }
             });
         });
