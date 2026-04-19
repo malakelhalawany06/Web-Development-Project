@@ -87,8 +87,6 @@ function loadNotesFiles() {
     const savedFiles = JSON.parse(localStorage.getItem('notesFiles') || '[]');
     const filesGrid = document.getElementById('gridView');
     
-    // Get existing file cards that are NOT uploaded ones
-    const existingFiles = filesGrid.querySelectorAll('.file-card:not([data-uploaded="true"])');
     
     // Clear ONLY the previously uploaded files (not the original ones)
     const uploadedFiles = filesGrid.querySelectorAll('.file-card[data-uploaded="true"]');
@@ -97,9 +95,7 @@ function loadNotesFiles() {
     // Add new uploaded files at the top
     savedFiles.forEach(file => {
         const fileCard = createFileCard(file);
-        fileCard.setAttribute('data-uploaded', 'true');
-        // Insert at the beginning (top)
-        filesGrid.insertBefore(fileCard, filesGrid.firstChild);
+        filesGrid.appendChild(fileCard);
     });
 }
 
@@ -107,12 +103,14 @@ function createFileCard(file) {
     const fileCard = document.createElement('div');
     fileCard.className = 'file-card';
     fileCard.setAttribute('data-course', file.course);
+    fileCard.setAttribute('data-uploaded','true');
     fileCard.innerHTML = `
         <div class="file-icon">${file.fileIcon}</div>
         <div class="file-info">
-            <div class="file-name">${escapeHtml(file.fileName)}</div>
-            <div class="file-meta">${escapeHtml(file.fileMeta)}</div>
-            <div class="file-size">${escapeHtml(file.fileSize)} • ${file.date}</div>
+            <div class="file-name">${escapeHtml(file.title||file.fileName)}</div> 
+          
+            <div class="file-meta" style="font-size: 10px; color: var(--text3);">${escapeHtml(file.description)} • ${escapeHtml(file.fileSize)} • Uploaded by Ahmed K. • ${file.date}</div>
+           
         </div>
         <div class="file-actions">
             <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
@@ -142,10 +140,10 @@ function shareFile(button) {
 function deleteFile(button) {
     if (confirm('Are you sure you want to delete this file?')) {
         const fileCard = button.closest('.file-card');
-        const fileName = fileCard.querySelector('.file-name').innerText;
+        const fileTitle = fileCard.querySelector('.file-name').innerText;
         
         let savedFiles = JSON.parse(localStorage.getItem('notesFiles') || '[]');
-        savedFiles = savedFiles.filter(file => file.fileName !== fileName);
+        savedFiles = savedFiles.filter(file => file.title !== fileTitle);
         localStorage.setItem('notesFiles', JSON.stringify(savedFiles));
         
         fileCard.remove();

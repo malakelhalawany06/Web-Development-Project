@@ -90,12 +90,14 @@ function saveToNotesFiles(title, desc, fileName, fileSize) {
         courseName = 'Data Structures';
     }
     
-    const fileIcon = '📄';
+    const fileIcon = getFileIcon(fileName);
     const now = new Date();
-    const dateStr = now.toLocaleDateString();
+    const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     
     notesFiles.unshift({
         fileName: fileName,
+        title: title,           
+        description: desc, 
         fileMeta: `${courseName} • Uploaded by Ahmed K.`,
         fileSize: fileSize,
         fileIcon: fileIcon,
