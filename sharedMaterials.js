@@ -277,12 +277,7 @@ window.onload = function () {
             fileInput.value = '';
             if (fileNameDisplay) fileNameDisplay.textContent = "No file chosen";
 
-            showModal("Material Uploaded Successfully! Redirecting...");
-            
-            // Redirect to Notes & Files page after 1.5 seconds
-            setTimeout(function() {
-                window.location.href = 'notes&files.html';
-            }, 1500);
+            showModal("Material Uploaded Successfully!");
         });
     }
 
