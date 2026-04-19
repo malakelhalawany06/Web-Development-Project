@@ -85,18 +85,6 @@ courseTabs.forEach(tab=>{ //loop through all tabs
     });
 });
 //load files from localStorage and displays them in the UI
-function loadNotesFiles() {
-    const savedFiles = JSON.parse(localStorage.getItem('notesFiles') || '[]'); //serialize content into string, so that the local storage understands it 
-    const filesGrid = document.getElementById('gridView'); //this is where the file cards are displayed
-    //clear only the previously uploaded files (not the original ones)
-    const uploadedFiles = filesGrid.querySelectorAll('.file-card[data-uploaded="true"]');
-    uploadedFiles.forEach(file => file.remove());
-    //add new uploaded files
-    savedFiles.forEach(file => {
-        const fileCard = createFileCard(file);
-        filesGrid.appendChild(fileCard);
-    });
-}
 
 function createFileCard(file) { //turns a file object into an HTML card
     const fileCard = document.createElement('div');
@@ -150,10 +138,6 @@ function deleteFile(button) {
     }
 }
 
-// Load files when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadNotesFiles();
-});
  const currentUser=UserManager.getCurrentUser();
  const username=currentUser?.username;
  function loadUserNotesFiles(){
@@ -168,8 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
        filesGrid.appendChild(fileCard); 
     });
  }
- function saveUserFile(fileData){
-    if(!username) return;
-    let userFiles=UserManager.getUserNotesFiles(username);
-    userFiles.unshi
- }
+//load files when page loads
+ document.addEventListener('DOMContentLoaded',function(){
+    loadUserNotesFiles();
+ });

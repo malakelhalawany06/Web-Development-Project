@@ -184,7 +184,7 @@ function viewDetails(button){
     detailsModal.innerHTML=`
     <div class="modal-content" style="max-width:500px;">
     <h2>${escapeHtml(groupName)}</h2>
-    <div style=marging-bottom:1rem;">
+    <div style="marging-bottom:1rem;">
     <span class="stat">${memberCount}</span>
     <span class="stat">${resourceCount}</span>
     <span class="stat">${messageCount}</span>
@@ -233,9 +233,6 @@ function initializeButtons(){
         newButton.onclick = function() { viewDetails(this); }; //same for view buttons 
     });
 }
-document.addEventListener('DOMContentLoaded', function() {
-    initializeButtons(); //execute automatically when the webpage finishes loading
-});
 //reverse if joinGroup(), key differences are checking if joined, decreasing members and switch back to join group
 function leaveGroup(button){
     const groupCard=button.closest('.group-card');
@@ -267,7 +264,7 @@ function loadUserStudyGroups(){
     if(!groupsGrid) return;
     groupsGrid.innerHTML='';
     userGroups.forEach(group=>{
-        const groupCrad=createGroupCard(group);
+        const groupCard=createGroupCard(group);
         groupsGrid.appendChild(groupCard);
     });
 }
@@ -312,3 +309,7 @@ function createGroupCard(group){
     `;
     return card;
 }
+document.addEventListener('DOMContentLoaded', function() {
+    initializeButtons(); //execute automatically when the webpage finishes loading
+    loadUserStudyGroups();
+});
