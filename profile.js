@@ -44,3 +44,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", function (){
+const el = document.querySelector(".topbar-subtitle");
+
+const today = new Date();
+el.textContent = today.toLocaleDateString('en-US' ,{
+  weekday: 'long',
+  year:'numeric' ,
+  month:'long' ,
+  day:'numeric' ,
+}) ;
+
+});

@@ -206,6 +206,18 @@ function renderDashQA() {
     container.innerHTML += html;
   });
 }
+document.addEventListener("DOMContentLoaded", function (){
+const el = document.querySelector(".topbar-subtitle");
+
+const today = new Date();
+el.textContent = today.toLocaleDateString('en-US' ,{
+  weekday: 'long',
+  year:'numeric' ,
+  month:'long' ,
+  day:'numeric' ,
+}) ;
+
+});
 
 // Render immediately when page loads
 window.addEventListener('DOMContentLoaded', renderDashQA);
