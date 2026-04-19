@@ -121,6 +121,8 @@ if(form){ //handling for the form submission
     </div>
     <div class="group-stats">
         <div class="stat">👥 0 members</div>
+         <div class="stat">📝 0 resources</div>
+        <div class="stat">💬 0 messages</div>
     </div>
     <div class="group-description">
         ${escapeHtml(groupDescription)}
@@ -166,16 +168,19 @@ function joinGroup(button){
 }
 
 function viewDetails(button){
+    //Extract data from card
     const groupCard=button.closest('.group-card');
     const groupName=groupCard.querySelector('h3').innerText;
     const groupCourse=groupCard.querySelector('.group-info p').innerText;
     const groupDescription=groupCard.querySelector('.group-description').innerText;
     const memberCount=groupCard.querySelector('.stat:first-child').innerText;
-    const resourceCount=groupCard.querySelectorAll('.stat')[1].innerText;
-    const messageCount=groupCard.querySelectorAll('.stat')[2].innerText;
+    const resourceCount=groupCard.querySelectorAll('.stat')[1].innerText; //resources
+    const messageCount=groupCard.querySelectorAll('.stat')[2].innerText; //messages 
+    //create modal 
     const detailsModal=document.createElement('div');
     detailsModal.className='modal';
     detailsModal.style.display='flex';
+    //build content 
     detailsModal.innerHTML=`
     <div class="modal-content" style="max-width:500px;">
     <h2>${escapeHtml(groupName)}</h2>
@@ -197,9 +202,10 @@ function viewDetails(button){
     </div>
     </div>
     `;
-    document.body.appendChild(detailsModal);
     
-   
+    document.body.appendChild(detailsModal); //add to page 
+    
+   //close if clicked outside the modal
     detailsModal.addEventListener('click', function(e) {
         if (e.target === detailsModal) {
             detailsModal.remove();
@@ -207,11 +213,13 @@ function viewDetails(button){
     });
 }
 function initializeButtons(){
+    //Select Join Buttons 
     const joinButtons=document.querySelectorAll('.group-actions .btn-primary.btn-sm, .group-actions .btn-success.btn-sm');
     joinButtons.forEach(button=>{
+        //Replace each button, to remove old event listeners
         const newButton=button.cloneNode(true);
         button.parentNode.replaceChild(newButton,button);
-        if(newButton.innerText==='Join Group'){
+        if(newButton.innerText==='Join Group'){ //Reassign correct behavior for join and leave 
             newButton.onclick=function(){joinGroup(this);};
         } else if(newButton.innerText==='✓ Joined'){
             newButton.onclick=function(){leaveGroup(this);};
@@ -222,11 +230,11 @@ function initializeButtons(){
     viewButtons.forEach(button=>{
         const newButton = button.cloneNode(true);
         button.parentNode.replaceChild(newButton, button);
-        newButton.onclick = function() { viewDetails(this); };
+        newButton.onclick = function() { viewDetails(this); }; //same for view buttons 
     });
 }
 document.addEventListener('DOMContentLoaded', function() {
-    initializeButtons();
+    initializeButtons(); //execute automatically when the webpage finishes loading
 });
 //reverse if joinGroup(), key differences are checking if joined, decreasing members and switch back to join group
 function leaveGroup(button){
