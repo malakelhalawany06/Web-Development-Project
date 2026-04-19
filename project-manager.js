@@ -1,135 +1,174 @@
+(function () {
 
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let tasks = [];
 
+// =====================
+// LOAD TASKS SAFELY
+// =====================
+function loadTasks() {
+    const stored = localStorage.getItem("tasks");
 
-function addTask() {
-    let name = document.getElementById("taskName").value.trim();
-    let member = document.getElementById("assignedTo").value.trim();
-    let deadline = document.getElementById("deadline").value;
-
-    // validation (progress is removed since it defaults to 0)
-    if (name === "" || member === "" || deadline === "") {
-        alert("Please fill all fields (Task Name, Member, Deadline)!");
+    if (!stored) {
+        tasks = [];
         return;
     }
 
-    let task = {
-        name: name,
-        member: member,
-        deadline: deadline,
-        progress: 0 
-    };
-
-    tasks.push(task);
-
-    
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-
-    displayTasks();
-
-    // clear inputs
-    document.getElementById("taskName").value = "";
-    document.getElementById("assignedTo").value = "";
-    document.getElementById("deadline").value = "";
+    try {
+        tasks = JSON.parse(stored);
+    } catch (e) {
+        console.error("Tasks data corrupted:", e);
+        tasks = [];
+    }
 }
 
+// =====================
+// SAVE TASKS
+// =====================
+function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
 
-function displayTasks() {
-    let container = document.getElementById("taskTable");
+// =====================
+// ADD TASK (GLOBAL)
+// =====================
+window.addTask = function () {
 
-    if (!container) return; 
+    const nameEl = document.getElementById("taskName");
+    const memberEl = document.getElementById("assignedTo");
+    const deadlineEl = document.getElementById("deadline");
+
+    if (!nameEl || !memberEl || !deadlineEl) return;
+
+    const name = nameEl.value.trim();
+    const member = memberEl.value.trim();
+    const deadline = deadlineEl.value;
+
+    if (!name || !member || !deadline) {
+        alert("Please fill all fields!");
+        return;
+    }
+
+    tasks.push({
+        name,
+        member,
+        deadline,
+        progress: 0
+    });
+
+    saveTasks();
+    displayTasks();
+
+    nameEl.value = "";
+    memberEl.value = "";
+    deadlineEl.value = "";
+};
+
+// =====================
+// DISPLAY TASKS
+// =====================
+window.displayTasks = function () {
+
+    const container = document.getElementById("taskTable");
+    if (!container) return;
 
     container.innerHTML = "";
 
     tasks.forEach((task, index) => {
-        
-        let card = `
+        container.innerHTML += `
         <div class="task-card">
+
             <div class="task-card-header">
-                <div class="task-icon"><i class="fa-solid fa-clipboard-check"></i></div>
                 <div class="task-info">
                     <h3>${task.name}</h3>
                     <p>Assigned to: ${task.member}</p>
                 </div>
             </div>
+
             <div class="task-meta">
-                <div class="date">Due: ${task.deadline}</div>
+                <div>Due: ${task.deadline}</div>
             </div>
+
             <div class="progress-section">
-                <div class="progress-header">${task.progress}%</div>
+                <div>${task.progress}%</div>
                 <div class="progress-bar">
-                    <div class="progress-fill fill-blue" style="width: ${task.progress}%;"></div>
+                    <div class="progress-fill" style="width:${task.progress}%"></div>
                 </div>
             </div>
-            
+
             <div class="task-card-actions">
-                <div class="progress-update">
-                    <input type="number" id="update-prog-${index}" value="${task.progress}" min="0" max="100">
-                    <button class="btn btn-small" onclick="updateTaskProgress(${index})">Set %</button>
-                </div>
-                <button class="btn btn-small btn-danger" onclick="deleteTask(${index})">Delete</button>
+                <input type="number" id="prog-${index}" value="${task.progress}" min="0" max="100">
+                <button onclick="updateTaskProgress(${index})">Update</button>
+                <button onclick="deleteTask(${index})">Delete</button>
             </div>
+
         </div>
         `;
-        container.innerHTML += card;
     });
 
-    // Update overall progress whenever tasks are displayed
     updateProjectProgress();
-}
+};
 
+// =====================
+// UPDATE PROGRESS
+// =====================
+window.updateTaskProgress = function (index) {
 
-function updateTaskProgress(index) {
-    let newProgress = parseInt(document.getElementById(`update-prog-${index}`).value);
-    
-    // Safety check for valid percentage
-    if (isNaN(newProgress) || newProgress < 0) newProgress = 0;
-    if (newProgress > 100) newProgress = 100;
+    const input = document.getElementById(`prog-${index}`);
+    if (!input) return;
 
-    tasks[index].progress = newProgress;
+    let value = parseInt(input.value);
 
-    // SAVE 🔥
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    if (isNaN(value)) value = 0;
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
 
+    tasks[index].progress = value;
+
+    saveTasks();
     displayTasks();
-}
+};
 
-
-function deleteTask(index) {
+// =====================
+// DELETE TASK
+// =====================
+window.deleteTask = function (index) {
     tasks.splice(index, 1);
-
-    // SAVE 🔥
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-
+    saveTasks();
     displayTasks();
-}
+};
 
-
+// =====================
+// PROJECT PROGRESS
+// =====================
 function updateProjectProgress() {
+
     let total = 0;
 
-    tasks.forEach(task => {
-        total += task.progress;
+    tasks.forEach(t => {
+        total += t.progress;
     });
 
-    let avg = tasks.length === 0 ? 0 : Math.round(total / tasks.length);
+    let avg = tasks.length ? Math.round(total / tasks.length) : 0;
 
-    // Update text elements
-    let textElement = document.getElementById("projectProgressText");
-    let valueElement = document.getElementById("projectProgressValue");
-    
-    if (textElement) textElement.innerText = avg + "%";
-    if (valueElement) valueElement.innerText = avg + "%";
+    const text = document.getElementById("projectProgressText");
+    const value = document.getElementById("projectProgressValue");
+    const ring = document.getElementById("projectProgressRing");
 
-    // Update the circular gradient ring
-    let ring = document.getElementById("projectProgressRing");
+    if (text) text.innerText = avg + "%";
+    if (value) value.innerText = avg + "%";
+
     if (ring) {
-        // 3.6 degrees per 1%
-        ring.style.background = `conic-gradient(#3b82f6 ${avg * 3.6}deg, #212631 0deg)`;
+        ring.style.background =
+            `conic-gradient(#3b82f6 ${avg * 3.6}deg, #212631 0deg)`;
     }
 }
 
-
-window.onload = function () {
+// =====================
+// INIT (SAFE LOAD)
+// =====================
+document.addEventListener("DOMContentLoaded", function () {
+    loadTasks();
     displayTasks();
-};
+});
+
+})();

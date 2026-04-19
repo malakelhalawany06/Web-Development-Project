@@ -154,3 +154,22 @@ function deleteFile(button) {
 document.addEventListener('DOMContentLoaded', function() {
     loadNotesFiles();
 });
+ const currentUser=UserManager.getCurrentUser();
+ const username=currentUser?.username;
+ function loadUserNotesFiles(){
+    if(!username) return;
+    const userFiles=UserManager.getUserNotesFiles(username);
+    const filesGrid=document.getElementById('gridView');
+    if(!filesGrid) return;
+    const uploadedFiles=filesGrid.querySelectorAll('.file-card[data-uploaded="true"]');
+    uploadedFiles.forEach(file=>file.remove());
+    userFiles.forEach(file=>{
+       const fileCard=createFileCard(file);
+       filesGrid.appendChild(fileCard); 
+    });
+ }
+ function saveUserFile(fileData){
+    if(!username) return;
+    let userFiles=UserManager.getUserNotesFiles(username);
+    userFiles.unshi
+ }

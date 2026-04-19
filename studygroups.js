@@ -271,3 +271,44 @@ function loadUserStudyGroups(){
         groupsGrid.appendChild(groupCard);
     });
 }
+function createGroupCard(group){
+    const card=document.createElement('div');
+    card.className='group-card';
+    card.setAttribute('data-status',group.status);
+    card.setAttribute('data-category',group.category);
+    card.setAttribute('data-id',group.id);
+    let iconClass='blue';
+    let icon = '💻';
+    if (group.category === 'math') {
+        icon = '🧮';
+        iconClass = 'purple';
+    } else if (group.category === 'engineering') {
+        icon = '⚡';
+        iconClass = 'cyan';
+    }
+        card.innerHTML = `
+        <div class="group-header">
+            <div class="group-icon ${iconClass}">${icon}</div>
+            <div class="group-info">
+                <h3>${escapeHtml(group.name)}</h3>
+                <p>${escapeHtml(group.course)}</p>
+            </div>
+        </div>
+        <div class="group-stats">
+            <div class="stat">👥 ${group.members} members</div>
+            <div class="stat">📝 ${group.resources} resources</div>
+            <div class="stat">💬 ${group.messages} messages</div>
+        </div>
+        <div class="group-description">
+            ${escapeHtml(group.description || 'Study group for ' + group.course)}
+        </div>
+        <div class="group-actions">
+            <button class="btn btn-outline btn-sm" onclick="viewDetails(this)">View Details</button>
+            ${group.status === 'joined' 
+                ? '<button class="btn btn-success btn-sm" onclick="leaveGroup(this)">✓ Joined</button>'
+                : '<button class="btn btn-primary btn-sm" onclick="joinGroup(this)">Join Group</button>'
+            }
+        </div>
+    `;
+    return card;
+}
