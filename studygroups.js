@@ -61,15 +61,14 @@
                 });
             });
         });
-const modal=document.getElementById('createGroupModal');
-const form=document.getElementById('createGroupForm');
+const modal=document.getElementById('createGroupModal'); // the popup container/modal
+const form=document.getElementById('createGroupForm'); //form inside the modal
 
 function openCreateGroupModal(){
     console.log("openCreateGroupModal called");
-    const modal = document.getElementById('createGroupModal');
     console.log("modal element:", modal);
     if(modal){
-        modal.classList.add('show');
+        modal.classList.add('show'); //show modal 
     console.log("modal classes after:", modal.className);
 
     }
@@ -77,28 +76,30 @@ function openCreateGroupModal(){
 
 function closeCreateGroupModal(){
     if(modal){
-        modal.classList.remove('show');
+        modal.classList.remove('show'); //hide modal
     }
     if(form){
-        form.reset();
+        form.reset(); //reset form
     }
 }
-window.onclick=function(event){
-    if(modal&&event.target===modal){
+window.onclick=function(event){ //clicking outside the modal exits it 
+    if(modal&&event.target===modal){ //if clicked anywhere other than the modal
         closeCreateGroupModal();
     }
 }
-if(form){
+if(form){ //handling for the form submission
     form.addEventListener('submit',function(e){
-    e.preventDefault();
+    e.preventDefault(); //prevent page reload
+    //get user inputs from the text fields 
     const groupName=document.getElementById('groupName').value;
     const groupCourse=document.getElementById('groupCourse').value;
     const groupCategory=document.getElementById('groupCategory').value;
     const groupDescription=document.getElementById('groupDescription').value;
-    const groupsGrid=document.getElementById('groupsGrid');
-    const newGroupCard=document.createElement('div');
+    //preparing to create a new card 
+    const groupsGrid=document.getElementById('groupsGrid'); //container that holds all cards
+    const newGroupCard=document.createElement('div'); //the card that holds the new elements
     newGroupCard.className='group-card';
-    newGroupCard.setAttribute('data-status','joined');
+    newGroupCard.setAttribute('data-status','available');
     newGroupCard.setAttribute('data-category',groupCategory);
      let icon = '💻';
     let iconClass = 'blue';
@@ -109,6 +110,7 @@ if(form){
          icon = '⚡';
         iconClass = 'cyan';
     }
+    //building the card using HTML
       newGroupCard.innerHTML = `
     <div class="group-header">
         <div class="group-icon ${iconClass}">${icon}</div>
@@ -118,9 +120,7 @@ if(form){
         </div>
     </div>
     <div class="group-stats">
-        <div class="stat">👥 1 members</div>
-        <div class="stat">📝 0 resources</div>
-        <div class="stat">💬 0 messages</div>
+        <div class="stat">👥 0 members</div>
     </div>
     <div class="group-description">
         ${escapeHtml(groupDescription)}
@@ -130,10 +130,13 @@ if(form){
         <button class="btn btn-primary btn-sm" onclick="joinGroup(this)">Join Group</button>
     </div>
 `;
-        if(groupsGrid)
+
+       //Adding the card to the page 
+       if(groupsGrid)
         {
             groupsGrid.appendChild(newGroupCard);
         }
+        //closing the modal
         closeCreateGroupModal();
         alert('Group '+groupName+' created successfully!');
 });
