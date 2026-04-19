@@ -141,24 +141,26 @@ if(form){ //handling for the form submission
         alert('Group '+groupName+' created successfully!');
 });
 }
-
+//sanitizes user input so it is safe to insert into HTML
 function escapeHtml(text){
     const div=document.createElement('div');
-    div.textContent=text;
+    div.textContent=text; //textContent treats input as plain text not HTML
     return div.innerHTML;
 }
+
 function joinGroup(button){
-    const groupCard=button.closest('.group-card');
-    const groupName=groupCard.querySelector('h3').innerText;
-    if(button.innerText==='Join Group'){
+    const groupCard=button.closest('.group-card'); //Finds the nearest parent with class .group-card
+    const groupName=groupCard.querySelector('h3').innerText; //get group name
+    if(button.innerText==='Join Group'){ //check current state
+        //Update the button's UI
         button.innerText='✓ Joined';
         button.classList.remove('btn-primary');
         button.classList.add('btn-success');
-        groupCard.setAttribute('data-status','joined');
+        groupCard.setAttribute('data-status','joined'); //update status
         const memberStat=groupCard.querySelector('.stat:first-child');
-        const currentMembers=parseInt(memberStat.innerText.match(/\d+/)[0]);
+        const currentMembers=parseInt(memberStat.innerText.match(/\d+/)[0]); //.match(/\d+/) gets the first number in the text, parseInt converts it to number
         memberStat.innerHTML= `👥 ${currentMembers + 1} members`;
-        button.onclick=function(){leaveGroup(this);};
+        button.onclick=function(){leaveGroup(this);}; //same button does the opposite action when joined
         alert(`You joined "${groupName}".`);
     }
 }
@@ -226,6 +228,7 @@ function initializeButtons(){
 document.addEventListener('DOMContentLoaded', function() {
     initializeButtons();
 });
+//reverse if joinGroup(), key differences are checking if joined, decreasing members and switch back to join group
 function leaveGroup(button){
     const groupCard=button.closest('.group-card');
     const groupName=groupCard.querySelector('h3').innerText;
