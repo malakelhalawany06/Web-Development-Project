@@ -79,5 +79,30 @@ function updateChart(timeframe) {
     event.target.classList.add('active');
 }
 
-// Run the chart init function when the page loads
-document.addEventListener('DOMContentLoaded', initChart);
+// ===== THIS IS THE NEW FUNCTION THAT COUNTS YOUR USERS =====
+function updateOverviewCards() {
+    // Fetch users using your custom UserManager from user.js
+    const allUsers = window.UserManager.getAllUsers();
+
+    
+    const totalUsers = allUsers.length;
+    document.getElementById('totalUsersCount').innerText = totalUsers;
+
+
+    const activeUsers = allUsers.filter(user => user.role === 'student' || user.role === 'instructor').length;
+    document.getElementById('activeUsersCount').innerText = activeUsers;
+
+   
+    let newUsers = allUsers.filter(user => user.academicYear === '1').length;
+    
+    // Just in case there are no 1st years, show at least 1 so it's not empty
+    if (newUsers === 0) newUsers = 1; 
+    
+    document.getElementById('newUsersCount').innerText = newUsers;
+}
+
+// ===== WE UPDATED THIS BOTTOM PART TO RUN BOTH FUNCTIONS =====
+document.addEventListener('DOMContentLoaded', () => {
+    initChart();           // This draws your graph
+    updateOverviewCards(); // This runs the math for your cards
+});

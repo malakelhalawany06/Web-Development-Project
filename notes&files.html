@@ -103,6 +103,10 @@
                 <!-- Upload Button Bar -->
                 <div class="upload-bar">
                     <button class="btn btn-primary"  onclick="window.location.href='sharedMaterials.html'">+ Upload New File</button>
+                    <div class="view-toggle">
+        <button class="view-btn active" onclick="setView('grid')">📱 Grid View</button>
+        <button class="view-btn" onclick="setView('list')">📋 List View</button>
+    </div>
                 </div>
 
                 <!-- Course Filter Tabs -->
@@ -118,103 +122,6 @@
 
                 <!-- Files Grid View -->
                 <div id="gridView" class="files-grid">
-                    <div class="file-card" data-course="ds">
-                        <div class="file-icon">📘</div>
-                        <div class="file-info">
-                            <div class="file-name">Binary Trees Lecture Notes.pdf</div>
-                            <div class="file-meta">Data Structures • Uploaded by Ahmed K.</div>
-                            <div class="file-size">2.4 MB • 2 days ago</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
-                            <button class="btn-icon" onclick="shareFile(this)">🔗</button>
-                            <button class="btn-icon" onclick="deleteFile(this)">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="file-card" data-course="ds">
-                        <div class="file-icon">📄</div>
-                        <div class="file-info">
-                            <div class="file-name">Sorting Algorithms Cheatsheet.docx</div>
-                            <div class="file-meta">Data Structures • Uploaded by Nadia M.</div>
-                            <div class="file-size">1.1 MB • 3 days ago</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
-                            <button class="btn-icon" onclick="shareFile(this)">🔗</button>
-                            <button class="btn-icon" onclick="deleteFile(this)">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="file-card" data-course="ds">
-                        <div class="file-icon">📊</div>
-                        <div class="file-info">
-                            <div class="file-name">Graph Traversal Presentation.pptx</div>
-                            <div class="file-meta">Data Structures • Uploaded by Ahmed K.</div>
-                            <div class="file-size">3.7 MB • 5 days ago</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
-                            <button class="btn-icon" onclick="shareFile(this)">🔗</button>
-                            <button class="btn-icon" onclick="deleteFile(this)">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="file-card" data-course="db">
-                        <div class="file-icon">📘</div>
-                        <div class="file-info">
-                            <div class="file-name">SQL Joins Explained.pdf</div>
-                            <div class="file-meta">Database Systems • Uploaded by Sara O.</div>
-                            <div class="file-size">1.8 MB • 1 week ago</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
-                            <button class="btn-icon" onclick="shareFile(this)">🔗</button>
-                            <button class="btn-icon" onclick="deleteFile(this)">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="file-card" data-course="net">
-                        <div class="file-icon">📄</div>
-                        <div class="file-info">
-                            <div class="file-name">OSI Model Layers Summary.pdf</div>
-                            <div class="file-meta">Networks • Uploaded by Nadia M.</div>
-                            <div class="file-size">0.8 MB • 4 days ago</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
-                            <button class="btn-icon" onclick="shareFile(this)">🔗</button>
-                            <button class="btn-icon" onclick="deleteFile(this)">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="file-card" data-course="web">
-                        <div class="file-icon">📘</div>
-                        <div class="file-info">
-                            <div class="file-name">HTML CSS Crash Course.pdf</div>
-                            <div class="file-meta">Web Development • Uploaded by Ahmed K.</div>
-                            <div class="file-size">2.1 MB • 3 days ago</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
-                            <button class="btn-icon" onclick="shareFile(this)">🔗</button>
-                            <button class="btn-icon" onclick="deleteFile(this)">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="file-card" data-course="web">
-                        <div class="file-icon">📄</div>
-                        <div class="file-info">
-                            <div class="file-name">JavaScript Cheatsheet.docx</div>
-                            <div class="file-meta">Web Development • Uploaded by Nadia M.</div>
-                            <div class="file-size">1.5 MB • 5 days ago</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
-                            <button class="btn-icon" onclick="shareFile(this)">🔗</button>
-                            <button class="btn-icon" onclick="deleteFile(this)">🗑️</button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- List View -->
@@ -224,59 +131,6 @@
     </div>
 
     <!-- Upload Modal -->
-    <div id="uploadModal" class="modal">
-        <div class="modal-content">
-            <h2>Upload New File</h2>
-            <form id="uploadForm">
-                <div class="form-group">
-                    <label>File *</label>
-                    <input type="file" id="fileInput" required>
-                </div>
-                <div class="form-group">
-                    <label>Course *</label>
-                    <select id="fileCourse" required>
-                        <option value="">Select Course</option>
-                        <option value="ds">Data Structures</option>
-                        <option value="db">Database Systems</option>
-                        <option value="net">Networks</option>
-                        <option value="calc">Calculus II</option>
-                        <option value="web">Web Development</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Description (optional)</label>
-                    <textarea id="fileDescription" rows="2" placeholder="Add a description..."></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeUploadModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Upload</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Share Modal -->
-    <div id="shareModal" class="modal">
-        <div class="modal-content">
-            <h2>Share File</h2>
-            <div class="form-group">
-                <label>Share with</label>
-                <select id="shareWith">
-                    <option value="all">All Students</option>
-                    <option value="group">Study Group Only</option>
-                    <option value="specific">Specific Student</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Message (optional)</label>
-                <textarea id="shareMessage" rows="2" placeholder="Add a message..."></textarea>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-outline" onclick="closeShareModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="confirmShare()">Share</button>
-            </div>
-        </div>
-    </div>
 
     <script src="users.js"></script>
     <script src="notes&files.js"></script>
