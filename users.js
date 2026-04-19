@@ -191,6 +191,42 @@
                     role: 'student'
                 });
 
+                this.addUser({
+                    username: 'ali_ashraf',
+                    firstName: 'ALi',
+                    lastName: 'Ashraf',
+                    university: 'BUE',
+                    major: 'Applied Arts',
+                    academicYear: '4',
+                    email: 'ali@loomhub.com',
+                    password: 'ali9090',
+                    role: 'student'
+                });
+
+                this.addUser({
+                    username: 'ebrahim_ahmed',
+                    firstName: 'Ebrahim',
+                    lastName: 'Ahmed',
+                    university: 'GUC',
+                    major: 'Law',
+                    academicYear: '2',
+                    email: 'ebrahim@loomhub.com',
+                    password: 'ebrahim456',
+                    role: 'student'
+                });
+
+                this.addUser({
+                    username: 'marwan_osama',
+                    firstName: 'Marwan',
+                    lastName: 'Osama',
+                    university: 'AUC',
+                    major: 'Dentistry',
+                    academicYear: '1',
+                    email: 'marwan@loomhub.com',
+                    password: 'marwan7878',
+                    role: 'student'
+                });
+
                 // INSTRUCTORS
                 this.addUser({
                     username: 'dr_hassan',
