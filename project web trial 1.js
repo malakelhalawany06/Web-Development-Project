@@ -222,3 +222,42 @@ el.textContent = today.toLocaleDateString('en-US' ,{
 // Render immediately when page loads
 window.addEventListener('DOMContentLoaded', renderDashQA);
 
+document.addEventListener("DOMContentLoaded", function () {
+    const loader = document.getElementById('page-loader');
+    
+    if (loader) {
+        // 1. BULLETPROOF RELOAD CHECK (Works for local file:/// links)
+        let isReload = false;
+        if (window.performance) {
+            const navEntries = performance.getEntriesByType("navigation");
+            // Modern browsers
+            if (navEntries.length > 0 && navEntries[0].type === "reload") {
+                isReload = true;
+            } 
+            // Fallback for local files and older browser mechanics
+            else if (performance.navigation && performance.navigation.type === 1) {
+                isReload = true; 
+            }
+        }
+        
+        // 2. Check if this is their first time opening the tab
+        const isFirstVisit = !sessionStorage.getItem('welcomeScreenPlayed');
+
+        // 3. Play animation IF it's the first visit OR if they just reloaded
+        if (isFirstVisit || isReload) {
+            sessionStorage.setItem('welcomeScreenPlayed', 'true');
+            
+            window.addEventListener('load', function() {
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    setTimeout(() => loader.remove(), 600); 
+                }, 500); 
+            });
+            
+        } else {
+            // 4. HIDE INSTANTLY when just clicking sidebar links
+            loader.style.display = 'none';
+            loader.remove();
+        }
+    }
+});
