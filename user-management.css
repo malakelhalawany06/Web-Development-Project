@@ -1,0 +1,53 @@
+/* Base Layout & Reset */
+* { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { margin: 0; background-color: #0d1117; color: #f8fafc; height: 100vh; overflow: hidden; }
+
+.dashboard-layout { display: flex; height: 100vh; }
+
+
+
+/* --- Provided CSS from your prompt --- */
+.panel {
+    background-color: #181d27;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #2a313e;
+}
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.panel-title { font-size: 1.1rem; font-weight: 600; color: #f8fafc; }
+.btn { background-color: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+.btn:hover { background-color: #7c3aed; }
+
+/* Form Grid */
+.task-form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+@media (max-width: 1024px) { .task-form-grid { grid-template-columns: repeat(2, 1fr); } }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-size: 0.85rem; color: #94a3b8; }
+.form-control { background-color: #212631; border: 1px solid #2a313e; color: white; padding: 10px 12px; border-radius: 6px; outline: none; width: 100%; }
+.form-control:focus { border-color: #8b5cf6; }
+
+/* Additional Buttons */
+.btn-small { padding: 6px 12px; font-size: 0.8rem; }
+.btn-danger { background-color: transparent; border: 1px solid #ef4444; color: #ef4444; }
+.btn-danger:hover { background-color: #ef4444; color: white; }
+.btn-warning { background-color: transparent; border: 1px solid #eab308; color: #eab308; margin-right: 5px; }
+.btn-warning:hover { background-color: #eab308; color: #181d27; }
+.btn-primary-outline { background-color: transparent; border: 1px solid #3b82f6; color: #3b82f6; margin-right: 5px;}
+.btn-primary-outline:hover { background-color: #3b82f6; color: white; }
+
+/* --- Table Styles --- */
+.table-container { width: 100%; overflow-x: auto; }
+.user-table { width: 100%; border-collapse: collapse; text-align: left; }
+.user-table th { padding: 12px 15px; border-bottom: 2px solid #2a313e; color: #94a3b8; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+.user-table td { padding: 15px; border-bottom: 1px solid #2a313e; color: #f8fafc; font-size: 0.95rem; vertical-align: middle; }
+.user-table tbody tr:hover { background-color: #1e2433; }
+
+/* Status Badges */
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+.badge-active { background-color: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+.badge-suspended { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+/* Modal Styles */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+.modal-content { width: 90%; max-width: 800px; margin: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
