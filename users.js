@@ -27,6 +27,7 @@
         if (users.length > 0) return; // already exists → STOP
 
         const demoUsers = [
+            //admin
             {
                 username: 'admin_loom',
                 firstName: 'Admin',
@@ -38,6 +39,7 @@
                 password: 'admin123',
                 role: 'admin'
             },
+            // student 
             {
                 username: 'ahmed_khalid',
                 firstName: 'Ahmed',
@@ -60,6 +62,40 @@
                 password: 'sara456',
                 role: 'student'
             },
+            {
+                username: 'osama_salah',
+                firstName: 'Osama',
+                lastName: 'Salah',
+                university: 'AAST',
+                major: 'dentistry',
+                academicYear: '1',
+                email: 'osama@loomhub.com',
+                password: 'osama44',
+                role: 'student'
+            },
+            {
+                username: 'khaled_mohamed',
+                firstName: 'Khaled',
+                lastName: 'Mohamed',
+                university: 'BUE',
+                major: 'Applied Arts',
+                academicYear: '2',
+                email: 'khaled@loomhub.com',
+                password: 'khaled123',
+                role: 'student'
+            },
+            {
+                username: 'marwan_alaa',
+                firstName: 'Marwan',
+                lastName: 'Alaa',
+                university: 'GUC',
+                major: 'Law',
+                academicYear: '4',
+                email: 'marwan@loomhub.com',
+                password: 'marwan77',
+                role: 'student'
+            },
+            // instructor 
             {
                 username: 'dr_hassan',
                 firstName: 'Hassan',
