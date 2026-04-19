@@ -33,6 +33,7 @@
     gap: 10px;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
+    align-items: flex-start;
 }
 
 .course-tab {
@@ -44,6 +45,8 @@
     cursor: pointer;
     color: var(--text2);
     transition: all 0.2s;
+    flex-shrink:0;
+    flex-grow:0;
 }
 
 .course-tab:hover {
@@ -62,6 +65,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1rem;
+    align-items:start;
 }
 
 .file-card {
@@ -74,7 +78,9 @@
     padding: 12px;
     transition: all 0.2s;
 }
-
+.file-card.hidden {
+    display: none;
+}
 .file-card:hover {
     border-color: var(--accent);
     transform: translateX(4px);
