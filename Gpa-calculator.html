@@ -6,6 +6,7 @@
     <title>GPA Calculator</title>
     
     <link rel="stylesheet" href="project web.css">
+     <link rel="stylesheet" href="Gpa-calculator.css">
 </head>
 <body>
 
@@ -105,14 +106,24 @@
 
         <!-- ADD COURSE -->
         <div class="card">
-            <div class="card-header">
-                <span class="card-title">➕ Add Course</span>
-            </div>
+    <div class="card-header">
+        <span class="card-title">➕ Add Course</span>
+    </div>
 
-            <input type="text" id="courseName" placeholder="Course Name" class="btn-ghost">
-            <input type="number" id="credits" placeholder="Credit Hours" class="btn-ghost">
+    <div class="form-row">
+        <div class="form-group">
+            <label for="courseName">Course Name</label>
+            <input type="text" id="courseName" placeholder="Enter course name" class="form-input">
+        </div>
+        
+        <div class="form-group">
+            <label for="credits">Credit Hours</label>
+            <input type="number" id="credits" placeholder="E.g. 3" class="form-input">
+        </div>
 
-            <select id="grade" class="btn-ghost">
+        <div class="form-group">
+            <label for="grade">Grade</label>
+            <select id="grade" class="form-input">
                 <option value="">Select Grade</option>
                 <option value="4.0">A</option>
                 <option value="3.7">A-</option>
@@ -124,9 +135,11 @@
                 <option value="1.0">D</option>
                 <option value="0.0">F</option>
             </select>
-
-            <button class="btn btn-primary" onclick="addCourse()">+ Add Course</button>
         </div>
+    </div>
+
+    <button class="btn btn-primary" style="margin-top: 1.25rem;" onclick="addCourse()">+ Add Course</button>
+</div>
 
         <!-- TABLE -->
         <div class="card">
