@@ -1,4 +1,13 @@
-let courses = JSON.parse(localStorage.getItem("courses")) || [];
+const user = UserManager.getCurrentUser();
+
+if(!user){
+    alert("no user logged in");
+    throw new Error("user not found");
+}
+
+const STORAGE_KEY = `courses_${user.username}`;
+
+let courses = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
 // ===== ADD COURSE =====
 function addCourse() {
@@ -20,8 +29,8 @@ function addCourse() {
 
     courses.push(course);
 
-    // SAVE to localStorage 🔥
-    localStorage.setItem("courses", JSON.stringify(courses));
+    // SAVE to localStorage 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
 
     displayCourses();
     calculateGPA();
@@ -71,15 +80,15 @@ function calculateGPA() {
     let percentage = (gpa / 4) * 100;
     document.getElementById("gpaBar").style.width = percentage + "%";
 
-    // SAVE update (important)
-    localStorage.setItem("courses", JSON.stringify(courses));
+    // SAVE update
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
 }
 
 // ===== DELETE COURSE =====
 function deleteCourse(index) {
     courses.splice(index, 1);
 
-    localStorage.setItem("courses", JSON.stringify(courses));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
 
     displayCourses();
     calculateGPA();
