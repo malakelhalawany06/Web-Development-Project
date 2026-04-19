@@ -1,5 +1,17 @@
 const user = UserManager.getCurrentUser();
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the login button and attach event listener (safer than onclick in HTML)
+    const loginBtn = document.querySelector('button[onclick="validateLogin()"]');
+    if (loginBtn) {
+        // Replace inline onclick with proper event listener
+        loginBtn.onclick = function(e) {
+            e.preventDefault();
+            validateLogin();
+        };
+    }
+});
+
 if(!user){
     alert("no user logged in");
     throw new Error("user not found");
