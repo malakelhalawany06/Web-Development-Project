@@ -1,26 +1,43 @@
-// =======================
-// STORAGE
-// =======================
-let materials = JSON.parse(localStorage.getItem("materials")) || [];
 
-// =======================
-// DISPLAY MATERIALS
-// =======================
+function loadUserMaterials() {
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) return [];
+    const key = `user_${currentUser.username}_materials`;
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : [];
+}
+
+function saveUserMaterials(materials) {
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) return;
+    const key = `user_${currentUser.username}_materials`;
+    localStorage.setItem(key, JSON.stringify(materials));
+}
+
+
 function displayMaterials() {
     const feedContainer = document.getElementById('feed-container');
     if (!feedContainer) return;
+    
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) return;
+    
+    const materials = loadUserMaterials();
     feedContainer.innerHTML = "";
+
+    const userName = `${currentUser.firstName} ${currentUser.lastName}`;
+    const userAvatar = currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0);
 
     materials.forEach(post => {
         const newPost = document.createElement('div');
         newPost.classList.add('card', 'post-card');
         newPost.style.marginBottom = '1.25rem';
-
+        
         newPost.innerHTML = `
             <div class="post-header">
-                <div class="avatar purple">AK</div>
+                <div class="avatar purple">${userAvatar}</div>
                 <div>
-                    <div style="font-size: 14px; font-weight: 500;">Ahmed Khalid (You)</div>
+                    <div style="font-size: 14px; font-weight: 500;">${userName} (You)</div>
                     <div style="font-size: 11px; color: var(--text3);">${post.date}</div>
                 </div>
             </div>
@@ -51,9 +68,7 @@ function displayMaterials() {
     });
 }
 
-// =======================
-// GET FILE ICON
-// =======================
+
 function getFileIcon(fileName) {
     if (!fileName) return '📄';
     const ext = fileName.split('.').pop().toLowerCase();
@@ -64,12 +79,20 @@ function getFileIcon(fileName) {
     return '📄';
 }
 
-// =======================
-// SAVE TO NOTES & FILES
-// =======================
+
 // Inside your upload button click handler, add this save function
 function saveToNotesFiles(title, desc, fileName, fileSize) {
-    let notesFiles = JSON.parse(localStorage.getItem('notesFiles') || '[]');
+    // Get current user
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) {
+        console.log("No user logged in");
+        return;
+    }
+    
+    const username = currentUser.username;
+    
+    // Get existing files for this user
+    let userFiles = UserManager.getUserNotesFiles(username);
     
     // Determine course
     let course = 'web';
@@ -94,40 +117,29 @@ function saveToNotesFiles(title, desc, fileName, fileSize) {
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     
-    notesFiles.unshift({
+    // Add new file
+    userFiles.unshift({
         fileName: fileName,
         title: title,           
         description: desc, 
-        fileMeta: `${courseName} • Uploaded by Ahmed K.`,
+        fileMeta: `${courseName} • Uploaded by ${currentUser.firstName} ${currentUser.lastName}`,
         fileSize: fileSize,
         fileIcon: fileIcon,
         course: course,
-        date: dateStr
+        date: dateStr,
+        uploadedBy: currentUser.username
     });
     
-    localStorage.setItem('notesFiles', JSON.stringify(notesFiles));
+    // Save back to user-specific storage
+    UserManager.saveUserNotesFiles(username, userFiles);
+    
+    console.log("File saved for user:", username);
 }
-
-// Call this in your upload button:
-// saveToNotesFiles(title, desc, file.name, (file.size / 1024 / 1024).toFixed(1) + ' MB');
-
-// =======================
-// SAVE MATERIALS
-// =======================
-function saveMaterials() {
-    localStorage.setItem("materials", JSON.stringify(materials));
-}
-
-// =======================
-// DOWNLOAD FUNCTION
-// =======================
 function downloadFile(fileName) {
     alert(`Downloading "${fileName}"...`);
 }
 
-// =======================
-// MAIN
-// =======================
+
 window.onload = function () {
 
     const searchInput = document.getElementById('global-search');
@@ -142,14 +154,9 @@ window.onload = function () {
     const modalMessage = document.getElementById('modal-message');
     const closeModalBtn = document.getElementById('close-modal-btn');
 
-    // =======================
-    // LOAD SAVED MATERIALS
-    // =======================
+   
     displayMaterials();
 
-    // =======================
-    // SEARCH
-    // =======================
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
@@ -168,9 +175,6 @@ window.onload = function () {
         });
     }
 
-    // =======================
-    // FILE NAME DISPLAY
-    // =======================
     if (fileInput) {
         fileInput.addEventListener('change', function () {
             if (this.files.length > 0) {
@@ -181,41 +185,40 @@ window.onload = function () {
         });
     }
 
-    // =======================
-    // COMMENTS
-    // =======================
     if (feedContainer) {
-        feedContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('send-comment-btn')) {
-                const inputField = e.target.previousElementSibling;
-                const commentText = inputField.value.trim();
+    feedContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('send-comment-btn')) {
+            const inputField = e.target.previousElementSibling;
+            const commentText = inputField.value.trim();
 
-                if (commentText !== "") {
-                    const commentsContainer = e.target.closest('.post-card').querySelector('.comments-container');
+            if (commentText !== "") {
+                const currentUser = UserManager.getCurrentUser();
+                const userName = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Ahmed Khalid';
+                const userAvatar = currentUser ? currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0) : 'AK';
+                
+                const commentsContainer = e.target.closest('.post-card').querySelector('.comments-container');
 
-                    const newComment = document.createElement('div');
-                    newComment.classList.add('comment');
-                    newComment.innerHTML = `
-                        <div class="avatar sm purple">AK</div>
-                        <div style="flex: 1;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="font-size: 12px; font-weight: 600;">Ahmed Khalid (You)</span>
-                                <span style="font-size: 10px;">Just now</span>
-                            </div>
-                            <div style="font-size: 12.5px;">${commentText}</div>
+                const newComment = document.createElement('div');
+                newComment.classList.add('comment');
+                newComment.innerHTML = `
+                    <div class="avatar sm purple">${userAvatar}</div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-size: 12px; font-weight: 600;">${userName} (You)</span>
+                            <span style="font-size: 10px;">Just now</span>
                         </div>
-                    `;
+                        <div style="font-size: 12.5px;">${commentText}</div>
+                    </div>
+                `;
 
-                    commentsContainer.appendChild(newComment);
-                    inputField.value = '';
-                }
+                commentsContainer.appendChild(newComment);
+                inputField.value = '';
             }
-        });
-    }
+        }
+    });
+}
 
-    // =======================
-    // MODAL
-    // =======================
+   //Modal
     function showModal(message) {
         if (modal && modalMessage) {
             modalMessage.textContent = message;
@@ -236,51 +239,55 @@ window.onload = function () {
         }
     }
 
-    // =======================
-    // UPLOAD - SAVE TO BOTH PAGES
-    // =======================
-    if (uploadBtn) {
-        uploadBtn.addEventListener('click', (e) => {
-            e.preventDefault();
 
-            const title = uploadTitleInput.value.trim();
-            const desc = uploadDescInput.value.trim();
-            const file = fileInput.files[0];
+if (uploadBtn) {
+    uploadBtn.addEventListener('click', (e) => {
+        e.preventDefault();
 
-            if (title === "") {
-                showModal("Please enter a Material Title.");
-                return;
-            }
+        const title = uploadTitleInput.value.trim();
+        const desc = uploadDescInput.value.trim();
+        const file = fileInput.files[0];
 
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        if (title === "") {
+            showModal("Please enter a Material Title.");
+            return;
+        }
 
-            let newMaterial = {
-                title: title,
-                desc: desc,
-                fileName: file ? file.name : "",
-                fileSize: file ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : "",
-                date: `${dateStr} at ${timeStr}`
-            };
+        const currentUser = UserManager.getCurrentUser();
+        if (!currentUser) {
+            showModal("Please login first.");
+            return;
+        }
 
-            materials.unshift(newMaterial);
-            saveMaterials();
-            displayMaterials();
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-            // ===== SAVE TO NOTES & FILES PAGE =====
-            if (file) {
-                saveToNotesFiles(title, desc, file.name, (file.size / 1024 / 1024).toFixed(1) + ' MB');
-            }
+        let newMaterial = {
+            title: title,
+            desc: desc,
+            fileName: file ? file.name : "",
+            fileSize: file ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : "",
+            date: `${dateStr} at ${timeStr}`
+        };
 
-            // clear inputs
-            uploadTitleInput.value = '';
-            uploadDescInput.value = '';
-            fileInput.value = '';
-            if (fileNameDisplay) fileNameDisplay.textContent = "No file chosen";
+        let materials = loadUserMaterials();
+        materials.unshift(newMaterial);
+        saveUserMaterials(materials);
+        displayMaterials();
 
-            showModal("Material Uploaded Successfully!");
-        });
-    }
+        // SAVE TO NOTES & FILES PAGE
+        if (file) {
+            saveToNotesFiles(title, desc, file.name, (file.size / 1024 / 1024).toFixed(1) + ' MB');
+        }
 
+        // clear inputs
+        uploadTitleInput.value = '';
+        uploadDescInput.value = '';
+        fileInput.value = '';
+        if (fileNameDisplay) fileNameDisplay.textContent = "No file chosen";
+
+        showModal("Material Uploaded Successfully!");
+    });
+}
 };

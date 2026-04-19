@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoomHub — Student Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="project web.css">
+  <script src="project web.js"></script>
+   <script src="project web trial 1.js"></script>
+</head>
+<html>
+
+<body class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item active" href="index.html">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item" href="profile.html" target="_self">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </div>
+<div class="sidebar-section">
+    <div class="sidebar-label">Resources</div>
+    <a class="nav-item" href="notes&files.html">
+        <span class="nav-icon">📂</span> Notes & Files
+    </a>
+    <a class="nav-item" href="sharedMaterials.html">
+        <span class="nav-icon">🔗</span> Shared Materials
+    </a>
+</div>
+<div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      
+      <a class="nav-item" href="Q&A.html">
+        <span class="nav-icon">💬</span> Q&amp;A Forum
+      </a>
+    </div>
+ <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='profile.html'">
+      <div class="avatar">AK</div>
+      <div class="profile-info">
+        <div class="name">Ahmed Khalid</div>
+        <div class="role">Computer Science · Yr 3</div>
+        
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">🏠Dashboard</div>
+        <div class="topbar-subtitle" id="current-date"></div>
+      </div>
+      <div class="topbar-right">
+        
+        <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+       
+        <div class="avatar sm">AK</div>
+      </div>
+    </header>
+
+        <!-- Scrollable content -->
+    <div class="content">
+
+     
+
+          <!-- NOTES QUICK ACCESS -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📂 Recent Notes</span>
+              <span class="card-action" style="cursor: pointer;" onclick="window.location.href='notes&files.html'">Browse</span>
+            </div>
+            <div class="notes-grid">
+              <div class="note-card">
+                <div class="note-icon">📄</div>
+                <div class="note-name">Ch.7 Graphs</div>
+                <div class="note-meta">Data Structures</div>
+              </div>
+              <div class="note-card">
+                <div class="note-icon">📊</div>
+                <div class="note-name">SQL Joins</div>
+                <div class="note-meta">Database Systems</div>
+              </div>
+              <div class="note-card">
+                <div class="note-icon">📘</div>
+                <div class="note-name">TCP/IP Notes</div>
+                <div class="note-meta">Networks</div>
+              </div>
+              <div class="note-card">
+                <div class="note-icon">🧮</div>
+                <div class="note-name">Integration</div>
+                <div class="note-meta">Calculus II</div>
+              </div>
+            </div>
+          </div><!-- Q&A FORUM -->
+       <div class="card">
+  <div class="card-header">
+    <span class="card-title">💬 Q&amp;A Forum</span>
+    <button class="btn btn-primary" onclick="toggleDashQAForm()" style="padding:4px 10px;font-size:12px;">Ask Question</button>
+  </div>
+
+  <div id="dash-qa-form" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+    <input type="text" id="dashQATitle" placeholder="What's your question?" style="background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: var(--radius-sm); outline: none; font-size: 13px; font-family: var(--font); width: 100%;">
+    
+    <div style="display: flex; gap: 8px;">
+      <select id="dashQATag" style="flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px; border-radius: var(--radius-sm); outline: none; font-size: 12px; font-family: var(--font);">
+        <option value="Data Structures">Data Structures</option>
+        <option value="Database Systems">Database Systems</option>
+        <option value="Networks">Networks</option>
+        <option value="General">General</option>
+      </select>
+      <button class="btn btn-primary" onclick="submitDashQuestion()" style="padding: 6px 12px; font-size: 12px;">Post</button>
+    </div>
+  </div>
+
+  <div id="dashQAContainer"></div>
+  </div>
+
+        </div><!-- /right col -->
+
+         
+</div>
+</body>
+</html>
