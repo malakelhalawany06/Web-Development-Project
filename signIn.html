@@ -34,7 +34,7 @@
             <option value="GUC">GUC</option>
         </select>
 
-        <label for="year">Academic Year:</label><br><span id="'yearError"></span>
+        <label for="year">Academic Year:</label><br><span id="yearError"></span>
        <select id="year">
         <option value="First Year">First Year</option>
         <option value="Second Year">Second Year</option>
@@ -64,6 +64,12 @@
         <label for="confirm">Re-enter Password:</label><br><span id="confirmError"></span>
         <input type="password" id="confirm" placeholder="Re-enter Password"><br>
 
+
+        <label for="role">Role:</label>
+            <select id="role">
+                <option value="Instructor">Instructor</option>
+                <option value="Student">Student</option>
+            </select>
 
         <button onclick="validateSignUp()">Sign Up</button>
         <span>Have an account already? <a href="logIn.html">login</a></span>
