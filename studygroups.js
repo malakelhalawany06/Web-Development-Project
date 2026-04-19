@@ -19,16 +19,18 @@
         });
 
         // Filter functionality
-        const filterChips = document.querySelectorAll('.filter-chip');
+        const filterChips = document.querySelectorAll('.filter-chip');//get all elements with class .filter-chip
         
-        filterChips.forEach(chip => {
-            chip.addEventListener('click', function() {
-                filterChips.forEach(c => c.classList.remove('active'));
+        filterChips.forEach(chip => { //loop through each chip
+            chip.addEventListener('click', function() { //runs function(e) whenever a chip is clicked on
+              //one chip looks selected when clicked(active)
+                filterChips.forEach(c => c.classList.remove('active')); 
                 this.classList.add('active');
                 
-                const filterValue = this.dataset.filter;
+                const filterValue = this.dataset.filter; //get the filter value, dataset access custom HTML attributes for this object
                 
-                groupCards.forEach(card => {
+                groupCards.forEach(card => { //loop through all cards
+                    //Filters using conditions  
                     if (filterValue === 'all') {
                         card.style.display = '';
                     } else if (filterValue === 'available') {
