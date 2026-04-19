@@ -85,6 +85,7 @@
         },
 
         getUser: function (username) {
+<<<<<<< HEAD
             return loadUsersFromStorage().find(u => u.username === username) || null;
         },
 
@@ -92,6 +93,12 @@
             return loadUsersFromStorage().find(u => u.email === email) || null;
         },
 
+=======
+            const users = loadUsersFromStorage();
+            return users.find(user => user.username === username) || null;
+        },
+        // ===== ADD USER =====
+>>>>>>> d70951fbea182c24eb4066f5ba89d7d50d566c06
         addUser: function (userData) {
             const users = loadUsersFromStorage();
 
