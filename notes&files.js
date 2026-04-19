@@ -145,14 +145,100 @@ function deleteFile(button) {
     const userFiles=UserManager.getUserNotesFiles(username);
     const filesGrid=document.getElementById('gridView');
     if(!filesGrid) return;
+
     const uploadedFiles=filesGrid.querySelectorAll('.file-card[data-uploaded="true"]');
     uploadedFiles.forEach(file=>file.remove());
     userFiles.forEach(file=>{
        const fileCard=createFileCard(file);
        filesGrid.appendChild(fileCard); 
     });
+    updateNotesFilesBadge();
+ }
+ function updateCourseTabs(){
+    const currentUser=UserManager.getCurrentUser();//get the user logged in
+    if(!currentUser) return;
+    const major=currentUser.major;//get the user's major
+    const courseTabsContainer=document.querySelector('.course-tabs');//get the container for course tabs
+    if(!courseTabsContainer) return;
+     const tabsByMajor = {
+        'Computer Science': [
+            { course: 'all', name: 'All Courses' },
+            { course: 'ds', name: 'Data Structures' },
+            { course: 'db', name: 'Database Systems' },
+            { course: 'net', name: 'Networks' },
+            { course: 'web', name: 'Web Development' }
+        ],
+        'Business Informatics': [
+            { course: 'all', name: 'All Courses' },
+            { course: 'db', name: 'Data Analysis' },
+            { course: 'business', name: 'Business Analytics' },
+            { course: 'marketing', name: 'Marketing' }
+        ],
+        'Applied Arts': [
+            { course: 'all', name: 'All Courses' },
+            { course: 'arts', name: 'Graphic Design' },
+            { course: 'uiux', name: 'UI/UX Design' },
+            { course: 'digital', name: 'Digital Art' }
+        ],
+        'Law': [
+            { course: 'all', name: 'All Courses' },
+            { course: 'law', name: 'Constitutional Law' },
+            { course: 'criminal', name: 'Criminal Law' },
+            { course: 'international', name: 'International Law' }
+        ],
+        'Dentistry': [
+            { course: 'all', name: 'All Courses' },
+            { course: 'science', name: 'Human Anatomy' },
+            { course: 'pathology', name: 'Oral Pathology' },
+            { course: 'clinical', name: 'Clinical Dentistry' }
+        ],
+        'Networks': [
+            { course: 'all', name: 'All Courses' },
+            { course: 'net', name: 'Network Security' },
+            { course: 'cloud', name: 'Cloud Computing' },
+            { course: 'security', name: 'Cyber Security' }
+        ],
+        'System Admin': [
+            { course: 'all', name: 'All Courses' },
+            { course: 'admin', name: 'Server Management' },
+            { course: 'devops', name: 'DevOps' }
+        ]
+    };
+    const tabs=tabsByMajor[major]||tabsByMajor['Computer Science'];
+    courseTabsContainer.innerHTML='';
+    tabs.forEach(tab=>{
+        const tabButton=document.createElement('button');
+        tabButton.className='course-tab';
+        if(tab.course==='all'){
+             tabButton.classList.add('active');
+        }
+        tabButton.setAttribute('data-course',tab.course);
+        tabButton.textContent=tab.name;
+        tabButton.textContent=tab.name;
+        tabButton.onclick=function(){
+            document.querySelectorAll('.course-tab').forEach(t=>t.classList.remove('active'));
+            this.classList.add('active');
+            const course=this.dataset.course;
+            const fileCards=document.querySelectorAll('.file-card');
+            fileCards.forEach(card=>{
+                if(course==='all'||card.dataset.course===course){
+                    card.classList.remove('hidden');
+                    card.style.display = 'flex';
+                }else{
+                    card.classList.add('hidden');
+                    card.style.display = 'none';
+                }
+            });
+            if(document.getElementById('listView').style.display==='block'){
+                populateListView();
+            }
+        };
+        courseTabsContainer.appendChild(tabButton);
+    });
  }
 //load files when page loads
  document.addEventListener('DOMContentLoaded',function(){
+    updateCourseTabs();  // ADD THIS - generates tabs based on major
     loadUserNotesFiles();
+    updateNotesFilesBadge();
  });

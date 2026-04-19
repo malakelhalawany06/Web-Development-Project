@@ -1,23 +1,84 @@
-// ----- REMINDERS WITH DUE DATE, NOTES, PRIORITY -----
-let reminders = [];
+// ========================
+// REMINDERS with UserManager support
+// ========================
 
+let reminders = [];
+let currentUser = null;
+
+// Helper: get storage key for current user
+function getStorageKey() {
+  return currentUser ? `user_${currentUser.username}_reminders` : null;
+}
+
+// Ensure Ahmed Khalid is logged in by default (same as Q&A)
+function ensureDefaultUser() {
+  if (!window.UserManager) {
+    console.error("UserManager not loaded");
+    return null;
+  }
+
+  // Make sure demo users exist
+  if (window.UserManager.getAllUsers().length === 0) {
+    window.UserManager.loadDemoUsers();
+  }
+
+  // Try to get current logged-in user
+  let user = window.UserManager.getCurrentUser();
+
+  if (!user) {
+    // No user logged in – find or create Ahmed Khalid
+    user = window.UserManager.getUser("ahmed_khalid");
+    if (!user) {
+      // Create default user if somehow missing
+      const defaultUser = {
+        username: "ahmed_khalid",
+        firstName: "Ahmed",
+        lastName: "Khalid",
+        email: "ahmed@loomhub.com",
+        password: "pass123",
+        role: "student",
+        university: "MIU",
+        major: "Computer Science",
+        academicYear: "3"
+      };
+      window.UserManager.addUser(defaultUser);
+      user = defaultUser;
+    }
+    // Manually set as current user in localStorage
+    localStorage.setItem("app_current_user", user.username);
+  }
+
+  return user;
+}
+
+// Load reminders from localStorage (user-specific)
 function loadReminders() {
-  const stored = localStorage.getItem("loomhub_reminders_priority");
+  // Ensure user is logged in
+  currentUser = ensureDefaultUser();
+  if (!currentUser) {
+    console.error("Could not set up user");
+    return;
+  }
+
+  const key = getStorageKey();
+  if (!key) return;
+
+  const stored = localStorage.getItem(key);
   if (stored) {
     reminders = JSON.parse(stored);
   } else {
-    // Default reminders with due dates & notes
+    // Create default reminders for this user
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(now.getDate() + 1);
     const nextWeek = new Date(now);
     nextWeek.setDate(now.getDate() + 7);
     reminders = [
-      { id: Date.now()+101, text: "Data Structures quiz", completed: false, priority: "high", dueDate: tomorrow.toISOString().slice(0,16), notes: "Chapter 7 & 8, review Dijkstra" },
-      { id: Date.now()+102, text: "Calculus problem set", completed: false, priority: "high", dueDate: new Date(now.getTime() + 3*86400000).toISOString().slice(0,16), notes: "Integration by parts" },
-      { id: Date.now()+103, text: "Read Networks ch.7", completed: false, priority: "medium", dueDate: nextWeek.toISOString().slice(0,16), notes: "TCP/IP overview" },
-      { id: Date.now()+104, text: "Group meeting DB project", completed: true, priority: "low", dueDate: "", notes: "Zoom link in email" },
-      { id: Date.now()+105, text: "AI ethics paper outline", completed: false, priority: "medium", dueDate: "", notes: "" }
+      { id: Date.now() + 101, text: "Data Structures quiz", completed: false, priority: "high", dueDate: tomorrow.toISOString().slice(0, 16), notes: "Chapter 7 & 8, review Dijkstra" },
+      { id: Date.now() + 102, text: "Calculus problem set", completed: false, priority: "high", dueDate: new Date(now.getTime() + 3 * 86400000).toISOString().slice(0, 16), notes: "Integration by parts" },
+      { id: Date.now() + 103, text: "Read Networks ch.7", completed: false, priority: "medium", dueDate: nextWeek.toISOString().slice(0, 16), notes: "TCP/IP overview" },
+      { id: Date.now() + 104, text: "Group meeting DB project", completed: true, priority: "low", dueDate: "", notes: "Zoom link in email" },
+      { id: Date.now() + 105, text: "AI ethics paper outline", completed: false, priority: "medium", dueDate: "", notes: "" }
     ];
     saveReminders();
   }
@@ -26,7 +87,11 @@ function loadReminders() {
 }
 
 function saveReminders() {
-  localStorage.setItem("loomhub_reminders_priority", JSON.stringify(reminders));
+  if (!currentUser) return;
+  const key = getStorageKey();
+  if (key) {
+    localStorage.setItem(key, JSON.stringify(reminders));
+  }
   updateStats();
   updateSidebarBadge();
 }
@@ -53,7 +118,7 @@ function formatDueDate(dueDateStr) {
   if (!dueDateStr) return null;
   const due = new Date(dueDateStr);
   const now = new Date();
-  const diffDays = Math.ceil((due - now) / (1000*60*60*24));
+  const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
   let statusClass = "";
   let label = "";
   if (diffDays < 0) { statusClass = "overdue"; label = `Overdue by ${Math.abs(diffDays)}d`; }
@@ -61,7 +126,7 @@ function formatDueDate(dueDateStr) {
   else if (diffDays === 1) { statusClass = "soon"; label = "Due tomorrow"; }
   else if (diffDays <= 3) { statusClass = "soon"; label = `Due in ${diffDays} days`; }
   else { label = `Due ${due.toLocaleDateString()}`; }
-  const time = due.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  const time = due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return { label: `${label} at ${time}`, class: statusClass };
 }
 
@@ -183,6 +248,17 @@ function setupSearch() {
   });
   searchDiv.replaceWith(input);
 }
+
+// Listen for login/logout changes across tabs
+window.addEventListener('storage', (e) => {
+  if (e.key === 'app_current_user' || e.key?.startsWith('user_')) {
+    loadReminders();
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) loadReminders();
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   loadReminders();
