@@ -1,50 +1,68 @@
-// userManager.js – Complete user storage system with admin support
-
-(function() {
+(function () {
     const STORAGE_KEY = 'app_users';
     const CURRENT_USER_KEY = 'app_current_user';
 
+    // ===== LOAD USERS =====
     function loadUsersFromStorage() {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
             try {
                 return JSON.parse(stored);
-            } catch(e) {
-                console.error('Failed to parse users from localStorage', e);
+            } catch (e) {
+                console.error('Error parsing users:', e);
                 return [];
             }
         }
         return [];
     }
 
+    // ===== SAVE USERS =====
     function saveUsersToStorage(users) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
     }
 
+    // ===== MAIN OBJECT =====
     window.UserManager = {
-        getAllUsers: function() {
+
+        // ===== GET USERS =====
+        getAllUsers: function () {
             return loadUsersFromStorage();
         },
 
-        getUser: function(username) {
+        getUser: function (username) {
             const users = loadUsersFromStorage();
             return users.find(user => user.username === username) || null;
         },
 
-        addUser: function(userData) {
+        // ===== ADD USER =====
+        addUser: function (userData) {
             const users = loadUsersFromStorage();
-            const { username, firstName, lastName, university, major, academicYear, email, password, isAdmin } = userData;
 
+            const {
+                username,
+                firstName,
+                lastName,
+                university,
+                major,
+                academicYear,
+                email,
+                password,
+                role
+            } = userData;
+
+            // Validation
             if (!username || !firstName || !lastName || !email || !password) {
                 console.error('Missing required fields');
                 return false;
             }
+
             if (users.find(u => u.username === username)) {
                 console.error('Username already exists');
                 return false;
             }
+
             if (users.find(u => u.email === email)) {
-                console.error('Email already registered');
+                console.error('Email already exists');
                 return false;
             }
 
@@ -57,66 +75,98 @@
                 academicYear: academicYear || '',
                 email: email,
                 password: password,
-                isAdmin: isAdmin || false
+                role: role || 'student' // default role
             };
+
             users.push(newUser);
             saveUsersToStorage(users);
+
             return true;
         },
 
-        updateUser: function(username, updatedData) {
+        // ===== UPDATE USER =====
+        updateUser: function (username, updatedData) {
             const users = loadUsersFromStorage();
             const index = users.findIndex(u => u.username === username);
+
             if (index === -1) return false;
-            users[index] = { ...users[index], ...updatedData, username: username };
+
+            users[index] = {
+                ...users[index],
+                ...updatedData,
+                username: username 
+            };
+
             saveUsersToStorage(users);
             return true;
         },
 
-        deleteUser: function(username) {
+        // ===== DELETE USER =====
+        deleteUser: function (username) {
             let users = loadUsersFromStorage();
             const newUsers = users.filter(u => u.username !== username);
+
             if (newUsers.length === users.length) return false;
+
             saveUsersToStorage(newUsers);
             return true;
         },
 
-        authenticate: function(username, password) {
+        // ===== Validation =====
+        authenticate: function (username, password) {
             const user = this.getUser(username);
+
             if (user && user.password === password) {
                 localStorage.setItem(CURRENT_USER_KEY, username);
                 return user;
             }
+
             return null;
         },
 
-        getCurrentUser: function() {
-            const currentUsername = localStorage.getItem(CURRENT_USER_KEY);
-            if (!currentUsername) return null;
-            return this.getUser(currentUsername);
+        getCurrentUser: function () {
+            const username = localStorage.getItem(CURRENT_USER_KEY);
+            if (!username) return null;
+            return this.getUser(username);
         },
 
-        logout: function() {
+        logout: function () {
             localStorage.removeItem(CURRENT_USER_KEY);
         },
 
-        // Preload 3 users: 2 normal, 1 admin
-        loadDemoUsers: function() {
+        // ===== ROLE HELPERS =====
+        isAdmin: function (user) {
+            return user && user.role === 'admin';
+        },
+
+        isInstructor: function (user) {
+            return user && user.role === 'instructor';
+        },
+
+        isStudent: function (user) {
+            return user && user.role === 'student';
+        },
+
+        // ===== USERS =====
+        loadDemoUsers: function () {
             const users = loadUsersFromStorage();
+
             if (users.length === 0) {
-                // Admin user
+
+                // ADMIN
                 this.addUser({
                     username: 'admin_loom',
                     firstName: 'Admin',
                     lastName: 'LoomHub',
                     university: 'MIU',
                     major: 'System Admin',
-                    academicYear: '5',
+                    academicYear: '',
                     email: 'admin@loomhub.com',
                     password: 'admin123',
-                    isAdmin: true
+                    role: 'admin'
                 });
-                // Normal user 1
+
+                // STUDENTS
                 this.addUser({
                     username: 'ahmed_khalid',
                     firstName: 'Ahmed',
@@ -126,9 +176,9 @@
                     academicYear: '3',
                     email: 'ahmed@loomhub.com',
                     password: 'pass123',
-                    isAdmin: false
+                    role: 'student'
                 });
-                // Normal user 2
+
                 this.addUser({
                     username: 'sara_ali',
                     firstName: 'Sara',
@@ -138,15 +188,43 @@
                     academicYear: '2',
                     email: 'sara@loomhub.com',
                     password: 'sara456',
-                    isAdmin: false
+                    role: 'student'
                 });
-                console.log('Demo users loaded: 1 admin, 2 normal users');
+
+                // INSTRUCTORS
+                this.addUser({
+                    username: 'dr_hassan',
+                    firstName: 'Hassan',
+                    lastName: 'Mahmoud',
+                    university: 'MIU',
+                    major: 'Computer Science',
+                    academicYear: '',
+                    email: 'hassan@loomhub.com',
+                    password: 'teach123',
+                    role: 'instructor'
+                });
+
+                this.addUser({
+                    username: 'dr_nadia',
+                    firstName: 'Nadia',
+                    lastName: 'Youssef',
+                    university: 'AUC',
+                    major: 'Networks',
+                    academicYear: '',
+                    email: 'nadia@loomhub.com',
+                    password: 'nadia999',
+                    role: 'instructor'
+                });
+
+                console.log('Demo users created (admin, students, instructors)');
             }
         }
     };
 
-    document.addEventListener('DOMContentLoaded', function() {
+    
+    document.addEventListener('DOMContentLoaded', function () {
         UserManager.loadDemoUsers();
-        console.log('UserManager ready. Users:', UserManager.getAllUsers());
+        console.log('UserManager Ready:', UserManager.getAllUsers());
     });
+
 })();
