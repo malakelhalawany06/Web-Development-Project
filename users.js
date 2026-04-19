@@ -156,6 +156,11 @@
             return user && user.role === 'student';
         },
 
+        getUserByEmail: function(email) {
+    const users = this.getAllUsers();
+    return users.find(user => user.email === email) || null;
+    },
+
         // ===== USERS =====
         loadDemoUsers: function () {
             const users = loadUsersFromStorage();
