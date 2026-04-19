@@ -91,13 +91,18 @@ function createFileCard(file) { //turns a file object into an HTML card
     fileCard.className = 'file-card';
     fileCard.setAttribute('data-course', file.course);
     fileCard.setAttribute('data-uploaded','true');
+     // Extract the uploaded by name from fileMeta or use stored value
+    let uploadedByName = 'Unknown';
+    if (file.fileMeta) {
+        const match = file.fileMeta.match(/Uploaded by (.+)/);
+        if (match) uploadedByName = match[1];
+    }
+    
     fileCard.innerHTML = `
         <div class="file-icon">${file.fileIcon}</div>
         <div class="file-info">
-            <div class="file-name">${escapeHtml(file.title||file.fileName)}</div> 
-          
-            <div class="file-meta" style="font-size: 10px; color: var(--text3);">${escapeHtml(file.description)} • ${escapeHtml(file.fileSize)} • Uploaded by Ahmed K. • ${file.date}</div>
-           
+            <div class="file-name">${escapeHtml(file.title || file.fileName)}</div> 
+            <div class="file-meta" style="font-size: 10px; color: var(--text3);">${escapeHtml(file.description)} • ${escapeHtml(file.fileSize)} • Uploaded by ${uploadedByName} • ${file.date}</div>
         </div>
         <div class="file-actions">
             <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
@@ -105,7 +110,7 @@ function createFileCard(file) { //turns a file object into an HTML card
             <button class="btn-icon" onclick="deleteFile(this)">🗑️</button>
         </div>
     `;
-    return fileCard; //so loadNotesFile() can insert it 
+    return fileCard;
 }
 
 function escapeHtml(text) {
@@ -125,35 +130,51 @@ function shareFile(button) {
 }
 
 function deleteFile(button) {
-    if (confirm('Are you sure you want to delete this file?')) {
+   if (confirm('Are you sure you want to delete this file?')) {
         const fileCard = button.closest('.file-card');
         const fileTitle = fileCard.querySelector('.file-name').innerText;
         
-        let savedFiles = JSON.parse(localStorage.getItem('notesFiles') || '[]'); //load stored files
-        savedFiles = savedFiles.filter(file => file.title !== fileTitle); //remove matching file 
-        localStorage.setItem('notesFiles', JSON.stringify(savedFiles)); //save updated list
+        const currentUser = UserManager.getCurrentUser();
+        if (!currentUser) return;
         
-        fileCard.remove(); //remove from the interface 
+        const username = currentUser.username;
+        
+        // Get files from user-specific storage
+        let userFiles = UserManager.getUserNotesFiles(username);
+        
+        // Remove the file with matching title
+        const newFiles = userFiles.filter(file => file.title !== fileTitle);
+        
+        // Save back to user-specific storage
+        UserManager.saveUserNotesFiles(username, newFiles);
+        
+        // Remove from page
+        fileCard.remove();
+        
         alert('File deleted successfully!');
     }
 }
 
  const currentUser=UserManager.getCurrentUser();
  const username=currentUser?.username;
- function loadUserNotesFiles(){
-    if(!username) return;
-    const userFiles=UserManager.getUserNotesFiles(username);
-    const filesGrid=document.getElementById('gridView');
-    if(!filesGrid) return;
-
-    const uploadedFiles=filesGrid.querySelectorAll('.file-card[data-uploaded="true"]');
-    uploadedFiles.forEach(file=>file.remove());
-    userFiles.forEach(file=>{
-       const fileCard=createFileCard(file);
-       filesGrid.appendChild(fileCard); 
+ function loadUserNotesFiles() {
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) return;
+    
+    const username = currentUser.username;
+    const userFiles = UserManager.getUserNotesFiles(username);
+    const filesGrid = document.getElementById('gridView');
+    if (!filesGrid) return;
+    
+    filesGrid.innerHTML = '';
+    
+    userFiles.forEach(file => {
+        const fileCard = createFileCard(file);
+        filesGrid.appendChild(fileCard);
     });
+    
     updateNotesFilesBadge();
- }
+}
  function updateCourseTabs(){
     const currentUser=UserManager.getCurrentUser();//get the user logged in
     if(!currentUser) return;
@@ -214,7 +235,6 @@ function deleteFile(button) {
         }
         tabButton.setAttribute('data-course',tab.course);
         tabButton.textContent=tab.name;
-        tabButton.textContent=tab.name;
         tabButton.onclick=function(){
             document.querySelectorAll('.course-tab').forEach(t=>t.classList.remove('active'));
             this.classList.add('active');
@@ -236,6 +256,14 @@ function deleteFile(button) {
         courseTabsContainer.appendChild(tabButton);
     });
  }
+ function updateNotesFilesBadge() {
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) return;
+    const username = currentUser.username;
+    const userFiles = UserManager.getUserNotesFiles(username);
+    const badge = document.getElementById('notesFilesBadge');
+    if (badge) badge.textContent = userFiles.length;
+}
 //load files when page loads
  document.addEventListener('DOMContentLoaded',function(){
     updateCourseTabs();  // ADD THIS - generates tabs based on major
