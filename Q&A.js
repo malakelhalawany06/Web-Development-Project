@@ -1,87 +1,98 @@
 // ========================
-// Q&A with auto-login for Ahmed Khalid
+// Q&A – per‑major default questions
 // ========================
 
 let questions = [];
 let currentUser = null;
 
-// Helper: get storage key for current user
 function getStorageKey() {
   return currentUser ? `user_${currentUser.username}_qa_forum` : null;
 }
 
-// Ensure Ahmed Khalid is logged in by default
-function ensureDefaultUser() {
-  if (!window.UserManager) {
-    console.error("UserManager not loaded");
-    return null;
+// Generate default questions based on major (from your images)
+function generateDefaultQuestions(user) {
+  const { firstName, lastName, major, academicYear, role } = user;
+  if (role === 'instructor') return []; // instructors get no default questions
+
+  const yearNum = parseInt(academicYear) || 1;
+  const author = `${firstName} ${lastName}`;
+
+  const questionMap = {
+    'Computer Science': [
+      { title: 'How does Dijkstra\'s algorithm handle negative weights?', tag: 'Data Structures', body: 'I know it works for positive weights, but what about negative edges?' },
+      { title: 'Best resources for understanding JOIN types in SQL?', tag: 'Database', body: 'Struggling with INNER, LEFT, RIGHT, and FULL OUTER JOINs.' },
+      { title: 'Difference between TCP and UDP?', tag: 'Networks', body: 'When to use each?' }
+    ],
+    'Business Informatics': [
+      { title: 'What is the difference between operational and strategic decisions?', tag: 'General', body: 'Examples in business context.' },
+      { title: 'How to design an effective database for an e‑commerce site?', tag: 'Database', body: 'Best practices for normalization and indexing.' }
+    ],
+    'Applied Arts': [
+      { title: 'What are the key principles of typography?', tag: 'General', body: 'Explain kerning, leading, and tracking.' },
+      { title: 'How to choose sustainable materials for interior design?', tag: 'General', body: 'Factors to consider.' }
+    ],
+    'Dentistry': [
+      { title: 'What are the stages of oral pathology development?', tag: 'General', body: 'From initial lesion to treatment.' },
+      { title: 'How to maintain proper sterilization in a dental clinic?', tag: 'General', body: 'Procedures and standards.' }
+    ],
+    'Law': [
+      { title: 'What are the main differences between civil and common law?', tag: 'General', body: 'Key characteristics.' },
+      { title: 'Explain the commercial procedures law in Egypt.', tag: 'General', body: 'Main articles and their application.' }
+    ]
+  };
+
+  let defaultQuestions = questionMap[major];
+  if (!defaultQuestions) {
+    console.warn(`Unknown major: ${major}, using fallback questions`);
+    defaultQuestions = [
+      { title: 'How can I improve my study habits?', tag: 'General', body: 'Tips for better time management.' },
+      { title: 'What are the best online resources for this course?', tag: 'General', body: 'Recommendations for tutorials and books.' }
+    ];
   }
-  
-  // Make sure demo users exist
+
+  const questions = defaultQuestions.map((q, idx) => ({
+    id: Date.now() + idx,
+    title: `${yearNum > 1 ? `Year ${yearNum} – ` : ''}${q.title}`,
+    body: q.body,
+    tag: q.tag,
+    author: author,
+    upvotes: Math.floor(Math.random() * 15) + 1,
+    answers: [],
+    timestamp: Date.now() - idx * 86400000
+  }));
+  return questions;
+}
+
+// Get current logged‑in user (no fallback)
+function getCurrentUser() {
+  if (!window.UserManager) return null;
   if (window.UserManager.getAllUsers().length === 0) {
     window.UserManager.loadDemoUsers();
   }
-  
-  // Try to get current logged-in user
-  let user = window.UserManager.getCurrentUser();
-  
-  if (!user) {
-    // No user logged in – find or create Ahmed Khalid
-    user = window.UserManager.getUser("ahmed_khalid");
-    if (!user) {
-      // Create default user if somehow missing
-      const defaultUser = {
-        username: "ahmed_khalid",
-        firstName: "Ahmed",
-        lastName: "Khalid",
-        email: "ahmed@loomhub.com",
-        password: "pass123",
-        role: "student",
-        university: "MIU",
-        major: "Computer Science",
-        academicYear: "3"
-      };
-      window.UserManager.addUser(defaultUser);
-      user = defaultUser;
-    }
-    // Manually set as current user in localStorage
-    localStorage.setItem("app_current_user", user.username);
-  }
-  
-  return user;
+  return window.UserManager.getCurrentUser();
 }
 
-// Load current user and questions
 function loadData() {
-  if (!window.UserManager) {
-    console.error("UserManager not loaded. Check script order.");
-    return;
-  }
-
-  // Force Ahmed Khalid to be logged in
-  currentUser = ensureDefaultUser();
-  
+  currentUser = getCurrentUser();
   if (!currentUser) {
-    document.getElementById("questionsContainer").innerHTML = `
-      <div class="empty-state">❌ Error: Could not set up user. Please refresh.</div>
-    `;
-    const askBtn = document.getElementById("showAskBtn");
-    if (askBtn) askBtn.disabled = true;
+    document.getElementById("questionsContainer").innerHTML = `<div class="empty-state">🔒 Please log in to view and ask questions.</div>`;
     return;
   }
-
-  // Enable ask button
-  const askBtn = document.getElementById("showAskBtn");
-  if (askBtn) askBtn.disabled = false;
 
   const key = getStorageKey();
-  if (!key) return;
-
   const stored = localStorage.getItem(key);
   if (stored) {
     questions = JSON.parse(stored);
+    // Check if first question's major matches current user's major (simple heuristic)
+    const expectedTitle = generateDefaultQuestions(currentUser)[0]?.title;
+    const firstTitle = questions[0]?.title;
+    if (expectedTitle && firstTitle && !firstTitle.includes(expectedTitle.split('–')[0]?.trim())) {
+      console.log("Mismatch detected – regenerating questions for", currentUser.username);
+      questions = generateDefaultQuestions(currentUser);
+      saveData();
+    }
   } else {
-    questions = [];
+    questions = generateDefaultQuestions(currentUser);
     saveData();
   }
   renderAll();
@@ -90,9 +101,7 @@ function loadData() {
 function saveData() {
   if (!currentUser) return;
   const key = getStorageKey();
-  if (key) {
-    localStorage.setItem(key, JSON.stringify(questions));
-  }
+  if (key) localStorage.setItem(key, JSON.stringify(questions));
 }
 
 let currentFilter = "all";
@@ -337,13 +346,19 @@ function setupFilters() {
   });
 }
 
-// Listen for login/logout changes across tabs
-window.addEventListener('storage', (e) => {
-  if (e.key === 'app_current_user' || e.key?.startsWith('user_')) {
-    loadData();
+// Manual reset button (add to HTML if needed)
+function resetMyQuestions() {
+  if (!currentUser) return;
+  if (confirm(`Reset all questions for ${currentUser.firstName}? This will replace your current questions with default ones for your major.`)) {
+    questions = generateDefaultQuestions(currentUser);
+    saveData();
+    renderAll();
   }
-});
+}
 
+window.addEventListener('storage', (e) => {
+  if (e.key === 'app_current_user') loadData();
+});
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) loadData();
 });
@@ -353,4 +368,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSearch();
   setupAskForm();
   setupFilters();
+
+  // Optional: add reset button event if exists
+  const resetBtn = document.getElementById("resetQuestionsBtn");
+  if (resetBtn) resetBtn.addEventListener("click", resetMyQuestions);
 });
