@@ -114,22 +114,28 @@
 
     // Initialize the page: load from localStorage, or fallback to sidebar, or use defaults
     function initPage() {
-        let user = loadFromLocalStorage();
-        if (!user) {
-            user = getUserFromSidebar();
-            if (!user) {
-                user = {
-                    firstName: 'Ahmed',
-                    lastName: 'Khalid',
-                    major: 'Computer Science',
-                    year: '3',
-                    university: 'MIU'
-                };
-            }
-            saveToLocalStorage(user);
+    // Try to get user from UserManager first (if logged in)
+    let user = null;
+    if (window.UserManager) {
+        const currentUser = window.UserManager.getCurrentUser();
+        if (currentUser) {
+            user = {
+                firstName: currentUser.firstName,
+                lastName: currentUser.lastName,
+                major: currentUser.major,
+                year: currentUser.academicYear,
+                university: currentUser.university,
+                email: currentUser.email,
+                username: currentUser.username
+            };
+            saveToLocalStorage(user); // sync to personalInfo storage
         }
-        applyUserDataToPage(user);
     }
+    if (!user) user = loadFromLocalStorage();
+    if (!user) user = getUserFromSidebar();
+    if (!user) user = { firstName: 'Ahmed', lastName: 'Khalid', major: 'CS', year: '3', university: 'MIU' };
+    applyUserDataToPage(user);
+}
 
     // Save function triggered by the "Save Changes" button (on personalInfo.html)
     window.saveProfileChanges = function() {
@@ -221,6 +227,7 @@
         };
 
         saveToLocalStorage(updatedUser);
+        syncToUserManager(updatedUser);
         applyUserDataToPage(updatedUser);  // update current page immediately
 
         // Visual feedback on the save button
@@ -234,6 +241,23 @@
         }
         return true;
     };
+
+    // Sync updated profile back to UserManager (users.js)
+function syncToUserManager(updatedUser) {
+    if (!window.UserManager) return;
+    const currentUsername = localStorage.getItem('app_current_user');
+    if (!currentUsername) return;
+    
+    // Map fields: personalInfo uses 'year', UserManager uses 'academicYear'
+    window.UserManager.updateUser(currentUsername, {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        major: updatedUser.major,
+        academicYear: updatedUser.year,
+        university: updatedUser.university,
+        email: updatedUser.email
+    });
+}
 
     // Listen for changes made in another tab (so profile page updates live)
     window.addEventListener('storage', function(event) {

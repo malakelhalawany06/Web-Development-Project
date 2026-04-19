@@ -13,6 +13,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+function syncUserToPersonalInfo(user) {
+    if (!user) return;
+    localStorage.setItem('userFirstName', user.firstName);
+    localStorage.setItem('userLastName', user.lastName);
+    localStorage.setItem('userMajor', user.major);
+    localStorage.setItem('userYear', user.academicYear || '');   // UserManager uses 'academicYear'
+    localStorage.setItem('userUniversity', user.university);
+    localStorage.setItem('userEmail', user.email);
+    localStorage.setItem('userUsername', user.username);
+}
+
 // Global validateLogin function
 function validateLogin() {
     // Get error span elements
@@ -70,7 +81,7 @@ function validateLogin() {
     const user = window.UserManager.getUserByEmail(email);
     
     if (!user) {
-        if (emailErrorSpan) emailErrorSpan.innerText = 'No account found with this email';
+        if (emailErrorSpan) emailErrorSpan.innerText = 'No account found with this email'; emailErrorSpan.setAttribute('style','color:red');
         console.log(`Login failed: email ${email} not found`);
         return;
     }
@@ -84,6 +95,8 @@ function validateLogin() {
 
     // Success - store session and redirect
     localStorage.setItem('app_current_user', user.username);
+    // Sync user data from UserManager to personalInfo.js localStorage keys
+    syncUserToPersonalInfo(user);
     console.log(`Login successful for ${user.username}, redirecting to index.html`);
     
     // Use window.location.href for redirect
