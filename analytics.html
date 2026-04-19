@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoomHub — Analytics</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="project web.css">
+  
+  <link rel="stylesheet" href="analytics.css">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="layout">
+  
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">📚</div>
+                <div class="logo-text">Loom<span>Hub</span></div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Overview</div>
+                <a class="nav-item" href="project web trail 1.html">
+                    <span class="nav-icon">🏠</span> Dashboard
+                </a>
+                <a class="nav-item" href="profile.html" target="_self">
+                    <span class="nav-icon">👤</span> My Profile
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Academic</div>
+                <a class="nav-item" href="Gpa-calculator.html">
+                    <span class="nav-icon">🎓</span> GPA Calculator
+                </a>
+                <a class="nav-item" href="reminders.html">
+                    <span class="nav-icon">⏰</span> Tasks & Reminders
+                    <span class="nav-badge warn">2</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Resources</div>
+                <a class="nav-item" href="notes&files.html">
+                    <span class="nav-icon">📂</span> Notes & Files
+                </a>
+                <a class="nav-item" href="sharedMaterials.html">
+                    <span class="nav-icon">🔗</span> Shared Materials
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Collaborate</div>
+                <a class="nav-item" href="studygroups.html">
+                    <span class="nav-icon">👥</span> Study Groups
+                    <span class="nav-badge green">3</span>
+                </a>
+                <a class="nav-item" href="project-manager.html">
+                    <span class="nav-icon">🗂</span> Project Manager
+                </a>
+                <a class="nav-item" href="Q&A.html">
+                    <span class="nav-icon">💬</span> Q&amp;A Forum
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Admin Panel</div>
+                <a class="nav-item" href="user-management.html">
+                    <span class="nav-icon">🛡</span> User Management
+                </a>
+                <a class="nav-item active" href="analytics.html">
+                    <span class="nav-icon">📊</span> Analytics
+                </a>
+            </div>
+
+            <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='profile.html'">
+                <div class="avatar">AK</div>
+                <div class="profile-info">
+                    <div class="name">Ahmed Khalid</div>
+                    <div class="role">Computer Science · Yr 3</div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main">
+
+            <header class="topbar">
+                <div>
+                    <div class="topbar-title">📊 Analytics</div>
+                    <div class="topbar-subtitle">Track your platform's growth</div>
+                </div>
+                <div class="topbar-right">
+                    <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+                    <div class="avatar sm">AK</div>
+                </div>
+            </header>
+
+            <main class="main-content" style="flex: 1; padding: 20px 40px; overflow-y: auto;">
+                
+                <div class="analytics-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total Users</h3>
+                            <div class="stat-number">1,248</div>
+                            <div class="stat-trend positive"><i class="fas fa-arrow-up"></i> 12% this month</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1); color: #22c55e;">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Active Users</h3>
+                            <div class="stat-number">892</div>
+                            <div class="stat-trend positive"><i class="fas fa-arrow-up"></i> 5% this week</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>New Users</h3>
+                            <div class="stat-number">64</div>
+                            <div class="stat-trend negative"><i class="fas fa-arrow-down"></i> 2% since yesterday</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel chart-panel">
+                    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="panel-title">User Growth</div>
+                        <div class="chart-toggle">
+                            <button class="toggle-btn active" onclick="updateChart('daily')">Daily</button>
+                            <button class="toggle-btn" onclick="updateChart('weekly')">Weekly</button>
+                        </div>
+                    </div>
+                    <div class="canvas-container" style="position: relative; height: 350px; width: 100%;">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+            </main>
+        </div> 
+    </div>
+
+    <script src="analytics.js"></script>
+</body>
+</html>

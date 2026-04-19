@@ -1,0 +1,83 @@
+/* Analytics Grid for Top Cards */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Individual Stat Cards */
+.stat-card {
+    background-color: #161b22; /* Matches your dark theme panels */
+    border: 1px solid #2a313e;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+}
+
+.stat-details h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 5px 0;
+}
+
+.stat-trend {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.stat-trend.positive { color: #22c55e; }
+.stat-trend.negative { color: #ef4444; }
+
+/* Chart Panel & Toggle Buttons */
+.chart-panel {
+    background-color: #161b22;
+    border: 1px solid #2a313e;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.chart-toggle {
+    display: flex;
+    background: #0d1117;
+    border-radius: 8px;
+    padding: 4px;
+    border: 1px solid #2a313e;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.toggle-btn.active {
+    background: #3b82f6; /* Accent color */
+    color: white;
+}
