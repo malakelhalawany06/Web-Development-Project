@@ -36,23 +36,28 @@ function validateLogin() {
 
     const email = emailInput.value.trim();
     const password = passInput.value;
+    const emailRegex=/^\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/;
 
     // Validation
     let isValid = true;
     if (!email) {
-        if (emailErrorSpan) emailErrorSpan.innerText = 'Email is required';
+        if (emailErrorSpan) emailErrorSpan.innerText = 'Email is required'; emailErrorSpan.setAttribute('style','color:red');
+           
+        
         isValid = false;
-    } else if (!email.includes('@') || !email.includes('.')) {
-        if (emailErrorSpan) emailErrorSpan.innerText = 'Enter a valid email address';
+    } else if (!emailRegex.test(email)) {
+        if (emailErrorSpan) emailErrorSpan.innerText = 'Enter a valid email address'; emailErrorSpan.setAttribute('style','color:red');
+           
         isValid = false;
     }
 
     if (!password) {
-        if (passErrorSpan) passErrorSpan.innerText = 'Password is required';
+        if (passErrorSpan) passErrorSpan.innerText = 'Password is required'; passErrorSpan.setAttribute('style','color:red');
+           
         isValid = false;
     }
 
-    if (!isValid) return;
+    if (!isValid) return isValid;
 
     // Check if UserManager is available
     if (typeof window.UserManager === 'undefined') {
@@ -71,7 +76,8 @@ function validateLogin() {
     }
 
     if (user.password !== password) {
-        if (passErrorSpan) passErrorSpan.innerText = 'Incorrect password';
+        if (passErrorSpan) passErrorSpan.innerText = 'Incorrect password'; passErrorSpan.setAttribute('style','color:red');
+           
         console.log(`Login failed: wrong password for ${email}`);
         return;
     }
