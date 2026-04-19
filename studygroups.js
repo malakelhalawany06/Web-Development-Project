@@ -319,9 +319,176 @@ function updateStudyGroupsBadge(){
     const joinedCount=userGroups.filter(group=>group.status==='joined').length;
     badge.textContent=joinedCount;
 }
-
+function updateFilterChips() {
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) return;
+    
+    const major = currentUser.major;
+    const filterSection = document.querySelector('.filter-section');
+    if (!filterSection) return;
+    
+    // Define filter chips for each major
+    const chipsByMajor = {
+        'Computer Science': [
+            { filter: 'all', name: 'All Groups' },
+            { filter: 'available', name: 'Available to Join' },
+            { filter: 'cs', name: 'Computer Science' },
+            { filter: 'math', name: 'Mathematics' },
+            { filter: 'engineering', name: 'Engineering' }
+        ],
+        'Business Informatics': [
+            { filter: 'all', name: 'All Groups' },
+            { filter: 'available', name: 'Available to Join' },
+            { filter: 'business', name: 'Business' },
+            { filter: 'marketing', name: 'Marketing' },
+            { filter: 'finance', name: 'Finance' }
+        ],
+        'Applied Arts': [
+            { filter: 'all', name: 'All Groups' },
+            { filter: 'available', name: 'Available to Join' },
+            { filter: 'arts', name: 'Graphic Design' },
+            { filter: 'uiux', name: 'UI/UX' },
+            { filter: 'digital', name: 'Digital Art' }
+        ],
+        'Law': [
+            { filter: 'all', name: 'All Groups' },
+            { filter: 'available', name: 'Available to Join' },
+            { filter: 'law', name: 'Constitutional Law' },
+            { filter: 'criminal', name: 'Criminal Law' },
+            { filter: 'international', name: 'International Law' }
+        ],
+        'Dentistry': [
+            { filter: 'all', name: 'All Groups' },
+            { filter: 'available', name: 'Available to Join' },
+            { filter: 'science', name: 'Anatomy' },
+            { filter: 'pathology', name: 'Pathology' },
+            { filter: 'clinical', name: 'Clinical' }
+        ],
+        'Networks': [
+            { filter: 'all', name: 'All Groups' },
+            { filter: 'available', name: 'Available to Join' },
+            { filter: 'cs', name: 'Network Security' },
+            { filter: 'cloud', name: 'Cloud Computing' },
+            { filter: 'security', name: 'Cyber Security' }
+        ],
+        'System Admin': [
+            { filter: 'all', name: 'All Groups' },
+            { filter: 'available', name: 'Available to Join' },
+            { filter: 'admin', name: 'Server Management' },
+            { filter: 'devops', name: 'DevOps' }
+        ]
+    };
+    
+    // Get chips for this major, or default to Computer Science
+    const chips = chipsByMajor[major] || chipsByMajor['Computer Science'];
+    
+    // Clear existing chips
+    filterSection.innerHTML = '';
+    
+    // Create new chips
+    chips.forEach(chip => {
+        const chipDiv = document.createElement('div');
+        chipDiv.className = 'filter-chip';
+        if (chip.filter === 'all') {
+            chipDiv.classList.add('active');
+        }
+        chipDiv.setAttribute('data-filter', chip.filter);
+        chipDiv.textContent = chip.name;
+        
+        // Add click event
+        chipDiv.addEventListener('click', function() {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filterValue = this.dataset.filter;
+            const groupCards = document.querySelectorAll('.group-card');
+            
+            groupCards.forEach(card => {
+                if (filterValue === 'all') {
+                    card.style.display = '';
+                } else if (filterValue === 'available') {
+                    if (card.dataset.status === 'available') {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                } else {
+                    if (card.dataset.category === filterValue) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        });
+        
+        filterSection.appendChild(chipDiv);
+    });
+}
+// Function to populate category dropdown based on user's major
+function populateCategoryDropdown() {
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) return;
+    
+    const major = currentUser.major;
+    const categorySelect = document.getElementById('groupCategory');
+    if (!categorySelect) return;
+    
+    // Define categories for each major
+    const categoriesByMajor = {
+        'Computer Science': [
+            { value: 'cs', name: 'Computer Science' },
+            { value: 'math', name: 'Mathematics' },
+            { value: 'engineering', name: 'Engineering' }
+        ],
+        'Business Informatics': [
+            { value: 'business', name: 'Business Analytics' },
+            { value: 'marketing', name: 'Marketing' },
+            { value: 'finance', name: 'Finance' }
+        ],
+        'Applied Arts': [
+            { value: 'arts', name: 'Graphic Design' },
+            { value: 'uiux', name: 'UI/UX Design' },
+            { value: 'digital', name: 'Digital Art' }
+        ],
+        'Law': [
+            { value: 'law', name: 'Constitutional Law' },
+            { value: 'criminal', name: 'Criminal Law' },
+            { value: 'international', name: 'International Law' }
+        ],
+        'Dentistry': [
+            { value: 'science', name: 'Human Anatomy' },
+            { value: 'pathology', name: 'Oral Pathology' },
+            { value: 'clinical', name: 'Clinical Dentistry' }
+        ],
+        'Networks': [
+            { value: 'cs', name: 'Network Security' },
+            { value: 'cloud', name: 'Cloud Computing' },
+            { value: 'security', name: 'Cyber Security' }
+        ],
+        'System Admin': [
+            { value: 'admin', name: 'Server Management' },
+            { value: 'devops', name: 'DevOps' }
+        ]
+    };
+    
+    const categories = categoriesByMajor[major] || categoriesByMajor['Computer Science'];
+    
+    // Clear existing options
+    categorySelect.innerHTML = '';
+    
+    // Add new options
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.value;
+        option.textContent = cat.name;
+        categorySelect.appendChild(option);
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
+    populateCategoryDropdown();
+    updateFilterChips(); 
     initializeButtons(); //execute automatically when the webpage finishes loading
     loadUserStudyGroups();
     updateStudyGroupsBadge();
