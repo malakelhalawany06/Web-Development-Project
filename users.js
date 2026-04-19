@@ -33,16 +33,6 @@
             const users = loadUsersFromStorage();
             return users.find(user => user.username === username) || null;
         },
-        //get user-specific study groups
-        getUserStudyGroups: function(username){
-            const key=`user_${username}_studyGroups`;
-            const stored=localStorage.getItem(key);
-            if(stored){
-                return JSON.parse(stored);
-            }
-            return this.getDefaultStudyGroups(username);
-        },
-
         // ===== ADD USER =====
         addUser: function (userData) {
             const users = loadUsersFromStorage();
