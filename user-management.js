@@ -1,108 +1,73 @@
-// Mock Data for Users
-let users = [
-    { id: 1, name: "Alice Johnson", email: "alice.j@student.edu", role: "Student", status: "Active" },
-    { id: 2, name: "Dr. Robert Smith", email: "r.smith@faculty.edu", role: "Instructor", status: "Active" },
-    { id: 3, name: "Michael Chang", email: "m.chang@student.edu", role: "Student", status: "Suspended" },
-    { id: 4, name: "Sarah Connor", email: "admin.sarah@loomhub.edu", role: "Admin", status: "Active" }
-];
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. Force the browser to forget any old/empty data
+    localStorage.clear(); 
+    
+    // 2. Force it to load your 6 demo users right now
+    UserManager.loadDemoUsers(); 
+    
+    // 3. Draw the table
+    loadUsersIntoTable();
+});
 
-// Render Table
-function renderUsers() {
-    const tbody = document.getElementById('userTableBody');
-    tbody.innerHTML = '';
+function loadUsersIntoTable() {
+    const userTableBody = document.getElementById('userTableBody');
+    if (!userTableBody) return;
 
-    users.forEach(user => {
-        const statusClass = user.status === 'Active' ? 'badge-active' : 'badge-suspended';
-        
+    const allUsers = UserManager.getAllUsers();
+    userTableBody.innerHTML = '';
+
+    allUsers.forEach((user, index) => {
         const row = document.createElement('tr');
+        
+        let roleColor = user.role === 'admin' ? '#ef4444' : (user.role === 'instructor' ? '#a855f7' : '#3b82f6');
+        let roleBg = user.role === 'admin' ? 'rgba(239, 68, 68, 0.1)' : (user.role === 'instructor' ? 'rgba(168, 85, 247, 0.1)' : 'rgba(59, 130, 246, 0.1)');
+
         row.innerHTML = `
-            <td><strong>${user.name}</strong></td>
-            <td>${user.email}</td>
-            <td>${user.role}</td>
-            <td><span class="badge ${statusClass}">${user.status}</span></td>
             <td>
-                <button class="btn btn-small btn-primary-outline" onclick="openModal(${user.id})" title="Edit User">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-small btn-warning" onclick="resetPassword(${user.id})" title="Reset Password">
-                    <i class="fas fa-key"></i>
-                </button>
-                <button class="btn btn-small btn-danger" onclick="deleteUser(${user.id})" title="Delete User">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div style="font-weight: 600;">${user.firstName} ${user.lastName}</div>
+                <div style="font-size: 0.8em; color: gray;">@${user.username}</div>
+            </td>
+            <td>${user.email}</td>
+            <td>
+                <span style="background: ${roleBg}; color: ${roleColor}; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: 600;">
+                    ${user.role.toUpperCase()}
+                </span>
+            </td>
+            <td>
+                <span style="color: #22c55e; font-weight: 500;"><i class="fas fa-circle" style="font-size: 0.6em; margin-right: 4px;"></i> Active</span>
+            </td>
+            <td>
+                <button class="btn btn-small" style="padding: 5px 10px; font-size: 0.85em;" onclick="openModal('${user.username}')"><i class="fas fa-edit"></i> Edit</button>
             </td>
         `;
-        tbody.appendChild(row);
+        
+        userTableBody.appendChild(row);
     });
 }
 
-// Modal Logic
-function openModal(userId = null) {
-    const modal = document.getElementById('userModal');
-    const title = document.getElementById('modalTitle');
-    const form = document.getElementById('userForm');
-
-    form.reset();
-
-    if (userId) {
-        title.innerText = "Edit User";
-        const user = users.find(u => u.id === userId);
-        document.getElementById('userId').value = user.id;
-        document.getElementById('userName').value = user.name;
-        document.getElementById('userEmail').value = user.email;
-        document.getElementById('userRole').value = user.role;
-        document.getElementById('userStatus').value = user.status;
+function openModal(username = null) {
+    document.getElementById('userModal').style.display = 'flex';
+    if (username) {
+        document.getElementById('modalTitle').innerText = 'Edit User';
+        const user = UserManager.getUser(username);
+        if (user) {
+            document.getElementById('userName').value = user.firstName + ' ' + user.lastName;
+            document.getElementById('userEmail').value = user.email;
+            const formattedRole = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+            document.getElementById('userRole').value = formattedRole;
+        }
     } else {
-        title.innerText = "Add New User";
-        document.getElementById('userId').value = "";
+        document.getElementById('modalTitle').innerText = 'Add New User';
+        document.getElementById('userForm').reset();
     }
-
-    modal.style.display = 'flex';
 }
 
 function closeModal() {
     document.getElementById('userModal').style.display = 'none';
 }
 
-// Form Submission (Add / Edit)
 function saveUser(event) {
     event.preventDefault();
-    
-    const id = document.getElementById('userId').value;
-    const name = document.getElementById('userName').value;
-    const email = document.getElementById('userEmail').value;
-    const role = document.getElementById('userRole').value;
-    const status = document.getElementById('userStatus').value;
-
-    if (id) {
-        // Update existing user
-        const index = users.findIndex(u => u.id == id);
-        users[index] = { id: parseInt(id), name, email, role, status };
-    } else {
-        // Add new user
-        const newId = users.length ? Math.max(...users.map(u => u.id)) + 1 : 1;
-        users.push({ id: newId, name, email, role, status });
-    }
-
+    alert("Save functionality clicked! The modal will now close.");
     closeModal();
-    renderUsers();
 }
-
-// Action: Delete User
-function deleteUser(id) {
-    if(confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
-        users = users.filter(u => u.id !== id);
-        renderUsers();
-    }
-}
-
-// Action: Reset Password
-function resetPassword(id) {
-    const user = users.find(u => u.id === id);
-    if(confirm(`Send password reset email to ${user.email}?`)) {
-        alert(`Password reset link sent to ${user.email}!`);
-    }
-}
-
-// Initial render
-document.addEventListener('DOMContentLoaded', renderUsers);

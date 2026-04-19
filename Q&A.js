@@ -1,19 +1,98 @@
-// ----- Q&A DATA MODEL -----
-let questions = [];
+// ========================
+// Q&A with auto-login for Ahmed Khalid
+// ========================
 
-// Load from localStorage
+let questions = [];
+let currentUser = null;
+
+// Helper: get storage key for current user
+function getStorageKey() {
+  return currentUser ? `user_${currentUser.username}_qa_forum` : null;
+}
+
+// Ensure Ahmed Khalid is logged in by default
+function ensureDefaultUser() {
+  if (!window.UserManager) {
+    console.error("UserManager not loaded");
+    return null;
+  }
+  
+  // Make sure demo users exist
+  if (window.UserManager.getAllUsers().length === 0) {
+    window.UserManager.loadDemoUsers();
+  }
+  
+  // Try to get current logged-in user
+  let user = window.UserManager.getCurrentUser();
+  
+  if (!user) {
+    // No user logged in – find or create Ahmed Khalid
+    user = window.UserManager.getUser("ahmed_khalid");
+    if (!user) {
+      // Create default user if somehow missing
+      const defaultUser = {
+        username: "ahmed_khalid",
+        firstName: "Ahmed",
+        lastName: "Khalid",
+        email: "ahmed@loomhub.com",
+        password: "pass123",
+        role: "student",
+        university: "MIU",
+        major: "Computer Science",
+        academicYear: "3"
+      };
+      window.UserManager.addUser(defaultUser);
+      user = defaultUser;
+    }
+    // Manually set as current user in localStorage
+    localStorage.setItem("app_current_user", user.username);
+  }
+  
+  return user;
+}
+
+// Load current user and questions
 function loadData() {
-  const stored = localStorage.getItem("loomhub_qa_forum");
+  if (!window.UserManager) {
+    console.error("UserManager not loaded. Check script order.");
+    return;
+  }
+
+  // Force Ahmed Khalid to be logged in
+  currentUser = ensureDefaultUser();
+  
+  if (!currentUser) {
+    document.getElementById("questionsContainer").innerHTML = `
+      <div class="empty-state">❌ Error: Could not set up user. Please refresh.</div>
+    `;
+    const askBtn = document.getElementById("showAskBtn");
+    if (askBtn) askBtn.disabled = true;
+    return;
+  }
+
+  // Enable ask button
+  const askBtn = document.getElementById("showAskBtn");
+  if (askBtn) askBtn.disabled = false;
+
+  const key = getStorageKey();
+  if (!key) return;
+
+  const stored = localStorage.getItem(key);
   if (stored) {
     questions = JSON.parse(stored);
   } else {
-    // No default questions – the empty state will appear
+    questions = [];
+    saveData();
   }
   renderAll();
 }
 
 function saveData() {
-  localStorage.setItem("loomhub_qa_forum", JSON.stringify(questions));
+  if (!currentUser) return;
+  const key = getStorageKey();
+  if (key) {
+    localStorage.setItem(key, JSON.stringify(questions));
+  }
 }
 
 let currentFilter = "all";
@@ -22,12 +101,13 @@ function renderQuestions() {
   const container = document.getElementById("questionsContainer");
   if (!container) return;
 
-  let filtered = questions.filter(q => {
-    if (currentFilter === "all") return true;
-    return q.tag === currentFilter;
-  });
-  // sort by newest first
-  filtered.sort((a,b) => b.timestamp - a.timestamp);
+  if (!currentUser) {
+    container.innerHTML = `<div class="empty-state">🔒 Please log in to view questions.</div>`;
+    return;
+  }
+
+  let filtered = questions.filter(q => currentFilter === "all" ? true : q.tag === currentFilter);
+  filtered.sort((a, b) => b.timestamp - a.timestamp);
 
   if (filtered.length === 0) {
     container.innerHTML = `<div class="empty-state">✨ No questions yet. Be the first to ask! ✨</div>`;
@@ -36,21 +116,22 @@ function renderQuestions() {
 
   container.innerHTML = filtered.map(q => {
     const answerCount = q.answers.length;
+    const isAuthor = q.author === `${currentUser.firstName} ${currentUser.lastName}`;
     return `
       <div class="question-item" data-id="${q.id}">
-              <div class="question-header">
-  <div class="question-title" data-id="${q.id}">${escapeHtml(q.title)}</div>
-  <div class="question-tag">${escapeHtml(q.tag)}</div>
-  <div class="expand-icon" data-id="${q.id}">▼</div>
-  <button class="delete-question-btn" data-id="${q.id}" title="Delete Question">🗑️</button>
-</div>
+        <div class="question-header">
+          <div class="question-title" data-id="${q.id}">${escapeHtml(q.title)}</div>
+          <div class="question-tag">${escapeHtml(q.tag)}</div>
+          <div class="expand-icon" data-id="${q.id}">▼</div>
+          ${isAuthor ? `<button class="delete-question-btn" data-id="${q.id}" title="Delete Question">🗑️</button>` : ''}
+        </div>
         <div class="question-meta">
           <span>👤 ${escapeHtml(q.author)}</span>
           <span>📅 ${new Date(q.timestamp).toLocaleDateString()}</span>
           <span class="answer-count">💬 ${answerCount} answers</span>
         </div>
         <div class="vote-area">
-          <button class="vote-btn" data-id="${q.id}" data-vote="up">▲ ${q.upvotes}</button>
+          <button class="vote-btn" data-id="${q.id}">▲ ${q.upvotes}</button>
         </div>
         <div class="answers-section" id="answers-${q.id}">
           <div class="answers-list">
@@ -70,18 +151,11 @@ function renderQuestions() {
           </div>
         </div>
       </div>
-
     `;
   }).join('');
 
-  // attach event listeners
-  document.querySelectorAll('.question-title').forEach(el => {
-    el.addEventListener('click', (e) => {
-      const id = parseInt(el.getAttribute('data-id'));
-      toggleAnswers(id);
-    });
-  });
-  document.querySelectorAll('.expand-icon').forEach(el => {
+  // Attach event listeners
+  document.querySelectorAll('.question-title, .expand-icon').forEach(el => {
     el.addEventListener('click', (e) => {
       const id = parseInt(el.getAttribute('data-id'));
       toggleAnswers(id);
@@ -108,23 +182,21 @@ function renderQuestions() {
     });
   });
   document.querySelectorAll('.delete-question-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const id = parseInt(btn.getAttribute('data-id'));
-    deleteQuestion(id);
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.getAttribute('data-id'));
+      deleteQuestion(id);
+    });
   });
-});
-  
 }
 
 function toggleAnswers(questionId) {
   const section = document.getElementById(`answers-${questionId}`);
-  if (section) {
-    section.classList.toggle('open');
-  }
+  if (section) section.classList.toggle('open');
 }
 
 function upvoteQuestion(id) {
+  if (!currentUser) return;
   const q = questions.find(q => q.id === id);
   if (q) {
     q.upvotes = (q.upvotes || 0) + 1;
@@ -134,22 +206,28 @@ function upvoteQuestion(id) {
 }
 
 function addAnswer(questionId, text) {
+  if (!currentUser) {
+    alert("Please log in to answer.");
+    return;
+  }
   const q = questions.find(q => q.id === questionId);
   if (q) {
     q.answers.push({
       text: text,
-      author: "You",
+      author: `${currentUser.firstName} ${currentUser.lastName}`,
       timestamp: Date.now()
     });
     saveData();
     renderAll();
-    // auto-expand the answers section after adding
-    const section = document.getElementById(`answers-${questionId}`);
-    if (section) section.classList.add('open');
+    document.getElementById(`answers-${questionId}`)?.classList.add('open');
   }
 }
 
 function addQuestion(title, body, tag) {
+  if (!currentUser) {
+    alert("Please log in to ask a question.");
+    return false;
+  }
   if (!title.trim()) {
     alert("Please enter a title.");
     return false;
@@ -160,7 +238,7 @@ function addQuestion(title, body, tag) {
     title: title.trim(),
     body: body.trim(),
     tag: tag,
-    author: "You",
+    author: `${currentUser.firstName} ${currentUser.lastName}`,
     upvotes: 0,
     answers: [],
     timestamp: Date.now()
@@ -169,7 +247,9 @@ function addQuestion(title, body, tag) {
   renderAll();
   return true;
 }
+
 function deleteQuestion(id) {
+  if (!currentUser) return;
   const question = questions.find(q => q.id === id);
   if (question && confirm(`Delete question "${question.title}"?`)) {
     questions = questions.filter(q => q.id !== id);
@@ -195,15 +275,9 @@ function updateFilterActive() {
 
 function escapeHtml(str) {
   if (!str) return "";
-  return str.replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
+  return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
 }
 
-// Setup search
 function setupSearch() {
   const searchDiv = document.getElementById("searchPlaceholder");
   if (!searchDiv) return;
@@ -213,17 +287,14 @@ function setupSearch() {
   input.style.cssText = "background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 0.4rem 0.75rem; font-size: 13px; color: var(--text2); width: 200px; outline: none;";
   input.addEventListener("input", (e) => {
     const query = e.target.value.toLowerCase();
-    const items = document.querySelectorAll(".question-item");
-    items.forEach(item => {
-      const titleEl = item.querySelector(".question-title");
-      const title = titleEl ? titleEl.innerText.toLowerCase() : "";
+    document.querySelectorAll(".question-item").forEach(item => {
+      const title = item.querySelector(".question-title")?.innerText.toLowerCase() || "";
       item.style.display = title.includes(query) ? "block" : "none";
     });
   });
   searchDiv.replaceWith(input);
 }
 
-// Event listeners for ask form
 function setupAskForm() {
   const showBtn = document.getElementById("showAskBtn");
   const formContainer = document.getElementById("askFormContainer");
@@ -234,6 +305,10 @@ function setupAskForm() {
   const tagSelect = document.getElementById("questionTagInput");
 
   showBtn.addEventListener("click", () => {
+    if (!currentUser) {
+      alert("Please log in to ask a question.");
+      return;
+    }
     formContainer.style.display = "block";
     showBtn.style.display = "none";
   });
@@ -251,10 +326,8 @@ function setupAskForm() {
       bodyInput.value = "";
     }
   });
-  
 }
 
-// Filter tabs
 function setupFilters() {
   document.querySelectorAll('.filter-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -263,6 +336,17 @@ function setupFilters() {
     });
   });
 }
+
+// Listen for login/logout changes across tabs
+window.addEventListener('storage', (e) => {
+  if (e.key === 'app_current_user' || e.key?.startsWith('user_')) {
+    loadData();
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) loadData();
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   loadData();

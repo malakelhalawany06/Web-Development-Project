@@ -1,11 +1,8 @@
-// logIn.js - Login page specific logic
+// logIn.js - Fixed for any student login
 
-// Ensure the DOM is fully loaded before attaching event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Get the login button and attach event listener (safer than onclick in HTML)
     const loginBtn = document.querySelector('button[onclick="validateLogin()"]');
     if (loginBtn) {
-        // Replace inline onclick with proper event listener
         loginBtn.onclick = function(e) {
             e.preventDefault();
             validateLogin();
@@ -18,87 +15,86 @@ function syncUserToPersonalInfo(user) {
     localStorage.setItem('userFirstName', user.firstName);
     localStorage.setItem('userLastName', user.lastName);
     localStorage.setItem('userMajor', user.major);
-    localStorage.setItem('userYear', user.academicYear || '');   // UserManager uses 'academicYear'
+    localStorage.setItem('userYear', user.academicYear || '');
     localStorage.setItem('userUniversity', user.university);
     localStorage.setItem('userEmail', user.email);
     localStorage.setItem('userUsername', user.username);
 }
 
-// Global validateLogin function
 function validateLogin() {
-    // Get error span elements
     const emailErrorSpan = document.getElementById('emailError');
     const passErrorSpan = document.getElementById('passError');
     
-    // Clear previous errors
     if (emailErrorSpan) emailErrorSpan.innerText = '';
     if (passErrorSpan) passErrorSpan.innerText = '';
 
-    // Get input fields
     const emailInput = document.getElementById('email');
     const passInput = document.getElementById('pass');
 
-    // Debug: check if elements exist
     if (!emailInput || !passInput) {
-        console.error('Login form elements not found! Check IDs: "email" and "pass"');
-        alert('Form error: missing email or password field. Please check the HTML.');
+        console.error('Login form elements missing');
+        alert('Form error');
         return;
     }
 
     const email = emailInput.value.trim();
     const password = passInput.value;
-    const emailRegex=/^\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/;
+    const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
 
-    // Validation
     let isValid = true;
     if (!email) {
-        if (emailErrorSpan) emailErrorSpan.innerText = 'Email is required'; emailErrorSpan.setAttribute('style','color:red');
-           
-        
+        if (emailErrorSpan) emailErrorSpan.innerText = 'Email is required';
         isValid = false;
     } else if (!emailRegex.test(email)) {
-        if (emailErrorSpan) emailErrorSpan.innerText = 'Enter a valid email address'; emailErrorSpan.setAttribute('style','color:red');
-           
+        if (emailErrorSpan) emailErrorSpan.innerText = 'Enter a valid email address';
         isValid = false;
     }
 
     if (!password) {
-        if (passErrorSpan) passErrorSpan.innerText = 'Password is required'; passErrorSpan.setAttribute('style','color:red');
-           
+        if (passErrorSpan) passErrorSpan.innerText = 'Password is required';
         isValid = false;
     }
 
-    if (!isValid) return isValid;
+    if (!isValid) return;
 
-    // Check if UserManager is available
     if (typeof window.UserManager === 'undefined') {
-        console.error('UserManager not loaded. Make sure users.js is included BEFORE logIn.js');
-        alert('System not ready. Please refresh the page.');
+        alert('System not ready. Refresh page.');
         return;
     }
 
-    // Attempt login using email
     const user = window.UserManager.getUserByEmail(email);
     
     if (!user) {
-        if (emailErrorSpan) emailErrorSpan.innerText = 'No account found with this email'; emailErrorSpan.setAttribute('style','color:red');
-        console.log(`Login failed: email ${email} not found`);
+        if (emailErrorSpan) emailErrorSpan.innerText = 'No account found with this email';
         return;
     }
 
     if (user.password !== password) {
-        if (passErrorSpan) passErrorSpan.innerText = 'Incorrect password'; passErrorSpan.setAttribute('style','color:red');
-           
-        console.log(`Login failed: wrong password for ${email}`);
+        if (passErrorSpan) passErrorSpan.innerText = 'Incorrect password';
         return;
     }
 
-    // Success - store session and redirect
+    // SUCCESSFUL LOGIN
     localStorage.setItem('app_current_user', user.username);
-    // Sync user data from UserManager to personalInfo.js localStorage keys
     syncUserToPersonalInfo(user);
-    console.log(`Login successful for ${user.username}, redirecting to index.html`);
+
+    // Debug: log the user's role
+    console.log('Logged in user:', user.username, 'Role:', user.role);
+
+    // Redirect based on role (case-insensitive check)
+    const role = (user.role || '').toLowerCase();
     
-    // Use window.location.href for redirect
-    window.location.href = 'index.html';
+    if (role === 'student') {
+        console.log('Redirecting to student-dashboard.html');
+        window.location.href = 'student-dashboard.html';
+    } else if (role === 'instructor') {
+        console.log('Redirecting to instructor-dashboard.html'); // change as needed
+        window.location.href = 'index.html';
+    } else if (role === 'admin') {
+        console.log('Redirecting to admin-dashboard.html'); // change as needed
+        window.location.href = 'index.html';
+    } else {
+        console.warn('Unknown role, redirecting to index.html');
+        window.location.href = 'index.html';
+    }
 }
