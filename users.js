@@ -128,6 +128,83 @@
             return loadUsersFromStorage().find(u => u.email === email) || null;
         },
 
+        //get user-specific study groups
+        getUserStudyGroups: function(username){
+            const key=`user_${username}_studyGroups`;
+            const stored=localStorage.getItem(key);
+            if(stored){
+                return JSON.parse(stored);
+            }
+            return this.getDefaultStudyGroups(username);
+        },
+        //save user-specific study groups
+        saveUserStudyGroups: function(username,groups){
+            const key=`user_${username}_studyGroups`;
+            localStorage.setItem(key,JSON.stringify(groups));
+        },
+        //get default study groups based on user's major 
+        getDefaultStudyGroups: function(username){
+            const user=this.getUser(username);
+            const major=user?.major||'Computer Science';
+
+            const defaultGroups={'Computer Science': [
+            { id: 1, name: 'CS Algorithm Group', course: 'Data Structures & Algorithms', members: 8, resources: 12, messages: 45, status: 'joined', category: 'cs', description: 'Weekly algorithm practice and exam preparation' },
+            { id: 2, name: 'Web Dev Squad', course: 'Web Development', members: 10, resources: 18, messages: 56, status: 'available', category: 'cs', description: 'HTML/CSS, JavaScript frameworks, and full-stack projects' },
+            { id: 3, name: 'AI Research Club', course: 'Artificial Intelligence', members: 15, resources: 28, messages: 89, status: 'available', category: 'cs', description: 'Machine learning algorithms and research paper discussions' }
+        ],
+        'Business Informatics': [
+            { id: 1, name: 'Business Analytics Group', course: 'Data Analysis', members: 6, resources: 10, messages: 32, status: 'joined', category: 'business', description: 'Learning data analysis techniques and tools' },
+            { id: 2, name: 'Marketing Study Circle', course: 'Digital Marketing', members: 8, resources: 14, messages: 41, status: 'available', category: 'business', description: 'Digital marketing strategies and case studies' }
+        ],
+        'Applied Arts': [
+            { id: 1, name: 'Design Studio', course: 'Graphic Design', members: 7, resources: 15, messages: 28, status: 'joined', category: 'arts', description: 'Graphic design principles and software practice' },
+            { id: 2, name: 'UI/UX Workshop', course: 'User Experience', members: 9, resources: 12, messages: 35, status: 'available', category: 'arts', description: 'User interface and experience design' }
+        ],
+        'Law': [
+            { id: 1, name: 'Legal Studies Group', course: 'Constitutional Law', members: 11, resources: 22, messages: 63, status: 'joined', category: 'law', description: 'Constitutional law discussions and case studies' }
+        ],
+        'Dentistry': [
+            { id: 1, name: 'Anatomy Study Group', course: 'Human Anatomy', members: 14, resources: 25, messages: 78, status: 'joined', category: 'science', description: 'Human anatomy study and exam preparation' }
+        ],
+        'Networks': [
+            { id: 1, name: 'Network Security Group', course: 'Network Security', members: 9, resources: 16, messages: 44, status: 'joined', category: 'cs', description: 'Network security concepts and protocols' }
+        ]};
+
+        return defaultGroups[major] || defaultGroups['Computer Science'];
+        },
+        //save user-specified notes and file in localStorage
+
+        saveUserNotesFiles:function(username,files){
+            const key=`user_${username}_notesFiles`;
+            localStorage.setItem(key,JSON.stringify(files));
+        },
+        //get user-specified notes and files
+        getUserNotesFiles:function(username){
+            const key=`user_${username}_notesFiles`;
+            const stored=localStorage.getItem(key);
+            if(stored){
+                return JSON.parse(stored);
+            }
+            return [];
+        },
+        //Share file with another user
+        shareFileWithUser: function(fromUsername, toUsername, fileData) {
+         const key = `user_${toUsername}_sharedFiles`;
+         const stored = localStorage.getItem(key);
+         let sharedFiles = stored ? JSON.parse(stored) : [];
+         sharedFiles.unshift({
+             ...fileData,
+             sharedBy: fromUsername,
+            sharedAt: new Date().toISOString()
+        });
+        localStorage.setItem(key, JSON.stringify(sharedFiles));
+        },
+        getSharedFiles: function(username) {
+         const key = `user_${username}_sharedFiles`;
+         const stored = localStorage.getItem(key);
+         return stored ? JSON.parse(stored) : [];
+        },
+
         addUser: function (userData) {
             const users = loadUsersFromStorage();
 
