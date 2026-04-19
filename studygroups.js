@@ -254,3 +254,20 @@ function leaveGroup(button){
         alert(`You left "${groupName}".`);
     }
 }
+
+//get current user 
+const currentUser=UserManager.getCurrentUser();
+const username=currentUser?.username;
+
+//load user-specific study groups
+function loadUserStudyGroups(){
+    if(!username) return;
+    const userGroups=UserManager.getUserStudyGroups(username);
+    const groupsGrid=document.getElementById('groupsGrid');
+    if(!groupsGrid) return;
+    groupsGrid.innerHTML='';
+    userGroups.forEach(group=>{
+        const groupCrad=createGroupCard(group);
+        groupsGrid.appendChild(groupCard);
+    });
+}

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoomHub — Student Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="project web.css">
+  <script src="project web.js"></script>
+   <script src="project web trial 1.js"></script>
+   <link rel="stylesheet" href="user-management.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="layout">
+  
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">📚</div>
+                <div class="logo-text">Loom<span>Hub</span></div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Overview</div>
+                <a class="nav-item " href="project web trail 1.html">
+                    <span class="nav-icon">🏠</span> Dashboard
+                </a>
+                <a class="nav-item" href="profile.html" target="_self">
+                    <span class="nav-icon">👤</span> My Profile
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Academic</div>
+                <a class="nav-item" href="Gpa-calculator.html">
+                    <span class="nav-icon">🎓</span> GPA Calculator
+                </a>
+                
+                <a class="nav-item" href="reminders.html">
+                    <span class="nav-icon">⏰</span> Tasks & Reminders
+                    <span class="nav-badge warn">2</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Resources</div>
+                <a class="nav-item" href="notes&files.html">
+                    <span class="nav-icon">📂</span> Notes & Files
+                </a>
+                <a class="nav-item" href="sharedMaterials.html">
+                    <span class="nav-icon">🔗</span> Shared Materials
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Collaborate</div>
+                <a class="nav-item" href="studygroups.html">
+                    <span class="nav-icon">👥</span> Study Groups
+                    <span class="nav-badge green">3</span>
+                </a>
+                <a class="nav-item" href="project-manager.html">
+                    <span class="nav-icon">🗂</span> Project Manager
+                </a>
+                <a class="nav-item" href="Q&A.html">
+                    <span class="nav-icon">💬</span> Q&amp;A Forum
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Admin Panel</div>
+                <a class="nav-item active" href="user-management.html">
+                    <span class="nav-icon">🛡</span> User Management
+                </a>
+                <a class="nav-item" href="#">
+                    <span class="nav-icon">📊</span> Analytics
+                </a>
+            </div>
+
+            <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='profile.html'">
+                <div class="avatar">AK</div>
+                <div class="profile-info">
+                    <div class="name">Ahmed Khalid</div>
+                    <div class="role">Computer Science · Yr 3</div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main">
+
+            <header class="topbar">
+                <div>
+                    <div class="topbar-title">🛡 User Management</div>
+                    <div class="topbar-subtitle" id="current-date"></div>
+                </div>
+                <div class="topbar-right">
+                    <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+                    <div class="avatar sm">AK</div>
+                </div>
+            </header>
+
+            <main class="main-content" style="flex: 1; padding: 20px 40px; overflow-y: auto;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">System Users</div>
+                        <button class="btn" onclick="openModal()"><i class="fas fa-plus"></i> Add New User</button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            
+        </div> </div> <div class="modal-overlay" id="userModal">
+        <div class="panel modal-content">
+            <div class="panel-header">
+                <div class="panel-title" id="modalTitle">Edit User</div>
+                <button class="btn btn-danger btn-small" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form id="userForm" onsubmit="saveUser(event)">
+                <input type="hidden" id="userId">
+                <div class="task-form-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="userName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="userEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="userRole" class="form-control" required>
+                            <option value="Student">Student</option>
+                            <option value="Instructor">Instructor</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="userStatus" class="form-control" required>
+                            <option value="Active">Active</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                    <button type="button" class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="user-management.js"></script>
+</body>
+</html>
