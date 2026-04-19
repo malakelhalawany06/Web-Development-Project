@@ -72,7 +72,7 @@
             return user && user.role === 'student';
         },
 
-        // ===== STUDY GROUPS FUNCTIONS =====
+        //study groups 
         getUserStudyGroups: function(username) {
             const key = `user_${username}_studyGroups`;
             const stored = localStorage.getItem(key);
@@ -118,7 +118,7 @@
             return defaultGroups[major] || defaultGroups['Computer Science'];
         },
 
-        // ===== NOTES & FILES FUNCTIONS =====
+        //notes and files
         getUserNotesFiles: function(username) {
             const key = `user_${username}_notesFiles`;
             const stored = localStorage.getItem(key);
@@ -180,7 +180,21 @@
             return stored ? JSON.parse(stored) : [];
         },
 
-        // ===== DEMO USERS =====
+        updateBadges:function(){
+            const currentUser=this.getCurrentUser();
+            if(!currentUser) return;
+
+            const username=currentUser.username;
+            const groups=this.getUserStudyGroups(username);
+            const files=this.getUserNotesFiles(username);
+            const joinedGroups=groups.filter(q=>groups.status==='joined').length;
+            const groupsBadge=document.getElementById('studyGroupsBadge');
+            const filesBadge=document.getElementById('notesFilesBadge');
+            if(grouupsBadge) groupsBadge.textContent=joinedGroups;
+            if(filesBadge) filesBadge.textContent=files.length;
+        },
+
+        //users
         loadDemoUsers: function () {
             const users = loadUsersFromStorage();
             if (users.length > 0) return;
