@@ -1,4 +1,4 @@
-/* ===== RESET & BASE (same as reminders page) ===== */
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -47,7 +47,7 @@ html, body {
 
 .layout { display: flex; height: 100vh; overflow: hidden; }
 
-/* ===== SIDEBAR ===== */
+/* sidebar */
 .sidebar {
   width: var(--sidebar-w);
   background: var(--bg2);

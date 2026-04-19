@@ -309,7 +309,20 @@ function createGroupCard(group){
     `;
     return card;
 }
+function updateStudyGroupsBadge(){
+    const badge=document.getElementById('studyGroupsBadge');
+    if(!badge) return;
+    const currentUser=UserManager.getCurrentUser();
+    if(!currentUser) return;
+    const username=currentUser.username;
+    const userGroups=UserManager.getUserStudyGroups(username);
+    const joinedCount=userGroups.filter(group=>group.status==='joined').length;
+    badge.textContent=joinedCount;
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeButtons(); //execute automatically when the webpage finishes loading
     loadUserStudyGroups();
+    updateStudyGroupsBadge();
 });
