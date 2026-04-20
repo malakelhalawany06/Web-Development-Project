@@ -147,9 +147,21 @@ window.validateSignUp = function() {
 
     // Set current logged-in user
     localStorage.setItem('app_current_user', username);
-
-    
-    window.location.href = 'index.html';
+ 
+     if (role === 'student') {
+        console.log('Redirecting to student-dashboard.html');
+        window.location.href = 'student-dashboard.html';
+    } else if (role === 'instructor') {
+        console.log('Redirecting to instructor-dashboard.html'); // change as needed
+        window.location.href = 'instructor-dashboard.html';
+    } else if (role === 'admin') {
+        console.log('Redirecting to admin-dashboard.html'); // change as needed
+        window.location.href = 'index.html';
+    } else {
+        console.warn('Unknown role, redirecting to index.html');
+        window.location.href = 'index.html';
+    }
+   // window.location.href = 'index.html';
     return true;
 };
 
