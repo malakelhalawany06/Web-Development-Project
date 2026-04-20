@@ -72,7 +72,7 @@
             return user && user.role === 'student';
         },
 
-        //study groups 
+        //study groups helper functions
         getUserStudyGroups: function(username) {
             const key = `user_${username}_studyGroups`;
             const stored = localStorage.getItem(key);
@@ -118,7 +118,7 @@
             return defaultGroups[major] || defaultGroups['Computer Science'];
         },
 
-        //notes and files
+        //notes and files helper functions
         getUserNotesFiles: function(username) {
             const key = `user_${username}_notesFiles`;
             const stored = localStorage.getItem(key);
@@ -161,7 +161,7 @@
             return defaultFiles[major] || defaultFiles['Computer Science'];
         },
 
-        // ===== SHARE FUNCTIONS =====
+        //shared materials function 
         shareFileWithUser: function(fromUsername, toUsername, fileData) {
             const key = `user_${toUsername}_sharedFiles`;
             const stored = localStorage.getItem(key);
