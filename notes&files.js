@@ -85,7 +85,6 @@ courseTabs.forEach(tab=>{ //loop through all tabs
     });
 });
 //load files from localStorage and displays them in the UI
-
 function createFileCard(file) { //turns a file object into an HTML card
     const fileCard = document.createElement('div');
     fileCard.className = 'file-card';
@@ -112,12 +111,13 @@ function createFileCard(file) { //turns a file object into an HTML card
     `;
     return fileCard;
 }
-
+//santizies user input to prevent errors 
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text; //.textContent treats input as plain text, browser automatically escapes dangerous characters
     return div.innerHTML;
 }
+
 
 function downloadFile(button) {
     const fileName = button.closest('.file-card').querySelector('.file-name').innerText; //find parent card and extracts file name
@@ -139,49 +139,51 @@ function deleteFile(button) {
         
         const username = currentUser.username;
         
-        // Get files from user-specific storage
+        //get files from user-specific storage
         let userFiles = UserManager.getUserNotesFiles(username);
         
-        // Remove the file with matching title
+        //remove the file with matching title
         const newFiles = userFiles.filter(file => file.title !== fileTitle);
         
-        // Save back to user-specific storage
+        //save back to user-specific storage
         UserManager.saveUserNotesFiles(username, newFiles);
         
-        // Remove from page
+        //remove from page
         fileCard.remove();
-        
+        updateNotesFilesBadge();
         alert('File deleted successfully!');
     }
 }
 
  const currentUser=UserManager.getCurrentUser();
  const username=currentUser?.username;
+ //get the notes based on user 
  function loadUserNotesFiles() {
     const currentUser = UserManager.getCurrentUser();
     if (!currentUser) return;
     
-    const username = currentUser.username;
-    const userFiles = UserManager.getUserNotesFiles(username);
-    const filesGrid = document.getElementById('gridView');
+    const username = currentUser.username; //get username
+    const userFiles = UserManager.getUserNotesFiles(username); //get notes by username
+    const filesGrid = document.getElementById('gridView'); 
     if (!filesGrid) return;
     
-    filesGrid.innerHTML = '';
+    filesGrid.innerHTML = ''; //make this part empty
     
-    userFiles.forEach(file => {
+    userFiles.forEach(file => { //loop through all user files
         const fileCard = createFileCard(file);
         filesGrid.appendChild(fileCard);
     });
     
     updateNotesFilesBadge();
 }
+//update the tabs based on user
  function updateCourseTabs(){
     const currentUser=UserManager.getCurrentUser();//get the user logged in
     if(!currentUser) return;
     const major=currentUser.major;//get the user's major
     const courseTabsContainer=document.querySelector('.course-tabs');//get the container for course tabs
     if(!courseTabsContainer) return;
-     const tabsByMajor = {
+     const tabsByMajor = { //all tabs by major
         'Computer Science': [
             { course: 'all', name: 'All Courses' },
             { course: 'ds', name: 'Data Structures' },
@@ -225,38 +227,39 @@ function deleteFile(button) {
             { course: 'devops', name: 'DevOps' }
         ]
     };
-    const tabs=tabsByMajor[major]||tabsByMajor['Computer Science'];
-    courseTabsContainer.innerHTML='';
-    tabs.forEach(tab=>{
+    const tabs=tabsByMajor[major]||tabsByMajor['Computer Science']; //get the specified tabs by major for the current user
+    courseTabsContainer.innerHTML=''; //make the container empty
+    tabs.forEach(tab=>{ //loop through all user tabs 
         const tabButton=document.createElement('button');
         tabButton.className='course-tab';
-        if(tab.course==='all'){
+        if(tab.course==='all'){ //make the 'all' tab active 
              tabButton.classList.add('active');
         }
-        tabButton.setAttribute('data-course',tab.course);
-        tabButton.textContent=tab.name;
-        tabButton.onclick=function(){
-            document.querySelectorAll('.course-tab').forEach(t=>t.classList.remove('active'));
-            this.classList.add('active');
-            const course=this.dataset.course;
-            const fileCards=document.querySelectorAll('.file-card');
-            fileCards.forEach(card=>{
+        tabButton.setAttribute('data-course',tab.course); //get the course in data-course
+        tabButton.textContent=tab.name; //get the name using text content
+        tabButton.onclick=function(){ //function runs when a tab is clicked on
+            document.querySelectorAll('.course-tab').forEach(t=>t.classList.remove('active')); //remove active for all tabs
+            this.classList.add('active'); //make the selected tab active
+            const course=this.dataset.course; //get the course
+            const fileCards=document.querySelectorAll('.file-card'); //select all file cards
+            fileCards.forEach(card=>{ //loop through all cards 
                 if(course==='all'||card.dataset.course===course){
-                    card.classList.remove('hidden');
+                    card.classList.remove('hidden'); //show the notes for this tab
                     card.style.display = 'flex';
                 }else{
-                    card.classList.add('hidden');
+                    card.classList.add('hidden'); //hide the notes for this tab
                     card.style.display = 'none';
                 }
             });
             if(document.getElementById('listView').style.display==='block'){
-                populateListView();
+                populateListView(); //reload list view 
             }
         };
-        courseTabsContainer.appendChild(tabButton);
+        courseTabsContainer.appendChild(tabButton); //add the tab button to the container 
     });
  }
- function updateNotesFilesBadge() {
+
+ function updateNotesFilesBadge() { 
     const currentUser = UserManager.getCurrentUser();
     if (!currentUser) return;
     const username = currentUser.username;

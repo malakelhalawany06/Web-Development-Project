@@ -212,7 +212,7 @@ function viewDetails(button){
         }
     });
 }
-function initializeButtons(){
+function initializeButtons(){//reseting and reassigning behaviour on the buttons
     //Select Join Buttons 
     const joinButtons=document.querySelectorAll('.group-actions .btn-primary.btn-sm, .group-actions .btn-success.btn-sm');
     joinButtons.forEach(button=>{
@@ -263,12 +263,12 @@ function loadUserStudyGroups(){
     const groupsGrid=document.getElementById('groupsGrid');
     if(!groupsGrid) return;
     groupsGrid.innerHTML='';
-    userGroups.forEach(group=>{
-        const groupCard=createGroupCard(group);
+    userGroups.forEach(group=>{ //loops through all user-specified groups
+        const groupCard=createGroupCard(group); 
         groupsGrid.appendChild(groupCard);
     });
 }
-function createGroupCard(group){
+function createGroupCard(group){ //creates a group card based on user's data, is called in loadUserStudyGroups()
     const card=document.createElement('div');
     card.className='group-card';
     card.setAttribute('data-status',group.status);
@@ -309,7 +309,7 @@ function createGroupCard(group){
     `;
     return card;
 }
-function updateStudyGroupsBadge(){
+function updateStudyGroupsBadge(){ //this shows how many study groups the user has joined using the small badge beside the tab
     const badge=document.getElementById('studyGroupsBadge');
     if(!badge) return;
     const currentUser=UserManager.getCurrentUser();
@@ -319,7 +319,7 @@ function updateStudyGroupsBadge(){
     const joinedCount=userGroups.filter(group=>group.status==='joined').length;
     badge.textContent=joinedCount;
 }
-function updateFilterChips() {
+function updateFilterChips() {//changes tabs depending on the user's major
     const currentUser = UserManager.getCurrentUser();
     if (!currentUser) return;
     
@@ -329,49 +329,49 @@ function updateFilterChips() {
     
     // Define filter chips for each major
     const chipsByMajor = {
-        'Computer Science': [
+        'Computer Science': [ //CS Tabs 
             { filter: 'all', name: 'All Groups' },
             { filter: 'available', name: 'Available to Join' },
             { filter: 'cs', name: 'Computer Science' },
             { filter: 'math', name: 'Mathematics' },
             { filter: 'engineering', name: 'Engineering' }
         ],
-        'Business Informatics': [
+        'Business Informatics': [ //BI Tabs
             { filter: 'all', name: 'All Groups' },
             { filter: 'available', name: 'Available to Join' },
             { filter: 'business', name: 'Business' },
             { filter: 'marketing', name: 'Marketing' },
             { filter: 'finance', name: 'Finance' }
         ],
-        'Applied Arts': [
+        'Applied Arts': [ //Applied arts Tabs
             { filter: 'all', name: 'All Groups' },
             { filter: 'available', name: 'Available to Join' },
             { filter: 'arts', name: 'Graphic Design' },
             { filter: 'uiux', name: 'UI/UX' },
             { filter: 'digital', name: 'Digital Art' }
         ],
-        'Law': [
+        'Law': [ //Law Tabs
             { filter: 'all', name: 'All Groups' },
             { filter: 'available', name: 'Available to Join' },
             { filter: 'law', name: 'Constitutional Law' },
             { filter: 'criminal', name: 'Criminal Law' },
             { filter: 'international', name: 'International Law' }
         ],
-        'Dentistry': [
+        'Dentistry': [ //Dentistry Tabs
             { filter: 'all', name: 'All Groups' },
             { filter: 'available', name: 'Available to Join' },
             { filter: 'science', name: 'Anatomy' },
             { filter: 'pathology', name: 'Pathology' },
             { filter: 'clinical', name: 'Clinical' }
         ],
-        'Networks': [
+        'Networks': [ //Networks Tabs
             { filter: 'all', name: 'All Groups' },
             { filter: 'available', name: 'Available to Join' },
             { filter: 'cs', name: 'Network Security' },
             { filter: 'cloud', name: 'Cloud Computing' },
             { filter: 'security', name: 'Cyber Security' }
         ],
-        'System Admin': [
+        'System Admin': [ //Admin Tabs 
             { filter: 'all', name: 'All Groups' },
             { filter: 'available', name: 'Available to Join' },
             { filter: 'admin', name: 'Server Management' },
@@ -379,13 +379,13 @@ function updateFilterChips() {
         ]
     };
     
-    // Get chips for this major, or default to Computer Science
+    //get chips for this major or default to Computer Science
     const chips = chipsByMajor[major] || chipsByMajor['Computer Science'];
     
-    // Clear existing chips
+    //clear existing chips
     filterSection.innerHTML = '';
     
-    // Create new chips
+    //create new chips
     chips.forEach(chip => {
         const chipDiv = document.createElement('div');
         chipDiv.className = 'filter-chip';
@@ -395,7 +395,7 @@ function updateFilterChips() {
         chipDiv.setAttribute('data-filter', chip.filter);
         chipDiv.textContent = chip.name;
         
-        // Add click event
+        //add click event
         chipDiv.addEventListener('click', function() {
             document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
@@ -422,10 +422,10 @@ function updateFilterChips() {
             });
         });
         
-        filterSection.appendChild(chipDiv);
+        filterSection.appendChild(chipDiv); //add the new chips to the filter section 
     });
 }
-// Function to populate category dropdown based on user's major
+//function to specify category dropdown based on user's major
 function populateCategoryDropdown() {
     const currentUser = UserManager.getCurrentUser();
     if (!currentUser) return;
@@ -434,7 +434,7 @@ function populateCategoryDropdown() {
     const categorySelect = document.getElementById('groupCategory');
     if (!categorySelect) return;
     
-    // Define categories for each major
+    //define categories for each major
     const categoriesByMajor = {
         'Computer Science': [
             { value: 'cs', name: 'Computer Science' },
@@ -471,13 +471,13 @@ function populateCategoryDropdown() {
             { value: 'devops', name: 'DevOps' }
         ]
     };
-    
+    //get the categories by major or let it default if no major entered to Computer Science 
     const categories = categoriesByMajor[major] || categoriesByMajor['Computer Science'];
     
-    // Clear existing options
+    //clear existing options
     categorySelect.innerHTML = '';
     
-    // Add new options
+    //add new options
     categories.forEach(cat => {
         const option = document.createElement('option');
         option.value = cat.value;
@@ -487,9 +487,10 @@ function populateCategoryDropdown() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    //execute automatically when the webpage finishes loading
     populateCategoryDropdown();
     updateFilterChips(); 
-    initializeButtons(); //execute automatically when the webpage finishes loading
+    initializeButtons(); 
     loadUserStudyGroups();
     updateStudyGroupsBadge();
 });

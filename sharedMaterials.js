@@ -1,12 +1,12 @@
-
+//retrieves the current user’s saved materials from localStorage
 function loadUserMaterials() {
     const currentUser = UserManager.getCurrentUser();
     if (!currentUser) return [];
-    const key = `user_${currentUser.username}_materials`;
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : [];
+    const key = `user_${currentUser.username}_materials`; //unique storage key, $ lets us insert variables into a string
+    const stored = localStorage.getItem(key); 
+    return stored ? JSON.parse(stored) : []; //if data exists, convert it from string into an object/array
 }
-
+//save current user materials in localStorage/opposite of loading 
 function saveUserMaterials(materials) {
     const currentUser = UserManager.getCurrentUser();
     if (!currentUser) return;
@@ -14,7 +14,7 @@ function saveUserMaterials(materials) {
     localStorage.setItem(key, JSON.stringify(materials));
 }
 
-
+//renders user shared materials 
 function displayMaterials() {
     const feedContainer = document.getElementById('feed-container');
     if (!feedContainer) return;
@@ -23,17 +23,17 @@ function displayMaterials() {
     if (!currentUser) return;
     
     const materials = loadUserMaterials();
-    feedContainer.innerHTML = "";
+    feedContainer.innerHTML = ""; //empty it first 
 
-    const userName = `${currentUser.firstName} ${currentUser.lastName}`;
-    const userAvatar = currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0);
+    const userName = `${currentUser.firstName} ${currentUser.lastName}`; //get username
+    const userAvatar = currentUser.firstName.charAt(0) + currentUser.lastName.charAt(0); //get user's initials
 
-    materials.forEach(post => {
+    materials.forEach(post => { //loop through each post the user has done 
         const newPost = document.createElement('div');
         newPost.classList.add('card', 'post-card');
         newPost.style.marginBottom = '1.25rem';
-        
-        newPost.innerHTML = `
+        //post with user specifications(name,initials,etc)
+        newPost.innerHTML = `  
             <div class="post-header">
                 <div class="avatar purple">${userAvatar}</div>
                 <div>
@@ -64,11 +64,11 @@ function displayMaterials() {
             </div>
         `;
 
-        feedContainer.prepend(newPost);
+        feedContainer.prepend(newPost); //add to the top/reverse of append 
     });
 }
 
-
+//gets a diff icon for each file type
 function getFileIcon(fileName) {
     if (!fileName) return '📄';
     const ext = fileName.split('.').pop().toLowerCase();
@@ -80,9 +80,9 @@ function getFileIcon(fileName) {
 }
 
 
-// Inside your upload button click handler, add this save function
+
 function saveToNotesFiles(title, desc, fileName, fileSize) {
-    // Get current user
+    //get current user
     const currentUser = UserManager.getCurrentUser();
     if (!currentUser) {
         console.log("No user logged in");
@@ -90,27 +90,113 @@ function saveToNotesFiles(title, desc, fileName, fileSize) {
     }
     
     const username = currentUser.username;
-    
-    // Get existing files for this user
+    const major = currentUser.major;
+    //get existing files for this user
     let userFiles = UserManager.getUserNotesFiles(username);
     
     // Determine course
     let course = 'web';
     let courseName = 'Web Development';
     const text = (title + ' ' + desc).toLowerCase();
-    
-    if (text.includes('calculus')) {
-        course = 'calc';
-        courseName = 'Calculus II';
-    } else if (text.includes('database')) {
-        course = 'db';
-        courseName = 'Database Systems';
-    } else if (text.includes('network')) {
-        course = 'net';
-        courseName = 'Networks';
-    } else if (text.includes('data structure')) {
-        course = 'ds';
-        courseName = 'Data Structures';
+    //CS Detection
+    if(major==='Computer Science'){
+        if(text.includes('calculus')||text.includes('calc')||text.includes('integrartion')||text.includes('derivative')){
+            course='calc';
+            courseName='Calculus';
+        } else if(text.includes('network') || text.includes('tcp') || text.includes('ip') || text.includes('osi')){
+            course = 'net';
+            courseName = 'Networks';
+        } else if(text.includes('database') || text.includes('sql') || text.includes('erd') || text.includes('normalization')){
+             course = 'db';
+            courseName = 'Database Systems';
+        } else if(text.includes('data structure') || text.includes('algorithm') || text.includes('graph') || text.includes('tree')){
+             course = 'ds';
+            courseName = 'Data Structures';
+        } else if(text.includes('web') || text.includes('html') || text.includes('css') || text.includes('javascript')) {
+            course = 'web';
+            courseName = 'Web Development';
+        } //BI Detection
+    }else if(major==='Business Informatics'){
+        if (text.includes('data analysis') || text.includes('analytics') || text.includes('visualization')) {
+            course = 'db';
+            courseName = 'Data Analysis';
+        } else if (text.includes('marketing') || text.includes('seo') || text.includes('social media')) {
+            course = 'marketing';
+            courseName = 'Digital Marketing';
+        }  else if (text.includes('finance') || text.includes('investment') || text.includes('stock')) {
+            course = 'finance';
+            courseName = 'Finance';
+        } else if (text.includes('business') || text.includes('management') || text.includes('strategy')) {
+            course = 'business';
+            courseName = 'Business Management';
+        }
+    } else if(major==='Applied Arts'){
+         if (text.includes('graphic') || text.includes('design') || text.includes('illustration') || text.includes('photoshop')) {
+            course = 'arts';
+            courseName = 'Graphic Design';
+        } else if (text.includes('ui') || text.includes('ux') || text.includes('user interface') || text.includes('user experience')) {
+            course = 'uiux';
+            courseName = 'UI/UX Design';
+        }  else if (text.includes('digital art') || text.includes('drawing') || text.includes('sketch')) {
+            course = 'digital';
+            courseName = 'Digital Art';
+        } else if (text.includes('photography') || text.includes('camera') || text.includes('editing')) {
+            course = 'photo';
+            courseName = 'Photography';
+        }
+    }   else if (major === 'Law'){
+        if (text.includes('constitutional') || text.includes('amendment') || text.includes('rights')) {
+            course = 'law';
+            courseName = 'Constitutional Law';
+        } else if (text.includes('criminal') || text.includes('crime') || text.includes('court')) {
+            course = 'criminal';
+            courseName = 'Criminal Law';
+        } else if (text.includes('international') || text.includes('treaty') || text.includes('global')) {
+            course = 'international';
+            courseName = 'International Law';
+        } else if (text.includes('contract') || text.includes('agreement') || text.includes('legal')) {
+            course = 'contract';
+            courseName = 'Contract Law';
+        }
+    }    else if (major === 'Dentistry'){
+         if (text.includes('anatomy') || text.includes('human body') || text.includes('skeletal')) {
+            course = 'science';
+            courseName = 'Human Anatomy';
+        } else if (text.includes('pathology') || text.includes('disease') || text.includes('oral')) {
+            course = 'pathology';
+            courseName = 'Oral Pathology';
+        } else if (text.includes('clinical') || text.includes('procedure') || text.includes('patient')) {
+            course = 'clinical';
+            courseName = 'Clinical Dentistry';
+        } else if (text.includes('radiology') || text.includes('x-ray') || text.includes('imaging')) {
+            course = 'radiology';
+            courseName = 'Dental Radiology';
+        } 
+    } else if (major === 'Networks'){
+         if (text.includes('security') || text.includes('firewall') || text.includes('encryption')) {
+            course = 'net';
+            courseName = 'Network Security';
+        } else if (text.includes('cloud') || text.includes('aws') || text.includes('azure')) {
+            course = 'cloud';
+            courseName = 'Cloud Computing';
+        } else if (text.includes('cyber') || text.includes('hacking') || text.includes('threat')) {
+            course = 'security';
+            courseName = 'Cyber Security';
+        } else if (text.includes('protocol') || text.includes('tcp') || text.includes('ip')) {
+            course = 'net';
+            courseName = 'Network Protocols';
+        }
+    }  else if (major === 'System Admin'){
+         if (text.includes('server') || text.includes('linux') || text.includes('windows server')) {
+            course = 'admin';
+            courseName = 'Server Management';
+        } else if (text.includes('devops') || text.includes('ci/cd') || text.includes('pipeline')) {
+            course = 'devops';
+            courseName = 'DevOps';
+        } else if (text.includes('cloud') || text.includes('infrastructure')) {
+            course = 'cloud';
+            courseName = 'Cloud Infrastructure';
+        }
     }
     
     const fileIcon = getFileIcon(fileName);
