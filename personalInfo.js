@@ -284,12 +284,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Update study groups badge
-    const groupsBadge = document.getElementById('studyGroupsBadge');
-    if (groupsBadge) {
-        const userGroups = UserManager.getUserStudyGroups(currentUser.username);
-        const joinedCount = userGroups.filter(g => g.status === 'joined').length;
-        groupsBadge.textContent = joinedCount;
-    }
+    setTimeout(updateAllBadges, 100);
+});
+// Also run when window is fully loaded
+window.addEventListener('load', function() {
+    updateAllBadges();
 });
 function updateAllBadges() {
     console.log("Updating badges...");
