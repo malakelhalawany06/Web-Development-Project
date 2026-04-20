@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoomHub — Q&A Forum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="Q&A.css" />
+</head>
+<html>
+<body class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item" href="instructor-dashboard.html">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item" href="instructor-profile.html" target="_self">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </div>
+<div class="sidebar-section">
+    <div class="sidebar-label">Resources</div>
+    <a class="nav-item" href="instructor-notes-files.html">
+        <span class="nav-icon">📂</span> Notes & Files
+    </a>
+    <a class="nav-item" href="instructor-shared-materials.html">
+        <span class="nav-icon">🔗</span> Shared Materials
+    </a>
+</div>
+<div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      
+      <a class="nav-item active" href="instructor-Q_and_A.html">
+        <span class="nav-icon">💬</span> Q&amp;A Forum
+      </a>
+    </div>
+ <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='profile.html'">
+      <div class="avatar">AK</div>
+      <div class="profile-info">
+        <div class="name">Ahmed Khalid</div>
+        <div class="role">Computer Science · Yr 3</div>
+        
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">💬 Q&A Forum</div>
+        <div class="topbar-subtitle">Ask, answer, upvote</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-bar" id="searchPlaceholder">🔍 Search questions</div>
+        <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+        <div class="avatar sm">AK</div>
+      </div>
+    </header>
+   
+    <div class="content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📢 Questions & Discussions</span>
+          <button class="btn-ghost" id="showAskBtn">+ Ask a Question</button>
+        </div>
+
+        <!-- Inline ask form -->
+        <div id="askFormContainer" style="display: none;" class="ask-form">
+          <input type="text" id="questionTitleInput" placeholder="Question title" />
+          <textarea id="questionBodyInput" placeholder="Describe your question in detail..."></textarea>
+          <select id="questionTagInput">
+            <option value="Data Structures">Data Structures</option>
+            <option value="Calculus">Calculus</option>
+            <option value="Networks">Networks</option>
+            <option value="Database">Database</option>
+            <option value="General">General</option>
+          </select>
+          <button id="submitQuestionBtn">Post Question</button>
+          <button id="cancelAskBtn" class="btn-ghost" style="margin-left: 8px;">Cancel</button>
+          <button class="delete-question-btn" data-id="${q.id}" title="Delete Question">🗑️</button>
+        </div>
+
+        <!-- Filter tabs by tag -->
+        <div class="filter-tabs" id="filterTabs">
+          <div class="filter-tab active" data-tag="all">All</div>
+          <div class="filter-tab" data-tag="Data Structures">Data Structures</div>
+          <div class="filter-tab" data-tag="Calculus">Calculus</div>
+          <div class="filter-tab" data-tag="Networks">Networks</div>
+          <div class="filter-tab" data-tag="Database">Database</div>
+        </div>
+
+        <!-- Questions list -->
+        <div id="questionsContainer">
+          <!-- dynamic -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="users.js"></script>   <!-- UserManager must be loaded first -->
+<script src="Q&A.js"></script>
+<script src="personalInfo.js"></script>
+</body>
+</html>

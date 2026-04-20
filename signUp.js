@@ -65,11 +65,14 @@ window.validateSignUp = function() {
 
     // Academic year validation (must be between 1 and 7)
     const yearNum = parseInt(academicYear);
-    if (!academicYear || isNaN(yearNum) || yearNum < 1 || yearNum > 7) {
+    if(role=='student'){
+        if (!academicYear || isNaN(yearNum) || yearNum < 1 || yearNum > 7) {
         document.getElementById('yearError').innerText = 'Select a valid academic year (1-7)';
           document.getElementById('yearError').setAttribute('style','color:red');
         isValid = false;
     }
+    }
+    
 
     // Username validation
     if (!username) {

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="project web.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoomHub - Shared Materials</title>
+    <link rel="stylesheet" href="sharedMaterials.css">
+</head>
+<body>
+
+
+<body class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item" href="instructor-dashboard.html">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item" href="instructor-profile.html" target="_self">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </div>
+<div class="sidebar-section">
+    <div class="sidebar-label">Resources</div>
+    <a class="nav-item" href="instructor-notes-files.html">
+        <span class="nav-icon">📂</span> Notes & Files
+    </a>
+    <a class="nav-item active" href="instructor-shared-materials.html">
+        <span class="nav-icon">🔗</span> Shared Materials
+    </a>
+</div>
+<div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      
+      <a class="nav-item" href="instructor-Q_and_A.html">
+        <span class="nav-icon">💬</span> Q&amp;A Forum
+      </a>
+    </div>
+ <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='profile.html'">
+      <div class="avatar">AK</div>
+      <div class="profile-info">
+        <div class="name">Ahmed Khalid</div>
+        <div class="role">Computer Science · Yr 3</div>
+        
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+   <main class="main">
+            <header class="topbar">
+                <div>
+                    <div class="topbar-title">🔗Shared Materials</div>
+                    <div class="topbar-subtitle">Shared resources</div>
+                </div>
+                <div class="topbar-right">
+                    <div class="search-bar">
+                        🔍 <input type="text" id="global-search" placeholder="Search materials..." style="background:none; border:none; color:inherit; outline:none; width:100%;">
+                    </div>
+                    <button class="icon-btn">
+                        🔔<span class="notif-dot"></span>
+                    </button>
+                    <div class="avatar sm purple">AK</div>
+                </div>
+            </header>
+             <div class="content">
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Upload New Material</div>
+                    </div>
+                    
+                    <input type="text" id="upload-title" class="feed-input" placeholder="Material Title (e.g., Data Structures Chapter 7)">
+                    <textarea id="upload-description" class="feed-input" placeholder="Add a description..."></textarea>
+                    
+                    <div class="upload-footer">
+                        <div class="file-input-wrapper">
+                            <label for="upload-file" class="btn btn-ghost">📁 Choose File</label>
+                            <span class="file-name-display" style="font-size: 12px; color: var(--text2);">No file chosen</span>
+                            <input type="file" id="upload-file" hidden>
+                        </div>
+                        <button id="upload-btn" class="btn btn-primary">Upload Material</button>
+                    </div>
+                    <div style="margin-top: 15px; text-align: right;">
+        <button class="btn btn-outline" onclick="window.location.href='notes&files.html'">← Back to My Notes</button>
+    </div>
+                </div>
+
+                <div class="card-header" style="margin-bottom: -10px; margin-top: 10px;">
+                    <div class="card-title">Recent Uploads</div>
+                </div>
+                
+                <div id="feed-container">
+                    <div class="card post-card" style="margin-bottom: 1.25rem;">
+                        <div class="post-header">
+                            <div class="avatar warn">SJ</div>
+                            <div>
+                                <div style="font-size: 14px; font-weight: 500;">Sarah Jenkins</div>
+                                <div style="font-size: 11px; color: var(--text3);">April 9, 2026 • 09:15 AM</div>
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 15px; font-weight: 600; color: var(--accent); margin-bottom: 8px;" class="post-title">Calculus II - Integration Techniques Cheat Sheet</div>
+                        <div style="font-size: 13.5px; color: var(--text2); margin-bottom: 15px;" class="post-text">Hey everyone, I compiled all the integration rules and formulas from chapters 5 and 6 into a single document.</div>
+                        
+                        <div class="file-attachment">
+                            <div style="font-size: 24px;">📄</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 13px; font-weight: 500;">Calc_CheatSheet_V2.pdf</div>
+                                <div style="font-size: 11px; color: var(--text3);">PDF Document • 2.4 MB</div>
+                            </div>
+                            <button class="btn btn-ghost">Download</button>
+                        </div>
+
+                        <div class="comments-container">
+                            <div class="comment">
+                                <div class="avatar sm purple">AK</div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                        <span style="font-size: 12px; font-weight: 600;">Ahmed Khalid</span>
+                                        <span style="font-size: 10px; color: var(--text3);">Today at 09:40 AM</span>
+                                    </div>
+                                    <div style="font-size: 12.5px; color: var(--text2);">This is a lifesaver, Sarah! Thank you so much for sharing.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="add-comment-box">
+                            <input type="text" class="feed-input comment-input" placeholder="Write a reply...">
+                            <button class="btn btn-primary send-comment-btn">Reply</button>
+                        </div>
+                    </div>
+                    <div class="card post-card" style="margin-bottom: 1.25rem;">
+    <div class="post-header">
+        <div class="avatar green">MR</div>
+        <div>
+            <div style="font-size: 14px; font-weight: 500;">Michael Ross</div>
+            <div style="font-size: 11px; color: var(--text3);">April 10, 2026 • 04:30 PM</div>
+        </div>
+    </div>
+    
+    <div style="font-size: 15px; font-weight: 600; color: var(--accent); margin-bottom: 8px;" class="post-title">Database Systems - ERD Practice Examples</div>
+    <div style="font-size: 13.5px; color: var(--text2); margin-bottom: 15px;" class="post-text">Here are the practice scenarios Professor Davis went over in the lab yesterday. I exported my diagrams as images. Good practice for the ERD assignment due on the 18th.</div>
+    
+    <div class="file-attachment">
+        <div style="font-size: 24px;">🗂️</div>
+        <div style="flex: 1;">
+            <div style="font-size: 13px; font-weight: 500;">ERD_Practice_Labs.zip</div>
+            <div style="font-size: 11px; color: var(--text3);">ZIP Archive • 5.1 MB</div>
+        </div>
+        <button class="btn btn-ghost">Download</button>
+    </div>
+
+    <div class="comments-container">
+        <div class="comment">
+            <div class="avatar sm warn">NM</div>
+            <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                    <span style="font-size: 12px; font-weight: 600;">Nadia M.</span>
+                    <span style="font-size: 10px; color: var(--text3);">April 10, 2026 at 05:15 PM</span>
+                </div>
+                <div style="font-size: 12.5px; color: var(--text2);">Thanks Mike! I was really struggling with the ternary relationship example. This helps a lot.</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="add-comment-box">
+        <input type="text" class="feed-input comment-input" placeholder="Write a reply...">
+        <button class="btn btn-primary send-comment-btn">Reply</button>
+    </div>
+</div>
+
+<div class="card post-card" style="margin-bottom: 1.25rem;">
+    <div class="post-header">
+        <div class="avatar purple">ER</div>
+        <div>
+            <div style="font-size: 14px; font-weight: 500;">Elena Rodriguez</div>
+            <div style="font-size: 11px; color: var(--text3);">April 11, 2026 • 11:05 AM</div>
+        </div>
+    </div>
+    
+    <div style="font-size: 15px; font-weight: 600; color: var(--accent); margin-bottom: 8px;" class="post-title">Data Structures - Ch 7 Graphs Summary</div>
+    <div style="font-size: 13.5px; color: var(--text2); margin-bottom: 15px;" class="post-text">Attached my Notion export for Chapter 7 covering BFS, DFS, and Dijkstra's algorithm. Let me know if anything is unclear!</div>
+    
+    <div class="file-attachment">
+        <div style="font-size: 24px;">📄</div>
+        <div style="flex: 1;">
+            <div style="font-size: 13px; font-weight: 500;">Ch7_Graphs_Notes.pdf</div>
+            <div style="font-size: 11px; color: var(--text3);">PDF Document • 1.8 MB</div>
+        </div>
+        <button class="btn btn-ghost">Download</button>
+    </div>
+
+    <div class="comments-container">
+        <div class="comment">
+            <div class="avatar sm">YR</div>
+            <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                    <span style="font-size: 12px; font-weight: 600;">Yusuf R.</span>
+                    <span style="font-size: 10px; color: var(--text3);">Today at 12:30 PM</span>
+                </div>
+                <div style="font-size: 12.5px; color: var(--text2);">The visualization of Dijkstra's on page 3 is so much better than the textbook. Appreciate it!</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="add-comment-box">
+        <input type="text" class="feed-input comment-input" placeholder="Write a reply...">
+        <button class="btn btn-primary send-comment-btn">Reply</button>
+    </div>
+</div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content card">
+            <h3 class="card-title" style="margin-bottom: 10px;">Notification</h3>
+            <p id="modal-message" style="color: var(--text2); font-size: 13px; margin-bottom: 20px;"></p>
+            <button id="close-modal-btn" class="btn btn-primary" style="width: 100%; justify-content: center;">OK</button>
+        </div>
+    </div>
+
+    <script src="users.js"></script>
+    <script src="sharedMaterials.js"></script>
+    <script src="personalInfo.js"></script>
+</body>
+</html>

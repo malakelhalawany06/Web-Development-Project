@@ -44,18 +44,21 @@ function validateLogin() {
     let isValid = true;
     if (!email) {
         if (emailErrorSpan) emailErrorSpan.innerText = 'Email is required';
+        emailErrorSpan.setAttribute('style','color:red');
         isValid = false;
     } else if (!emailRegex.test(email)) {
         if (emailErrorSpan) emailErrorSpan.innerText = 'Enter a valid email address';
+        emailErrorSpan.setAttribute('style','color:red');
         isValid = false;
     }
 
     if (!password) {
         if (passErrorSpan) passErrorSpan.innerText = 'Password is required';
+        passErrorSpan.setAttribute('style','color:red');
         isValid = false;
     }
 
-    if (!isValid) return;
+    if (!isValid) return isValid;
 
     if (typeof window.UserManager === 'undefined') {
         alert('System not ready. Refresh page.');
@@ -66,11 +69,13 @@ function validateLogin() {
     
     if (!user) {
         if (emailErrorSpan) emailErrorSpan.innerText = 'No account found with this email';
+        emailErrorSpan.setAttribute('style','color:red');
         return;
     }
 
     if (user.password !== password) {
         if (passErrorSpan) passErrorSpan.innerText = 'Incorrect password';
+        passErrorSpan.setAttribute('style','color:red');
         return;
     }
 

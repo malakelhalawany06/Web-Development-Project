@@ -1,0 +1,110 @@
+<html>
+<head>
+    <title>LoomHub — Profile</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="project web.css">
+    <link rel="stylesheet" href="profile.css">
+    <script src="users.js"></script>
+    <script src="profile.js"></script>
+  
+</head>
+<html>
+
+<body class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item" href="instructor-dashboard.html">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item active" href="instructor-profile.html" target="_self">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </div>
+<div class="sidebar-section">
+    <div class="sidebar-label">Resources</div>
+    <a class="nav-item" href="instructor-notes-files.html">
+        <span class="nav-icon">📂</span> Notes & Files
+    </a>
+    <a class="nav-item" href="instructor-shared-materials.html">
+        <span class="nav-icon">🔗</span> Shared Materials
+    </a>
+</div>
+<div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      
+      <a class="nav-item" href="instructor-Q_and_A.html">
+        <span class="nav-icon">💬</span> Q&amp;A Forum
+      </a>
+    </div>
+ <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='profile.html'">
+      <div class="avatar">AK</div>
+      <div class="profile-info">
+        <div class="name">Ahmed Khalid</div>
+        <div class="role">Computer Science · Yr 3</div>
+        
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+                <div>
+                    <div class="topbar-title">👤My Profile</div>
+                    <div class="topbar-subtitle" id="current-date"></div>
+                </div>
+                <div class="topbar-right">
+                   
+                    <div class="avatar sm">AK</div>
+                </div>
+            </header>
+            <div>
+                <div class="content">
+                    <div class="card" style="display: flex; align-items: center; justify-content: space-around; gap: 1rem; flex-wrap: wrap;">
+                        <img id="main-avatar" src="" alt="Profile">
+                        <label for="profile-upload" class="btn btn-secondary" style="cursor:pointer; width: auto; padding: 0.6rem 1.2rem;">📸 Upload Profile Picture</label>
+                        <input type="file" id="profile-upload" accept="image/jpeg, image/png, image/jpg" style="display:none;">
+                        <div class="profile-info">
+                            <div class="name">Ahmed Khalid</div>
+                            <div class="role">Computer Science · Yr 3</div>
+                            <div class="uni">MIU</div>
+                            <div class="username">AhmedKhalid05</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"></span>
+                        </div>
+                        <div class="button-list">
+                            <div class="button-item">
+                                <a href="logIn.html" target="_self"><button class="btn btn-primary">Logout</button></a>
+                            </div>
+                            <div class="button-item">
+                                <a href="personalInfo.html" target="_self"><button class="btn btn-primary">Edit Personal Info</button></a>
+                            </div>
+                            <div class="button-item">
+                                <a href="signUp.html" target="_self"><button class="btn btn-primary">Create a new account</button></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+       
+    <script src="personalInfo.js"></script>
+</body>
+</html>
