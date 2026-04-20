@@ -94,7 +94,19 @@ function calculateGPA() {
 
     // SAVE update
     localStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
+
+    // neww
+    // 1. Save the calculated GPA to memory so the Dashboard can see it
+    localStorage.setItem('userSavedGPA', gpa.toFixed(2));
+
+    // 2. Update the dashboard card if it happens to be on the same page
+    const topCard = document.getElementById('top-card-gpa');
+    if (topCard) {
+        topCard.innerText = gpa.toFixed(2);
+    }
+    // 👆 NEW CODE ENDS HERE 👆
 }
+
 
 // ===== DELETE COURSE =====
 function deleteCourse(index) {
