@@ -261,3 +261,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
+
+//newww
+// ===== LOAD GPA ON DASHBOARD =====
+document.addEventListener("DOMContentLoaded", function () {
+    // Look for the top card on the dashboard
+    const topCard = document.getElementById('top-card-gpa');
+    
+    // If we are on the dashboard...
+    if (topCard) {
+        // Grab the saved GPA from memory, or use "0.00" if there isn't one yet
+        const savedGPA = localStorage.getItem('userSavedGPA') || "0.00";
+        topCard.innerText = savedGPA;
+    }
+});

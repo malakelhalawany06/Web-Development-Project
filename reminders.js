@@ -1,85 +1,142 @@
 // ========================
-// REMINDERS with UserManager support
+// REMINDERS – per‑user subjects from images
 // ========================
 
 let reminders = [];
 let currentUser = null;
 
-// Helper: get storage key for current user
 function getStorageKey() {
   return currentUser ? `user_${currentUser.username}_reminders` : null;
 }
 
-// Ensure Ahmed Khalid is logged in by default (same as Q&A)
-function ensureDefaultUser() {
-  if (!window.UserManager) {
-    console.error("UserManager not loaded");
-    return null;
-  }
+// Subject map exactly from your images
+function getSubjectsForUser(user) {
+  const { university, major, academicYear, role } = user;
+  if (role === 'instructor' || !academicYear || academicYear === '') return [];
+  const yearNum = parseInt(academicYear);
 
-  // Make sure demo users exist
+  const subjectMap = {
+    'MIU': {
+      'Computer Science': {
+        1: ['Digital Logic Design', 'Mathematics', 'Data Structures'],
+        2: ['Database Systems', 'Web Development', 'Networks'],
+        3: ['Advanced Algorithms', 'Software Engineering', 'Operating Systems']
+      }
+    },
+    'AUC': {
+      'Business Informatics': {
+        1: ['Applied Economics', 'English for Business'],
+        2: ['Innovation Management', 'Database Systems']
+      }
+    },
+    'BUE': {
+      'Applied Arts': {
+        1: ['Environmental & Passive Technology', 'Architecture Drawing', 'Typography'],
+        2: ['Interior Design', 'Remodeling', 'Materials & Finishing']
+      }
+    },
+    'MSA': {
+      'Dentistry': {
+        1: ['Oral Pathology', 'General Physiology'],
+        2: ['Operative Dentistry', 'Computer Applications', 'Microbiology']
+      }
+    },
+    'GVC': {
+      'Law': {
+        1: ['Commercial Laws & Regulations', 'International Law'],
+        2: ['Law of Commercial Procedures', 'Administration Law', 'Technological Design']
+      }
+    },
+    'AASST': {
+      'Applied Arts': {
+        1: ['Environmental & Passive Technology', 'Architecture Drawing', 'Typography'],
+        2: ['Interior Design', 'Remodeling', 'Materials & Finishing']
+      }
+    }
+  };
+
+  const uni = subjectMap[university];
+  if (!uni) {
+    console.warn(`Unknown university: ${university}, using fallback`);
+    return ['General Study', 'Assignment'];
+  }
+  const majorSubjects = uni[major];
+  if (!majorSubjects) {
+    console.warn(`Unknown major: ${major}, using fallback`);
+    return ['General Study', 'Assignment'];
+  }
+  let subjects = majorSubjects[yearNum];
+  if (!subjects) {
+    // fallback to nearest lower year or year 1
+    const years = Object.keys(majorSubjects).map(Number).sort((a,b)=>a-b);
+    const closest = years.reduce((p,c) => (c <= yearNum ? c : p), 1);
+    subjects = majorSubjects[closest];
+    console.log(`Year ${yearNum} not found, using year ${closest} for ${major}`);
+  }
+  return subjects;
+}
+
+function generateDefaultReminders(user) {
+  const subjects = getSubjectsForUser(user);
+  if (subjects.length === 0) return [];
+  const now = new Date();
+  const reminders = [];
+  let id = Date.now();
+  subjects.forEach((subject, idx) => {
+    const quizDue = new Date(now);
+    quizDue.setDate(now.getDate() + (idx+1)*2);
+    reminders.push({
+      id: id++,
+      text: `${subject} – Quiz preparation`,
+      completed: false,
+      priority: 'high',
+      dueDate: quizDue.toISOString().slice(0,16),
+      notes: `Review ${subject}`
+    });
+    const projDue = new Date(now);
+    projDue.setDate(now.getDate() + (idx+3)*2);
+    reminders.push({
+      id: id++,
+      text: `${subject} – Group project`,
+      completed: false,
+      priority: 'medium',
+      dueDate: projDue.toISOString().slice(0,16),
+      notes: `Team work for ${subject}`
+    });
+  });
+  return reminders;
+}
+
+// Get current logged-in user – no fallback!
+function getCurrentUser() {
+  if (!window.UserManager) return null;
   if (window.UserManager.getAllUsers().length === 0) {
     window.UserManager.loadDemoUsers();
   }
-
-  // Try to get current logged-in user
-  let user = window.UserManager.getCurrentUser();
-
-  if (!user) {
-    // No user logged in – find or create Ahmed Khalid
-    user = window.UserManager.getUser("ahmed_khalid");
-    if (!user) {
-      // Create default user if somehow missing
-      const defaultUser = {
-        username: "ahmed_khalid",
-        firstName: "Ahmed",
-        lastName: "Khalid",
-        email: "ahmed@loomhub.com",
-        password: "pass123",
-        role: "student",
-        university: "MIU",
-        major: "Computer Science",
-        academicYear: "3"
-      };
-      window.UserManager.addUser(defaultUser);
-      user = defaultUser;
-    }
-    // Manually set as current user in localStorage
-    localStorage.setItem("app_current_user", user.username);
-  }
-
-  return user;
+  return window.UserManager.getCurrentUser();
 }
 
-// Load reminders from localStorage (user-specific)
 function loadReminders() {
-  // Ensure user is logged in
-  currentUser = ensureDefaultUser();
+  currentUser = getCurrentUser();
   if (!currentUser) {
-    console.error("Could not set up user");
+    document.getElementById("remindersContainer").innerHTML = `<div class="empty-message">🔒 Please log in to see your reminders.</div>`;
     return;
   }
 
   const key = getStorageKey();
-  if (!key) return;
-
   const stored = localStorage.getItem(key);
   if (stored) {
     reminders = JSON.parse(stored);
+    // Optional: verify that the first reminder matches expected subjects for this user
+    const expectedSubjects = getSubjectsForUser(currentUser);
+    const firstSubject = reminders[0]?.text.split(' – ')[0];
+    if (expectedSubjects.length > 0 && !expectedSubjects.includes(firstSubject)) {
+      console.log("Mismatch detected – regenerating correct subjects for", currentUser.username);
+      reminders = generateDefaultReminders(currentUser);
+      saveReminders();
+    }
   } else {
-    // Create default reminders for this user
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    const nextWeek = new Date(now);
-    nextWeek.setDate(now.getDate() + 7);
-    reminders = [
-      { id: Date.now() + 101, text: "Data Structures quiz", completed: false, priority: "high", dueDate: tomorrow.toISOString().slice(0, 16), notes: "Chapter 7 & 8, review Dijkstra" },
-      { id: Date.now() + 102, text: "Calculus problem set", completed: false, priority: "high", dueDate: new Date(now.getTime() + 3 * 86400000).toISOString().slice(0, 16), notes: "Integration by parts" },
-      { id: Date.now() + 103, text: "Read Networks ch.7", completed: false, priority: "medium", dueDate: nextWeek.toISOString().slice(0, 16), notes: "TCP/IP overview" },
-      { id: Date.now() + 104, text: "Group meeting DB project", completed: true, priority: "low", dueDate: "", notes: "Zoom link in email" },
-      { id: Date.now() + 105, text: "AI ethics paper outline", completed: false, priority: "medium", dueDate: "", notes: "" }
-    ];
+    reminders = generateDefaultReminders(currentUser);
     saveReminders();
   }
   renderAll();
@@ -89,9 +146,7 @@ function loadReminders() {
 function saveReminders() {
   if (!currentUser) return;
   const key = getStorageKey();
-  if (key) {
-    localStorage.setItem(key, JSON.stringify(reminders));
-  }
+  if (key) localStorage.setItem(key, JSON.stringify(reminders));
   updateStats();
   updateSidebarBadge();
 }
@@ -109,30 +164,31 @@ function updateStats() {
 
 function updateSidebarBadge() {
   const badge = document.getElementById("reminderBadge");
-  if (!badge) return;
-  const pending = reminders.filter(r => !r.completed).length;
-  badge.innerText = pending;
+  if (badge) badge.innerText = reminders.filter(r => !r.completed).length;
 }
 
 function formatDueDate(dueDateStr) {
   if (!dueDateStr) return null;
   const due = new Date(dueDateStr);
   const now = new Date();
-  const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
-  let statusClass = "";
-  let label = "";
+  const diffDays = Math.ceil((due - now) / (1000*60*60*24));
+  let statusClass = "", label = "";
   if (diffDays < 0) { statusClass = "overdue"; label = `Overdue by ${Math.abs(diffDays)}d`; }
   else if (diffDays === 0) { statusClass = "soon"; label = "Due today"; }
   else if (diffDays === 1) { statusClass = "soon"; label = "Due tomorrow"; }
   else if (diffDays <= 3) { statusClass = "soon"; label = `Due in ${diffDays} days`; }
   else { label = `Due ${due.toLocaleDateString()}`; }
-  const time = due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const time = due.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
   return { label: `${label} at ${time}`, class: statusClass };
 }
 
 function renderReminders() {
   const container = document.getElementById("remindersContainer");
   if (!container) return;
+  if (!currentUser) {
+    container.innerHTML = `<div class="empty-message">🔒 Please log in to see your reminders.</div>`;
+    return;
+  }
   if (reminders.length === 0) {
     container.innerHTML = `<div class="empty-message">✨ No reminders yet. Add one above ✨</div>`;
     return;
@@ -144,12 +200,10 @@ function renderReminders() {
     if (priority === "high") priorityBadge = `<span class="priority-badge priority-high">HIGH</span>`;
     else if (priority === "medium") priorityBadge = `<span class="priority-badge priority-medium">MEDIUM</span>`;
     else priorityBadge = `<span class="priority-badge priority-low">LOW</span>`;
-
     const dueInfo = formatDueDate(rem.dueDate);
     const dueHtml = dueInfo ? `<div class="reminder-due ${dueInfo.class}">📅 ${dueInfo.label}</div>` : "";
     const notesHtml = rem.notes ? `<div class="reminder-notes" id="notes-${rem.id}">📝 ${escapeHtml(rem.notes)}</div>` : "";
     const notesToggle = rem.notes ? `<button class="reminder-notes-toggle" data-id="${rem.id}">📄 Notes</button>` : "";
-
     return `
       <div class="reminder-item" data-id="${rem.id}">
         <input type="checkbox" class="reminder-check" ${isCompleted ? "checked" : ""} data-id="${rem.id}" />
@@ -162,35 +216,15 @@ function renderReminders() {
       </div>
     `;
   }).join("");
-
-  document.querySelectorAll('.reminder-check').forEach(cb => {
-    cb.addEventListener('change', (e) => {
-      const id = parseInt(e.target.getAttribute('data-id'));
-      toggleComplete(id, e.target.checked);
-    });
-  });
-  document.querySelectorAll('.delete-reminder').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = parseInt(btn.getAttribute('data-id'));
-      deleteReminder(id);
-    });
-  });
-  document.querySelectorAll('.reminder-notes-toggle').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = parseInt(btn.getAttribute('data-id'));
-      const notesDiv = document.getElementById(`notes-${id}`);
-      if (notesDiv) notesDiv.classList.toggle('show');
-    });
-  });
+  // Attach listeners
+  document.querySelectorAll('.reminder-check').forEach(cb => cb.addEventListener('change', (e) => { const id = parseInt(e.target.getAttribute('data-id')); toggleComplete(id, e.target.checked); }));
+  document.querySelectorAll('.delete-reminder').forEach(btn => btn.addEventListener('click', (e) => { const id = parseInt(btn.getAttribute('data-id')); deleteReminder(id); }));
+  document.querySelectorAll('.reminder-notes-toggle').forEach(btn => btn.addEventListener('click', (e) => { const id = parseInt(btn.getAttribute('data-id')); const notesDiv = document.getElementById(`notes-${id}`); if (notesDiv) notesDiv.classList.toggle('show'); }));
 }
 
 function toggleComplete(id, isChecked) {
   const reminder = reminders.find(r => r.id === id);
-  if (reminder) {
-    reminder.completed = isChecked;
-    saveReminders();
-    renderAll();
-  }
+  if (reminder) { reminder.completed = isChecked; saveReminders(); renderAll(); }
 }
 
 function deleteReminder(id) {
@@ -200,16 +234,8 @@ function deleteReminder(id) {
 }
 
 function addReminder(text, priority, dueDate, notes) {
-  const trimmed = text.trim();
-  if (trimmed === "") { alert("Please enter a reminder."); return false; }
-  reminders.unshift({
-    id: Date.now(),
-    text: trimmed,
-    completed: false,
-    priority: priority,
-    dueDate: dueDate || "",
-    notes: notes || ""
-  });
+  if (!text.trim()) { alert("Please enter a reminder."); return false; }
+  reminders.unshift({ id: Date.now(), text: text.trim(), completed: false, priority: priority, dueDate: dueDate || "", notes: notes || "" });
   saveReminders();
   renderAll();
   return true;
@@ -241,57 +267,48 @@ function setupSearch() {
   input.addEventListener("input", (e) => {
     const query = e.target.value.toLowerCase();
     document.querySelectorAll(".reminder-item").forEach(item => {
-      const textEl = item.querySelector(".reminder-text");
-      const title = textEl ? textEl.innerText.toLowerCase() : "";
+      const title = item.querySelector(".reminder-text")?.innerText.toLowerCase() || "";
       item.style.display = title.includes(query) ? "flex" : "none";
     });
   });
   searchDiv.replaceWith(input);
 }
 
-// Listen for login/logout changes across tabs
-window.addEventListener('storage', (e) => {
-  if (e.key === 'app_current_user' || e.key?.startsWith('user_')) {
-    loadReminders();
+// Manual reset button (add this to HTML if you want)
+function resetMyReminders() {
+  if (!currentUser) return;
+  if (confirm(`Reset all reminders for ${currentUser.firstName}? This will replace your current reminders with default subjects for your major.`)) {
+    reminders = generateDefaultReminders(currentUser);
+    saveReminders();
+    renderAll();
   }
-});
+}
 
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) loadReminders();
+window.addEventListener('storage', (e) => {
+  if (e.key === 'app_current_user') loadReminders();
 });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) loadReminders(); });
 
 document.addEventListener("DOMContentLoaded", () => {
   loadReminders();
   setupSearch();
-
   const addBtn = document.getElementById("addReminderBtn");
   const inputField = document.getElementById("reminderInput");
   const prioritySelect = document.getElementById("prioritySelect");
   const dueDateTime = document.getElementById("dueDateTime");
   const notesInput = document.getElementById("notesInput");
-
   addBtn.addEventListener("click", () => {
     if (addReminder(inputField.value, prioritySelect.value, dueDateTime.value, notesInput.value)) {
-      inputField.value = "";
-      prioritySelect.value = "medium";
-      dueDateTime.value = "";
-      notesInput.value = "";
-      inputField.focus();
+      inputField.value = ""; prioritySelect.value = "medium"; dueDateTime.value = ""; notesInput.value = ""; inputField.focus();
     }
   });
   inputField.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       if (addReminder(inputField.value, prioritySelect.value, dueDateTime.value, notesInput.value)) {
-        inputField.value = "";
-        prioritySelect.value = "medium";
-        dueDateTime.value = "";
-        notesInput.value = "";
+        inputField.value = ""; prioritySelect.value = "medium"; dueDateTime.value = ""; notesInput.value = "";
       }
     }
   });
-
-  document.getElementById("clearCompletedBtn").addEventListener("click", () => {
-    if (confirm("Delete all completed reminders?")) clearCompleted();
-  });
+  document.getElementById("clearCompletedBtn").addEventListener("click", () => { if (confirm("Delete all completed reminders?")) clearCompleted(); });
 });
