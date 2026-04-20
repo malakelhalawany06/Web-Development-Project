@@ -270,3 +270,52 @@ function syncToUserManager(updatedUser) {
     // Run initialization when DOM is ready
     document.addEventListener('DOMContentLoaded', initPage);
 })();
+
+// Update badges on any page that loads this script
+document.addEventListener('DOMContentLoaded', function() {
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) return;
+    
+    // Update notes badge
+    const notesBadge = document.getElementById('notesFilesBadge');
+    if (notesBadge) {
+        const userFiles = UserManager.getUserNotesFiles(currentUser.username);
+        notesBadge.textContent = userFiles.length;
+    }
+    
+    // Update study groups badge
+    const groupsBadge = document.getElementById('studyGroupsBadge');
+    if (groupsBadge) {
+        const userGroups = UserManager.getUserStudyGroups(currentUser.username);
+        const joinedCount = userGroups.filter(g => g.status === 'joined').length;
+        groupsBadge.textContent = joinedCount;
+    }
+});
+function updateAllBadges() {
+    console.log("Updating badges...");
+    
+    const currentUser = UserManager.getCurrentUser();
+    if (!currentUser) {
+        console.log("No user logged in, badges will stay 0");
+        return;
+    }
+    
+    console.log("Current user:", currentUser.username);
+    
+    // Update study groups badge
+    const groupsBadge = document.getElementById('studyGroupsBadge');
+    if (groupsBadge) {
+        const userGroups = UserManager.getUserStudyGroups(currentUser.username);
+        const joinedCount = userGroups.filter(g => g.status === 'joined').length;
+        console.log("Joined groups:", joinedCount);
+        groupsBadge.textContent = joinedCount;
+    }
+    
+    // Update notes files badge
+    const notesBadge = document.getElementById('notesFilesBadge');
+    if (notesBadge) {
+        const userFiles = UserManager.getUserNotesFiles(currentUser.username);
+        console.log("User files:", userFiles.length);
+        notesBadge.textContent = userFiles.length;
+    }
+}
