@@ -204,7 +204,7 @@ function saveToNotesFiles(title, desc, fileName, fileSize) {
     const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     
     // Add new file
-    userFiles.unshift({
+    userFiles.unshift({ //unshift will add the elements to the beginning of the array, and returns new length of the array
         fileName: fileName,
         title: title,           
         description: desc, 
@@ -221,6 +221,7 @@ function saveToNotesFiles(title, desc, fileName, fileSize) {
     
     console.log("File saved for user:", username);
 }
+//outputs 
 function downloadFile(fileName) {
     alert(`Downloading "${fileName}"...`);
 }
