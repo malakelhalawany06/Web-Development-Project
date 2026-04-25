@@ -97,7 +97,7 @@ function validateLogin() {
         window.location.href = 'instructor-dashboard.html';
     } else if (role === 'admin') {
         console.log('Redirecting to admin-dashboard.html'); // change as needed
-        window.location.href = 'index.html';
+        window.location.href = 'main-dashboard.html';
     } else {
         console.warn('Unknown role, redirecting to index.html');
         window.location.href = 'index.html';
