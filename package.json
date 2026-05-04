@@ -1,0 +1,24 @@
+{
+  "name": "web-development-project",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/malakelhalawany06/Web-Development-Project#readme",
+  "bugs": {
+    "url": "https://github.com/malakelhalawany06/Web-Development-Project/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malakelhalawany06/Web-Development-Project.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "mongodb": "^7.2.0"
+  }
+}
