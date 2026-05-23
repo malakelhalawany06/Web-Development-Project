@@ -1,28 +1,37 @@
-// db.js
+// config/db.js
 import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const uri = process.env.DB_URI;
+const dbName = process.env.DB_NAME;
+
 let client;
 let db;
 
-async function connectToDatabase() {
+if (!uri) throw new Error('DB_URI missing');
+if (!dbName) throw new Error('DB_NAME missing');
+
+export async function connectToDatabase() {
     if (db) return db;
-    
     try {
-        client = new MongoClient(uri);
+        client = client = new MongoClient(uri);
+// no extra TLS options needed
         await client.connect();
-        console.log('Successfully connected to MongoDB');
-        
-        // Use the database name you want, e.g., 'myDatabase'
-        db = client.db('myDatabase');
+        console.log('✅ Connected to MongoDB');
+        db = client.db(dbName);
         return db;
     } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
+        console.error('❌ MongoDB connection error:', error);
         throw error;
     }
 }
 
-export { connectToDatabase };
+export async function closeDatabaseConnection() {
+    if (client) {
+        await client.close();
+        db = null;
+        client = null;
+    }
+}
