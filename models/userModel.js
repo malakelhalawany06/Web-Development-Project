@@ -1,12 +1,18 @@
 // models/userModel.js
-import { connectToDatabase } from '../config/db.js';  // ← changed path
+import { connectToDatabase } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 
 const COLLECTION = 'users';
 
+// Find a user by their email OR mail field (accounts for mock student data structures)
 export async function findByEmail(email) {
     const db = await connectToDatabase();
-    return db.collection(COLLECTION).findOne({ email });
+    return db.collection(COLLECTION).findOne({
+        $or: [
+            { email: email },
+            { mail: email }
+        ]
+    });
 }
 
 export async function findById(userId) {

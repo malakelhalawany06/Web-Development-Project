@@ -8,6 +8,9 @@ import dotenv from 'dotenv';
 import { connectToDatabase } from './config/db.js';
 import { findByEmail, createUser, findById } from './models/userModel.js';
 
+
+
+
 // Initialize dotenv
 dotenv.config();
 
@@ -68,8 +71,16 @@ app.get('/', (req, res) => {
 });
 
 // Login POST
+// Login POST
+// Login POST
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    // FIX: Apply .trim() immediately to wipe out any accidental hidden spaces from the form fields
+    const email = req.body.email ? req.body.email.trim() : '';
+    const password = req.body.password ? req.body.password.trim() : '';
+
+    console.log("=== 🚀 NEW LOGIN ATTEMPT ===");
+    console.log("Form email received:", email);
+    console.log("Form password received:", password);
 
     if (!email || !password) {
         return res.render('index', { error: 'Email and password are required.' });
@@ -77,24 +88,40 @@ app.post('/login', async (req, res) => {
 
     try {
         const user = await findByEmail(email);
+        console.log("User found in MongoDB:", user ? "YES" : "NO");
+
         if (!user) {
+            console.log("❌ Login failed: No user matches that email in the database.");
             return res.render('index', { error: 'Invalid email or password.' });
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        // FIX: Extract the hash and apply .trim() to eliminate any hidden white spaces inside MongoDB Compass
+        const databaseHash = (user.password_hash || user.hashed_password || '').trim();
+        console.log("Database password hash found:", databaseHash ? "YES" : "NO");
+
+        if (!databaseHash) {
+            console.log("❌ Login failed: This user document has no password hash field at all!");
+            return res.render('index', { error: 'Invalid email or password.' });
+        }
+
+        // Compare the clean, trimmed password with the clean, trimmed hash
+        const isPasswordValid = await bcrypt.compare(password, databaseHash);
+        console.log("Does the typed password match the hash?", isPasswordValid ? "✅ YES!" : "❌ NO");
+
         if (!isPasswordValid) {
             return res.render('index', { error: 'Invalid email or password.' });
         }
 
         req.session.userId = user._id;
-        req.session.userEmail = user.email;
+        req.session.userEmail = user.email || user.mail; 
+        
+        console.log("🎉 SUCCESS! Redirecting user to dashboard...");
         res.redirect('/dashboard');
     } catch (error) {
         console.error('Login error:', error);
         res.render('index', { error: 'Internal server error.' });
     }
 });
-
 // Dashboard (protected)
 app.get('/dashboard', async (req, res) => {
     if (!req.session.userId) return res.redirect('/');
@@ -120,7 +147,7 @@ app.get('/logout', (req, res) => {
 
 // Signup form
 app.get('/signup', (req, res) => {
-    if (req.session.userId) return res.redirect('/dashboard');
+    if (req.session.userId) return res.redirect('/signup');
     res.render('signup', { error: null });
 });
 
