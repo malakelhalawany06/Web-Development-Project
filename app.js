@@ -169,3 +169,13 @@ connectToDatabase().then(() => {
     console.error('Failed to connect to database:', err);
     process.exit(1);
 });
+// Study Groups page
+app.get('/studygroups', (req, res) => {
+    if (!req.session.userId) return res.redirect('/');
+    res.render('studygroups', { user: res.locals.user });
+});
+// Notes & Files page
+app.get('/notes-files', (req, res) => {
+    if (!req.session.userId) return res.redirect('/');
+    res.render('notes&files', { user: res.locals.user });
+});
