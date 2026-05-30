@@ -6,8 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { connectToDatabase } from './config/db.js';
-import { findByEmail, createUser, findById } from './models/userModel.js';
-
+import { findByEmail, createUser, findById, findByUsername } from './models/userModel.js';
 
 
 
@@ -71,52 +70,51 @@ app.get('/', (req, res) => {
 });
 
 // Login POST
-// Login POST
-// Login POST
+// app.post('/login') inside app.js
 app.post('/login', async (req, res) => {
-    // FIX: Apply .trim() immediately to wipe out any accidental hidden spaces from the form fields
     const email = req.body.email ? req.body.email.trim() : '';
     const password = req.body.password ? req.body.password.trim() : '';
 
-    console.log("=== 🚀 NEW LOGIN ATTEMPT ===");
-    console.log("Form email received:", email);
-    console.log("Form password received:", password);
+    console.log("=== 🚀 Secure Multi-Collection Login Attempt ===");
 
     if (!email || !password) {
         return res.render('index', { error: 'Email and password are required.' });
     }
 
     try {
+        // Call your newly updated findByEmail function!
         const user = await findByEmail(email);
-        console.log("User found in MongoDB:", user ? "YES" : "NO");
 
         if (!user) {
-            console.log("❌ Login failed: No user matches that email in the database.");
+            console.log("❌ Login failed: Email not found in any user collection.");
             return res.render('index', { error: 'Invalid email or password.' });
         }
 
-        // FIX: Extract the hash and apply .trim() to eliminate any hidden white spaces inside MongoDB Compass
+        // user.role is automatically attached by your new model logic!
+        console.log(`✅ User identified! Collection: [${user.role.toUpperCase()}]`);
+
         const databaseHash = (user.password_hash || user.hashed_password || '').trim();
-        console.log("Database password hash found:", databaseHash ? "YES" : "NO");
 
         if (!databaseHash) {
-            console.log("❌ Login failed: This user document has no password hash field at all!");
+            console.log("❌ Login failed: This user document is missing a password hash field.");
             return res.render('index', { error: 'Invalid email or password.' });
         }
 
-        // Compare the clean, trimmed password with the clean, trimmed hash
         const isPasswordValid = await bcrypt.compare(password, databaseHash);
-        console.log("Does the typed password match the hash?", isPasswordValid ? "✅ YES!" : "❌ NO");
+        console.log("Does the typed password match?", isPasswordValid ? "✅ YES!" : "❌ NO");
 
         if (!isPasswordValid) {
             return res.render('index', { error: 'Invalid email or password.' });
         }
 
+        // Track their unique session data
         req.session.userId = user._id;
-        req.session.userEmail = user.email || user.mail; 
-        
-        console.log("🎉 SUCCESS! Redirecting user to dashboard...");
+        req.session.userEmail = user.email || user.mail;
+        req.session.userRole = user.role; // Stores 'students', 'instructors', or 'admins'
+
+        console.log(`🎉 SUCCESS! Routing ${user.role} to their dashboard...`);
         res.redirect('/dashboard');
+
     } catch (error) {
         console.error('Login error:', error);
         res.render('index', { error: 'Internal server error.' });
@@ -145,46 +143,114 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Signup form
+// 1. Updated Signup Form GET Route
 app.get('/signup', (req, res) => {
-    if (req.session.userId) return res.redirect('/signup');
-    res.render('signup', { error: null });
+    if (req.session.userId) return res.redirect('/dashboard');
+    // Pass empty validation blocks initially so the page loads cleanly
+    res.render('signup', { errors: {}, oldData: {} });
 });
 
-// Signup POST
+// 2. Updated Signup Submission POST Route
 app.post('/signup', async (req, res) => {
-    const { email, password, fullName } = req.body;
+    const errors = {};
+    
+    // Capture and trim all properties
+    const fname = req.body.fname ? req.body.fname.trim() : '';
+    const lname = req.body.lname ? req.body.lname.trim() : '';
+    const email = req.body.email ? req.body.email.trim() : '';
+    const university = req.body.university ? req.body.university.trim() : '';
+    const major = req.body.major ? req.body.major.trim() : '';
+    const username = req.body.username ? req.body.username.trim() : '';
+    const password = req.body.password ? req.body.password : '';
+    const confirmPassword = req.body.confirmPassword ? req.body.confirmPassword : '';
+    const role = req.body.role ? req.body.role.trim() : 'Student';
+    const year = req.body.year ? req.body.year.trim() : '';
 
-    if (!email || !password || !fullName) {
-        return res.render('signup', { error: 'All fields are required.' });
+    // Cache inputted items to re-populate forms if validation fails
+    const oldData = { fname, lname, email, university, major, username, role, year };
+
+    // --- FIELD VALIDATIONS ---
+    if (!fname) errors.fname = "First name is required.";
+    if (!lname) errors.lname = "Last name is required.";
+    if (!email) errors.email = "Email address is required.";
+    if (!username) errors.username = "Username creation is required.";
+    if (!password) errors.password = "Password field cannot be empty.";
+    if(password.length<8 )errors.password="Password must be at least 8 characters long.";
+    if (!confirmPassword) errors.confirmPassword = "Please confirm your password.";
+    
+    // Validate Academic Year strictly if the registrant is a Student
+    if (role === 'Student' && !year) {
+        errors.year = "Students must supply an academic year tracking selection.";
+    }
+
+    // Verify confirmation password matches
+    if (password && confirmPassword && password !== confirmPassword) {
+        errors.confirmPassword = "Passwords do not match.";
     }
 
     try {
-        const existing = await findByEmail(email);
-        if (existing) {
-            return res.render('signup', { error: 'Email already registered.' });
+        // --- UNIQUE AVAILABILITY CHECKS ---
+        if (email) {
+            const emailExists = await findByEmail(email);
+            if (emailExists) errors.email = "This email is already in use.";
         }
 
-        const saltRounds = 10;
-        const password_hash = await bcrypt.hash(password, saltRounds);
+        if (username) {
+            const usernameExists = await findByUsername(username);
+            if (usernameExists) errors.username = "This username is already taken.";
+        }
 
-        const newUser = await createUser({
-            email,
-            password_hash,
-            fullName,
+        // If any error exists, bounce back immediately with specific messages
+        if (Object.keys(errors).length > 0) {
+            return res.render('signup', { errors, oldData });
+        }
+
+        // --- ENCRYPTION AND SAVE PROCESS ---
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Assign the correct MongoDB target collection destination 
+        const databaseCollectionTarget = (role === 'Instructor') ? 'instructors' : 'students';
+
+        // Prepare schema payload properties
+        const newUserDocument = {
+            name: `${fname} ${lname}`,
+            username: username,
+            // Match structural variations seamlessly across collection designs
+            
+            hashed_password: hashedPassword,
+            university: university,
+            major: major,
             createdAt: new Date(),
             updatedAt: new Date()
-        });
+        };
 
-        req.session.userId = newUser.id || newUser._id;
-        req.session.userEmail = newUser.email;
+        // Save email field conditionally to balance collection requirements
+        if (role === 'Instructor') {
+            newUserDocument.mail = email; 
+            newUserDocument.subject = "To Be Assigned"; // Field requested for instructors
+        } else {
+            newUserDocument.email = email;
+            newUserDocument.year = parseInt(year); // Only save academic tracking to student
+        }
+
+        // Write directly to your separate collection architectures
+        const savedAccount = await createUser(databaseCollectionTarget, newUserDocument);
+
+        // Build active session profile
+        req.session.userId = savedAccount.id || savedAccount._id;
+        req.session.userEmail = email;
+        req.session.userRole = databaseCollectionTarget; // Saves 'students' or 'instructors'
+
+        console.log(`🎉 Success! Registered new ${role} successfully inside collection [${databaseCollectionTarget}]`);
         res.redirect('/dashboard');
-    } catch (error) {
-        console.error('Signup error:', error);
-        res.render('signup', { error: 'Failed to create account.' });
+
+    } catch (err) {
+        console.error('Account Creation Error Block:', err);
+        errors.username = "Internal database error processing submission.";
+        res.render('signup', { errors, oldData });
     }
 });
-
 // ------------------------------------------------------------------
 // Start server
 // ------------------------------------------------------------------

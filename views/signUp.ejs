@@ -17,66 +17,65 @@
     </div>
 
     <div id="details">
-        <% if (error) { %>
-            <div class="error" style="color: #dc2626; margin-bottom: 10px;"><%= error %></div>
-        <% } %>
-
         <form action="/signup" method="POST">
+            
             <label for="fname">First Name:</label><br>
-            <span id="fnameError"></span>
-            <input type="text" id="fname" name="fname" placeholder="Enter First Name" required><br>
+            <span id="fnameError" style="color: #dc2626;"><%= (locals.errors && errors.fname) ? errors.fname : '' %></span>
+            <input type="text" id="fname" name="fname" placeholder="Enter First Name" value="<%= locals.oldData ? oldData.fname : '' %>"><br>
 
             <label for="lname">Last Name:</label><br>
-            <span id="lnameError"></span>
-            <input id="lname" name="lname" type="text" placeholder="Enter Last Name" required><br>
+            <span id="lnameError" style="color: #dc2626;"><%= (locals.errors && errors.lname) ? errors.lname : '' %></span>
+            <input id="lname" name="lname" type="text" placeholder="Enter Last Name" value="<%= locals.oldData ? oldData.lname : '' %>"><br>
 
             <label for="email">Email:</label><br>
-            <span id="emailError"></span>
-            <input id="email" name="email" type="email" placeholder="Enter Email" required><br>
+            <span id="emailError" style="color: #dc2626;"><%= (locals.errors && errors.email) ? errors.email : '' %></span>
+            <input id="email" name="email" type="email" placeholder="Enter Email" value="<%= locals.oldData ? oldData.email : '' %>"><br>
 
             <label for="uni">University:</label>
             <select id="uni" name="university">
-                <option value="MIU">MIU</option>
-                <option value="AAST">AAST</option>
-                <option value="BUE">BUE</option>
-                <option value="MSA">MSA</option>
-                <option value="GUC">GUC</option>
-                <option value="AUC">AUC</option>
+                <option value="MIU" <%= (locals.oldData && oldData.university === 'MIU') ? 'selected' : '' %>>MIU</option>
+                <option value="AAST" <%= (locals.oldData && oldData.university === 'AAST') ? 'selected' : '' %>>AAST</option>
+                <option value="BUE" <%= (locals.oldData && oldData.university === 'BUE') ? 'selected' : '' %>>BUE</option>
+                <option value="MSA" <%= (locals.oldData && oldData.university === 'MSA') ? 'selected' : '' %>>MSA</option>
+                <option value="GUC" <%= (locals.oldData && oldData.university === 'GUC') ? 'selected' : '' %>>GUC</option>
+                <option value="AUC" <%= (locals.oldData && oldData.university === 'AUC') ? 'selected' : '' %>>AUC</option>
             </select><br>
 
-            <label for="year">Academic Year:</label><br>
-            <span id="yearError"></span>
-            <select id="year" name="year">
-                <% for(let i=1; i<=7; i++) { %>
-                    <option value="<%= i %>"><%= i %></option>
-                <% } %>
-            </select><br>
+            <div id="academicYearContainer">
+                <label for="year">Academic Year:</label><br>
+                <span id="yearError" style="color: #dc2626;"><%= (locals.errors && errors.year) ? errors.year : '' %></span>
+                <select id="year" name="year">
+                    <% for(let i=1; i<=7; i++) { %>
+                        <option value="<%= i %>" <%= (locals.oldData && oldData.year == i) ? 'selected' : '' %>><%= i %></option>
+                    <% } %>
+                </select><br>
+            </div>
 
             <label for="major">Major:</label><br>
             <select id="major" name="major">
-                <option value="Computer Science">Computer Science</option>
-                <option value="Law">Law</option>
-                <option value="Business">Business</option>
-                <option value="Dentistry">Dentistry</option>
-                <option value="Arts">Arts</option>
+                <option value="Computer Science" <%= (locals.oldData && oldData.major === 'Computer Science') ? 'selected' : '' %>>Computer Science</option>
+                <option value="Law" <%= (locals.oldData && oldData.major === 'Law') ? 'selected' : '' %>>Law</option>
+                <option value="Business" <%= (locals.oldData && oldData.major === 'Business') ? 'selected' : '' %>>Business</option>
+                <option value="Dentistry" <%= (locals.oldData && oldData.major === 'Dentistry') ? 'selected' : '' %>>Dentistry</option>
+                <option value="Arts" <%= (locals.oldData && oldData.major === 'Arts') ? 'selected' : '' %>>Arts</option>
             </select><br>
 
             <label for="username">Create Username:</label><br>
-            <span id="usernameError"></span>
-            <input type="text" id="username" name="username" placeholder="Enter Username" required><br>
+            <span id="usernameError" style="color: #dc2626;"><%= (locals.errors && errors.username) ? errors.username : '' %></span>
+            <input type="text" id="username" name="username" placeholder="Enter Username" value="<%= locals.oldData ? oldData.username : '' %>"><br>
 
             <label for="pass">Password:</label><br>
-            <span id="passError"></span>
-            <input type="password" id="pass" name="password" placeholder="Enter Password" required><br>
+            <span id="passError" style="color: #dc2626;"><%= (locals.errors && errors.password) ? errors.password : '' %></span>
+            <input type="password" id="pass" name="password" placeholder="Enter Password"><br>
 
             <label for="confirm">Re-enter Password:</label><br>
-            <span id="confirmError"></span>
-            <input type="password" id="confirm" name="confirmPassword" placeholder="Re-enter Password" required><br>
+            <span id="confirmError" style="color: #dc2626;"><%= (locals.errors && errors.confirmPassword) ? errors.confirmPassword : '' %></span>
+            <input type="password" id="confirm" name="confirmPassword" placeholder="Re-enter Password"><br>
 
             <label for="role">Role:</label>
             <select id="role" name="role">
-                <option value="Instructor">Instructor</option>
-                <option value="Student">Student</option>
+                <option value="Student" <%= (locals.oldData && oldData.role === 'Student') ? 'selected' : '' %>>Student</option>
+                <option value="Instructor" <%= (locals.oldData && oldData.role === 'Instructor') ? 'selected' : '' %>>Instructor</option>
             </select><br>
 
             <button type="submit">Sign Up</button>
@@ -89,5 +88,21 @@
 
     <script src="/js/users.js"></script>
     <script src="/js/signUp.js"></script>
+
+    <script>
+        const roleSelect = document.getElementById('role');
+        const academicYearContainer = document.getElementById('academicYearContainer');
+
+        function toggleAcademicYearField() {
+            if (roleSelect.value === 'Instructor') {
+                academicYearContainer.style.display = 'none';
+            } else {
+                academicYearContainer.style.display = 'block';
+            }
+        }
+
+        roleSelect.addEventListener('change', toggleAcademicYearField);
+        window.addEventListener('DOMContentLoaded', toggleAcademicYearField);
+    </script>
 </body>
 </html>
