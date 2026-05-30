@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LoomHub — Sign Up</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="/css/logIn.css">
+    <link rel="stylesheet" href="/css/project web.css">
+</head>
+<body>
+    <h2>Welcome to </h2>
+    <div class="main-logo"> 
+        <div class="logo-icon">📚</div>
+        <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div id="details">
+        <% if (error) { %>
+            <div class="error" style="color: #dc2626; margin-bottom: 10px;"><%= error %></div>
+        <% } %>
+
+        <form action="/signup" method="POST">
+            <label for="fname">First Name:</label><br>
+            <span id="fnameError"></span>
+            <input type="text" id="fname" name="fname" placeholder="Enter First Name" required><br>
+
+            <label for="lname">Last Name:</label><br>
+            <span id="lnameError"></span>
+            <input id="lname" name="lname" type="text" placeholder="Enter Last Name" required><br>
+
+            <label for="email">Email:</label><br>
+            <span id="emailError"></span>
+            <input id="email" name="email" type="email" placeholder="Enter Email" required><br>
+
+            <label for="uni">University:</label>
+            <select id="uni" name="university">
+                <option value="MIU">MIU</option>
+                <option value="AAST">AAST</option>
+                <option value="BUE">BUE</option>
+                <option value="MSA">MSA</option>
+                <option value="GUC">GUC</option>
+                <option value="AUC">AUC</option>
+            </select><br>
+
+            <label for="year">Academic Year:</label><br>
+            <span id="yearError"></span>
+            <select id="year" name="year">
+                <% for(let i=1; i<=7; i++) { %>
+                    <option value="<%= i %>"><%= i %></option>
+                <% } %>
+            </select><br>
+
+            <label for="major">Major:</label><br>
+            <select id="major" name="major">
+                <option value="Computer Science">Computer Science</option>
+                <option value="Law">Law</option>
+                <option value="Business">Business</option>
+                <option value="Dentistry">Dentistry</option>
+                <option value="Arts">Arts</option>
+            </select><br>
+
+            <label for="username">Create Username:</label><br>
+            <span id="usernameError"></span>
+            <input type="text" id="username" name="username" placeholder="Enter Username" required><br>
+
+            <label for="pass">Password:</label><br>
+            <span id="passError"></span>
+            <input type="password" id="pass" name="password" placeholder="Enter Password" required><br>
+
+            <label for="confirm">Re-enter Password:</label><br>
+            <span id="confirmError"></span>
+            <input type="password" id="confirm" name="confirmPassword" placeholder="Re-enter Password" required><br>
+
+            <label for="role">Role:</label>
+            <select id="role" name="role">
+                <option value="Instructor">Instructor</option>
+                <option value="Student">Student</option>
+            </select><br>
+
+            <button type="submit">Sign Up</button>
+            
+            <div style="margin-top: 15px;">
+                <span>Have an account already? <a href="/">login</a></span>
+            </div>
+        </form>
+    </div>
+
+    <script src="/js/users.js"></script>
+    <script src="/js/signUp.js"></script>
+</body>
+</html>

@@ -5,20 +5,27 @@ import bcrypt from 'bcrypt';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { connectToDatabase } from './config/db.js';   // ← changed path
+import { connectToDatabase } from './config/db.js';
 import { findByEmail, createUser, findById } from './models/userModel.js';
 
+// Initialize dotenv
 dotenv.config();
 
+// Fix for __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+const app = express(); // Declared only ONCE
 const PORT = process.env.PORT || 3000;
 
 // ------------------------------------------------------------------
-// Middleware
+// Settings & Middleware
 // ------------------------------------------------------------------
+
+// Set EJS as view engine (Moved up for clarity)
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -29,25 +36,25 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        secure: false,        // set true if using HTTPS
-        maxAge: 1000 * 60 * 60 * 24   // 1 day
+        secure: false, // set true if using HTTPS
+        maxAge: 1000 * 60 * 60 * 24 // 1 day
     }
 }));
 
 // Make user available to all templates
 app.use(async (req, res, next) => {
-    if (req.session.userId) {
-        const user = await findById(req.session.userId);
-        res.locals.user = user;
-    } else {
+    try {
+        if (req.session.userId) {
+            const user = await findById(req.session.userId);
+            res.locals.user = user;
+        } else {
+            res.locals.user = null;
+        }
+    } catch (error) {
         res.locals.user = null;
     }
     next();
 });
-
-// Set EJS as view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
 // ------------------------------------------------------------------
 // Routes
@@ -56,7 +63,8 @@ app.set('views', path.join(__dirname, 'views'));
 // Home page = login
 app.get('/', (req, res) => {
     if (req.session.userId) return res.redirect('/dashboard');
-    res.render('index', { error: null });
+    // Ensure your file in /views is named index.ejs
+    res.render('index', { error: null }); 
 });
 
 // Login POST
@@ -83,19 +91,23 @@ app.post('/login', async (req, res) => {
         res.redirect('/dashboard');
     } catch (error) {
         console.error('Login error:', error);
-        res.render('index', { error: 'Internal server error. Please try again later.' });
+        res.render('index', { error: 'Internal server error.' });
     }
 });
 
 // Dashboard (protected)
 app.get('/dashboard', async (req, res) => {
     if (!req.session.userId) return res.redirect('/');
-    const user = await findById(req.session.userId);
-    if (!user) {
-        req.session.destroy();
-        return res.redirect('/');
+    try {
+        const user = await findById(req.session.userId);
+        if (!user) {
+            req.session.destroy();
+            return res.redirect('/');
+        }
+        res.render('dashboard', { user });
+    } catch (err) {
+        res.redirect('/');
     }
-    res.render('dashboard', { user });
 });
 
 // Logout
@@ -112,7 +124,7 @@ app.get('/signup', (req, res) => {
     res.render('signup', { error: null });
 });
 
-// Signup POST (create user with hashed password)
+// Signup POST
 app.post('/signup', async (req, res) => {
     const { email, password, fullName } = req.body;
 
@@ -123,7 +135,7 @@ app.post('/signup', async (req, res) => {
     try {
         const existing = await findByEmail(email);
         if (existing) {
-            return res.render('signup', { error: 'Email already registered. Please log in.' });
+            return res.render('signup', { error: 'Email already registered.' });
         }
 
         const saltRounds = 10;
@@ -137,12 +149,12 @@ app.post('/signup', async (req, res) => {
             updatedAt: new Date()
         });
 
-        req.session.userId = newUser.id;
+        req.session.userId = newUser.id || newUser._id;
         req.session.userEmail = newUser.email;
         res.redirect('/dashboard');
     } catch (error) {
         console.error('Signup error:', error);
-        res.render('signup', { error: 'Failed to create account. Please try again.' });
+        res.render('signup', { error: 'Failed to create account.' });
     }
 });
 
@@ -152,7 +164,6 @@ app.post('/signup', async (req, res) => {
 connectToDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Server running at http://localhost:${PORT}`);
-        console.log(`   Login page: http://localhost:${PORT}/`);
     });
 }).catch(err => {
     console.error('Failed to connect to database:', err);
