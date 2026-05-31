@@ -1,4 +1,4 @@
-// server.js
+// server.js / app.js
 import express from 'express';
 import session from 'express-session';
 import bcrypt from 'bcrypt';
@@ -8,8 +8,6 @@ import dotenv from 'dotenv';
 import { connectToDatabase } from './config/db.js';
 import { findByEmail, createUser, findById, findByUsername } from './models/userModel.js';
 
-
-
 // Initialize dotenv
 dotenv.config();
 
@@ -17,14 +15,14 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express(); // Declared only ONCE
+const app = express(); 
 const PORT = process.env.PORT || 3000;
 
 // ------------------------------------------------------------------
 // Settings & Middleware
 // ------------------------------------------------------------------
 
-// Set EJS as view engine (Moved up for clarity)
+// Set EJS as view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -43,12 +41,22 @@ app.use(session({
     }
 }));
 
-// Make user available to all templates
+// Make user available to all templates with normalized properties for the partial sidebars
 app.use(async (req, res, next) => {
     try {
         if (req.session.userId) {
             const user = await findById(req.session.userId);
-            res.locals.user = user;
+            if (user) {
+                // Ensure role normalization matches what's stored in session if user document properties vary
+                user.role = req.session.userRole; 
+                
+                // Unify email properties so templates don't break if schema uses .mail vs .email
+                user.email = user.email || user.mail;
+                
+                res.locals.user = user;
+            } else {
+                res.locals.user = null;
+            }
         } else {
             res.locals.user = null;
         }
@@ -65,12 +73,10 @@ app.use(async (req, res, next) => {
 // Home page = login
 app.get('/', (req, res) => {
     if (req.session.userId) return res.redirect('/dashboard');
-    // Ensure your file in /views is named index.ejs
     res.render('index', { error: null }); 
 });
 
 // Login POST
-// app.post('/login') inside app.js
 app.post('/login', async (req, res) => {
     const email = req.body.email ? req.body.email.trim() : '';
     const password = req.body.password ? req.body.password.trim() : '';
@@ -82,7 +88,7 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        // Call your newly updated findByEmail function!
+        // findByEmail searches across students, instructors, and admins collections
         const user = await findByEmail(email);
 
         if (!user) {
@@ -90,7 +96,7 @@ app.post('/login', async (req, res) => {
             return res.render('index', { error: 'Invalid email or password.' });
         }
 
-        // user.role is automatically attached by your new model logic!
+        // user.role is automatically attached by your model framework ('students', 'instructors', 'admins')
         console.log(`✅ User identified! Collection: [${user.role.toUpperCase()}]`);
 
         const databaseHash = (user.password_hash || user.hashed_password || '').trim();
@@ -110,9 +116,9 @@ app.post('/login', async (req, res) => {
         // Track their unique session data
         req.session.userId = user._id;
         req.session.userEmail = user.email || user.mail;
-        req.session.userRole = user.role; // Stores 'students', 'instructors', or 'admins'
+        req.session.userRole = user.role.toLowerCase(); // Stores 'students', 'instructors', or 'admins'
 
-        console.log(`🎉 SUCCESS! Routing ${user.role} to their dashboard...`);
+        console.log(`🎉 SUCCESS! Routing ${user.role} to their respective dashboard view...`);
         res.redirect('/dashboard');
 
     } catch (error) {
@@ -120,17 +126,32 @@ app.post('/login', async (req, res) => {
         res.render('index', { error: 'Internal server error.' });
     }
 });
-// Dashboard (protected)
+
+// Central Dashboard Route (Acts as the router to specific layout files)
 app.get('/dashboard', async (req, res) => {
-    if (!req.session.userId) return res.redirect('/');
+    if (!req.session.userId || !req.session.userRole) return res.redirect('/');
+    
     try {
-        const user = await findById(req.session.userId);
+        const user = res.locals.user;
         if (!user) {
             req.session.destroy();
             return res.redirect('/');
         }
-        res.render('dashboard', { user });
+
+        // Explicit structural evaluation across potential session role strings
+        if (req.session.userRole === 'students') {
+            return res.render('student-dashboard', { user });
+        } else if (req.session.userRole === 'instructors') {
+            return res.render('instructor-dashboard', { user });
+        } else if (req.session.userRole === 'admins') {
+            return res.render('admin-dashboard', { user });
+        } else {
+            console.error(`Unknown role caught in engine navigation: ${req.session.userRole}`);
+            return res.redirect('/');
+        }
+        
     } catch (err) {
+        console.error('Dashboard Engine Error:', err);
         res.redirect('/');
     }
 });
@@ -143,14 +164,13 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// 1. Updated Signup Form GET Route
+// Signup Form GET Route
 app.get('/signup', (req, res) => {
     if (req.session.userId) return res.redirect('/dashboard');
-    // Pass empty validation blocks initially so the page loads cleanly
     res.render('signup', { errors: {}, oldData: {} });
 });
 
-// 2. Updated Signup Submission POST Route
+// Signup Submission POST Route
 app.post('/signup', async (req, res) => {
     const errors = {};
     
@@ -163,11 +183,12 @@ app.post('/signup', async (req, res) => {
     const username = req.body.username ? req.body.username.trim() : '';
     const password = req.body.password ? req.body.password : '';
     const confirmPassword = req.body.confirmPassword ? req.body.confirmPassword : '';
-    const role = req.body.role ? req.body.role.trim() : 'Student';
+    
+    // Read clean user input role safely
+    const rawRole = req.body.role ? req.body.role.trim() : 'Student';
     const year = req.body.year ? req.body.year.trim() : '';
 
-    // Cache inputted items to re-populate forms if validation fails
-    const oldData = { fname, lname, email, university, major, username, role, year };
+    const oldData = { fname, lname, email, university, major, username, role: rawRole, year };
 
     // --- FIELD VALIDATIONS ---
     if (!fname) errors.fname = "First name is required.";
@@ -175,11 +196,11 @@ app.post('/signup', async (req, res) => {
     if (!email) errors.email = "Email address is required.";
     if (!username) errors.username = "Username creation is required.";
     if (!password) errors.password = "Password field cannot be empty.";
-    if(password.length<8 )errors.password="Password must be at least 8 characters long.";
+    if (password.length < 8) errors.password = "Password must be at least 8 characters long.";
     if (!confirmPassword) errors.confirmPassword = "Please confirm your password.";
     
     // Validate Academic Year strictly if the registrant is a Student
-    if (role === 'Student' && !year) {
+    if (rawRole === 'Student' && !year) {
         errors.year = "Students must supply an academic year tracking selection.";
     }
 
@@ -200,7 +221,11 @@ app.post('/signup', async (req, res) => {
             if (usernameExists) errors.username = "This username is already taken.";
         }
 
-        // If any error exists, bounce back immediately with specific messages
+        // Fallback catch if an unauthorized user attempts an admin signup payload trick
+        if (rawRole.toLowerCase() === 'admin' || rawRole.toLowerCase() === 'admins') {
+            errors.role = "Admin accounts cannot be generated through this submission route.";
+        }
+
         if (Object.keys(errors).length > 0) {
             return res.render('signup', { errors, oldData });
         }
@@ -209,15 +234,13 @@ app.post('/signup', async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Assign the correct MongoDB target collection destination 
-        const databaseCollectionTarget = (role === 'Instructor') ? 'instructors' : 'students';
+        // Map frontend role option strings to the exact MongoDB collection names
+        const databaseCollectionTarget = (rawRole === 'Instructor') ? 'instructors' : 'students';
 
         // Prepare schema payload properties
         const newUserDocument = {
             name: `${fname} ${lname}`,
             username: username,
-            // Match structural variations seamlessly across collection designs
-            
             hashed_password: hashedPassword,
             university: university,
             major: major,
@@ -225,24 +248,24 @@ app.post('/signup', async (req, res) => {
             updatedAt: new Date()
         };
 
-        // Save email field conditionally to balance collection requirements
-        if (role === 'Instructor') {
+        // Save structural data elements conditionally
+        if (databaseCollectionTarget === 'instructors') {
             newUserDocument.mail = email; 
-            newUserDocument.subject = "To Be Assigned"; // Field requested for instructors
+            newUserDocument.subject = "To Be Assigned"; 
         } else {
             newUserDocument.email = email;
-            newUserDocument.year = parseInt(year); // Only save academic tracking to student
+            newUserDocument.academic_year = parseInt(year); 
         }
 
-        // Write directly to your separate collection architectures
+        // Save directly into your target architecture
         const savedAccount = await createUser(databaseCollectionTarget, newUserDocument);
 
-        // Build active session profile
+        // Build active user session profile matching layout dependencies
         req.session.userId = savedAccount.id || savedAccount._id;
         req.session.userEmail = email;
-        req.session.userRole = databaseCollectionTarget; // Saves 'students' or 'instructors'
+        req.session.userRole = databaseCollectionTarget; // Exact match to 'students' or 'instructors'
 
-        console.log(`🎉 Success! Registered new ${role} successfully inside collection [${databaseCollectionTarget}]`);
+        console.log(`🎉 Success! Registered new user inside collection [${databaseCollectionTarget}]`);
         res.redirect('/dashboard');
 
     } catch (err) {
@@ -251,6 +274,19 @@ app.post('/signup', async (req, res) => {
         res.render('signup', { errors, oldData });
     }
 });
+
+// Study Groups page
+app.get('/studygroups', (req, res) => {
+    if (!req.session.userId) return res.redirect('/');
+    res.render('studygroups', { user: res.locals.user });
+});
+
+// Notes & Files page
+app.get('/notes-files', (req, res) => {
+    if (!req.session.userId) return res.redirect('/');
+    res.render('notes&files', { user: res.locals.user });
+});
+
 // ------------------------------------------------------------------
 // Start server
 // ------------------------------------------------------------------
@@ -261,14 +297,4 @@ connectToDatabase().then(() => {
 }).catch(err => {
     console.error('Failed to connect to database:', err);
     process.exit(1);
-});
-// Study Groups page
-app.get('/studygroups', (req, res) => {
-    if (!req.session.userId) return res.redirect('/');
-    res.render('studygroups', { user: res.locals.user });
-});
-// Notes & Files page
-app.get('/notes-files', (req, res) => {
-    if (!req.session.userId) return res.redirect('/');
-    res.render('notes&files', { user: res.locals.user });
 });

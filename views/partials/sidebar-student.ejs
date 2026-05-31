@@ -9,7 +9,7 @@
     <a class="nav-item active" href="/dashboard">
       <span class="nav-icon">🏠</span> Dashboard
     </a>
-    <a class="nav-item" href="/profile">
+    <a class="nav-item" href="/profile" target="_self">
       <span class="nav-icon">👤</span> My Profile
     </a>
   </div>
@@ -19,7 +19,7 @@
     <a class="nav-item" href="/gpa-calculator">
       <span class="nav-icon">🎓</span> GPA Calculator
     </a>
-    <a class="nav-item" href="/reminders">
+    <a class="nav-item" href="/tasks-reminders">
       <span class="nav-icon">⏰</span> Tasks & Reminders
       <span class="nav-badge warn">2</span>
     </a>
@@ -27,54 +27,44 @@
 
   <div class="sidebar-section">
     <div class="sidebar-label">Resources</div>
-    <a class="nav-item" href="/notes">
-      <span class="nav-icon">📂</span> Notes & Files
-      <span class="nav-badge" id="notesFilesBadge">0</span>
+    <a class="nav-item" href="/notes-files">
+        <span class="nav-icon">📂</span> Notes & Files
+        <span class="nav-badge" id="notesFilesBadge">0</span>
     </a>
     <a class="nav-item" href="/shared-materials">
-      <span class="nav-icon">🔗</span> Shared Materials
+        <span class="nav-icon">🔗</span> Shared Materials
     </a>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-label">Collaborate</div>
-    <a class="nav-item" href="/study-groups">
+    <a class="nav-item" href="/studygroups">
       <span class="nav-icon">👥</span> Study Groups
       <span class="nav-badge green">0</span>
     </a>
     <a class="nav-item" href="/project-manager">
       <span class="nav-icon">🗂</span> Project Manager
     </a>
-    <a class="nav-item" href="/qna">
+    <a class="nav-item" href="/qa-forum">
       <span class="nav-icon">💬</span> Q&amp;A Forum
     </a>
   </div>
 
-  <div class="sidebar-section">
-    <div class="sidebar-label">Admin Panel</div>
-    <a class="nav-item" href="/user-management">
-      <span class="nav-icon">🛡</span> User Management
-    </a>
-    <a class="nav-item" href="/analytics">
-      <span class="nav-icon">📊</span> Analytics
-    </a>
-  </div>
-
-  <!-- Sidebar Profile (dynamic) -->
   <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='/profile'">
-    <div class="avatar">
-      <%= user.fullName.charAt(0) %><%= user.fullName.split(' ')[1]?.charAt(0) || '' %>
-    </div>
-    <div class="profile-info">
-      <div class="name"><%= user.fullName %></div>
-      <div class="role"><%= user.major || 'Student' %> · Yr <%= user.year || '?' %></div>
+  <div class="avatar">
+    <%= user && user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'ST' %>
+  </div>
+  <div class="profile-info">
+    <div class="name"><%= user && user.name ? user.name : 'Student Account' %></div>
+    <div class="role">
+      <%= user && user.major ? user.major : 'General Science' %>
+      
+      <% if (user && (user.academic_year !== undefined && user.academic_year !== null)) { %> 
+        · Yr <%= user.academic_year %>
+      <% } else { %>
+        · Yr 1
+      <% } %>
     </div>
   </div>
-
-  <!-- Logout button (optional) -->
-  <div class="sidebar-section" style="margin-top: auto;">
-    <a class="nav-item" href="/logout">
-      <span class="nav-icon">🚪</span> Logout
-    </a>
-  </div>
+</div>
 </aside>

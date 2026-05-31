@@ -1,18 +1,12 @@
 <header class="topbar">
   <div>
-    <div class="topbar-title">
-      <% if (typeof pageTitle !== 'undefined') { %>
-        <%= pageTitle %>
-      <% } else { %>
-        Dashboard
-      <% } %>
-    </div>
+    <div class="topbar-title">🏠 Dashboard</div>
     <div class="topbar-subtitle" id="current-date"></div>
   </div>
   <div class="topbar-right">
     <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
     <div class="avatar sm">
-      <%= user.fullName.charAt(0) %><%= user.fullName.split(' ')[1]?.charAt(0) || '' %>
+      <%= user.name.split(' ').map(n => n[0]).join('').toUpperCase() %>
     </div>
   </div>
 </header>
