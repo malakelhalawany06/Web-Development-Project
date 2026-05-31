@@ -72,10 +72,10 @@
                 </div>
 
                 <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='/profile'">
-                    <div class="avatar"><%= user ? user.fullName.charAt(0) : 'G' %></div>
+                    <div class="avatar"><%= user ? user.name.charAt(0) : 'G' %></div>
                     <div class="profile-info">
-                        <div class="name"><%= user ? user.fullName : 'Guest' %></div>
-                        <div class="role"><%= user ? (user.major || 'Student') : 'Please login' %> · Yr <%= user ? (user.academicYear || '?') : '?' %></div>
+                        <div class="name"><%= user ? user.name : 'Guest' %></div>
+                        <div class="role"><%= user ? (user.major || 'Student') : 'Please login' %> · Yr <%= user ? (user.academic_year || '?') : '?' %></div>
                     </div>
                 </div>
             </aside>
@@ -93,7 +93,7 @@
                             <input type="text" id="topbar-search-input" placeholder="Search groups...">
                         </div>
                         <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
-                        <div class="avatar sm"><%= user ? user.fullName.charAt(0) : 'G' %></div>
+                        <div class="avatar sm"><%= user ? user.name.charAt(0) : 'G' %></div>
                     </div>
                 </header>
 
@@ -164,9 +164,9 @@
             window.currentUser = {
                 id: '<%= user ? user._id : "" %>',
                 username: '<%= user ? user.username : "" %>',
-                fullName: '<%= user ? user.fullName : "" %>',
+                name: '<%= user ? user.name : "" %>',
                 major: '<%= user ? user.major : "" %>',
-                academicYear: '<%= user ? user.academicYear : "" %>'
+                academicYear: '<%= user ? user.academic_year : "" %>'
             };
         </script>
     </body>
