@@ -34,6 +34,7 @@ app.use(session({
 }));
 
 // Global user session state initialization middleware 
+// Global user session state initialization middleware inside app.js
 app.use(async (req, res, next) => {
     try {
         if (req.session.userId) {
@@ -41,8 +42,15 @@ app.use(async (req, res, next) => {
             if (user) {
                 user.role = req.session.userRole; 
                 user.email = user.email || user.mail;
-                // Unify normalization profiles down for EJS rendering engines
+                
+                // Unify academic year tracking properties 
                 user.year = user.year || user.academic_year; 
+
+                // 🌟 FORCE DEFAULT AVATAR IF FIELD IS EMPTY, NULL, OR MISSING
+                if (!user.profile_picture || user.profile_picture.trim() === "") {
+                    user.profile_picture = '/images/default-avatar.png';
+                }
+                
                 res.locals.user = user;
             } else {
                 res.locals.user = null;
@@ -55,7 +63,6 @@ app.use(async (req, res, next) => {
     }
     next();
 });
-
 // ------------------------------------------------------------------
 // MOUNTING ROUTERS (Keeps things organized!)
 // ------------------------------------------------------------------

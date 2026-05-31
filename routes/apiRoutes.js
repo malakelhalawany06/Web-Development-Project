@@ -45,11 +45,16 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
 
         const savedWebPath = `/images/${req.file.filename}`;
         const db = await connectToDatabase(); 
-        
+       // 1. Update the database record securely
         await db.collection(req.session.userRole).updateOne(
             { _id: new ObjectId(req.session.userId) },
             { $set: { profile_picture: savedWebPath, updatedAt: new Date() } }
         );
+
+        // 2. 🌟 THE CRUCIAL ADDITION: Force-update the session cache right now!
+        if (req.session.userObject) {
+            req.session.userObject.profile_picture = savedWebPath;
+        }
 
         res.json({ success: true, url: savedWebPath });
     } catch (err) {

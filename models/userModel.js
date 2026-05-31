@@ -34,7 +34,7 @@ export async function findByEmail(email) {
  * READ (Find by ID)
  * Since IDs are unique across your cluster, we scan the collections until we hit a match.
  */
-export async function findById(userId) {
+/*export async function findById(userId) {
     const db = await connectToDatabase();
     
     for (const colName of COLLECTIONS) {
@@ -44,8 +44,19 @@ export async function findById(userId) {
         }
     }
     return null;
+}*/
+// Ensure this is your findById structure in models/userModel.js
+export async function findById(id) {
+    if (!id) return null;
+    const db = await connectToDatabase();
+    
+    // Check all collections cleanly to verify who this unique ID belongs to
+    let user = await db.collection('students').findOne({ _id: new ObjectId(id) });
+    if (!user) user = await db.collection('instructors').findOne({ _id: new ObjectId(id) });
+    if (!user) user = await db.collection('admins').findOne({ _id: new ObjectId(id) });
+    
+    return user;
 }
-
 /**
  * CREATE
  * Requires an explicit collection target (e.g., 'students', 'instructors', 'admins')
