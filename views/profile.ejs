@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LoomHub — Profile</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/project web.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <script src="/js/users.js"></script>
+    <script src="/js/profile.js"></script>
+</head>
+<body>
+    <div class="layout">
+        
+        <% if (user.role === 'students') { %>
+            <%- include('partials/sidebar-student') %>
+        <% } else if (user.role === 'instructors') { %>
+            <%- include('partials/sidebar-instructor') %>
+        <% } else if (user.role === 'admins') { %>
+            <%- include('partials/sidebar-admin') %>
+        <% } %>
+
+        <div class="main">
+            <%- include('partials/topbar') %>
+            
+            <div>
+                <div class="content">
+                    <div class="card" style="display: flex; align-items: center; justify-content: space-around; gap: 1rem; flex-wrap: wrap;">
+                        <img id="main-avatar" src="<%= user.profile_picture || '/images/default-avatar.png' %>" alt="Profile" style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
+                        
+                        <label for="profile-upload" class="btn btn-secondary" style="cursor:pointer; width: auto; padding: 0.6rem 1.2rem;">📸 Upload Profile Picture</label>
+                        <input type="file" id="profile-upload" accept="image/jpeg, image/png, image/jpg" style="display:none;" onchange="uploadProfilePic(this)">
+                        
+                        <div class="profile-info">
+                            <div class="name"><%= user.name %></div>
+                            
+                            <div class="role">
+                                <% if (user.role === 'instructors') { %>
+                                    Professor
+                                <% } else if (user.role === 'admins') { %>
+                                    System Administrator
+                                <% } else { %>
+                                    <%= user.major || 'General Science' %> <% if (user.year) { %> · Yr <%= user.year %><% } %>
+                                <% } %>
+                            </div>
+                            
+                            <div class="uni"><%= user.university || 'MIU' %></div>
+                            <div class="username">@<%= user.username %></div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Account Actions</span>
+                        </div>
+                        <div class="button-list" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <div class="button-item">
+                                <a href="/logout" target="_self"><button class="btn btn-danger">Logout</button></a>
+                            </div>
+                            <div class="button-item">
+                                <a href="/personal-info/edit" target="_self"><button class="btn btn-primary">Edit Personal Info</button></a>
+                            </div>
+                            <% if (user.role !== 'admins') { %>
+                                <div class="button-item">
+                                    <a href="/signup" target="_self"><button class="btn btn-secondary">Create a new account</button></a>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/users.js"></script>    
+</body>
+</html>
