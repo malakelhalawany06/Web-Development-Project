@@ -6,11 +6,13 @@ import dotenv from 'dotenv';
 import { connectToDatabase } from './config/db.js';
 import { findById } from './models/userModel.js';
 
+
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
 import pageRoutes from './routes/pageRoutes.js';
 import apiRoutes from './routes/apiRoutes.js';
-
+import groupRoutes from './routes/groupRoutes.js';
+import fileRoutes from './routes/fileRoutes.js';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -62,7 +64,8 @@ app.use(async (req, res, next) => {
 app.use('/', pageRoutes);       // Mounts front page layout views
 app.use('/', authRoutes);       // Mounts login / signup form posts
 app.use('/api/user', apiRoutes); // Mounts asset image post routines
-
+app.use('/api/groups', groupRoutes);
+app.use('/api/files',fileRoutes);
 connectToDatabase().then(() => {
     app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
 }).catch(err => {

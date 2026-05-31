@@ -130,6 +130,12 @@ if (form) {
         const groupCategory = document.getElementById('groupCategory').value;
         const groupDescription = document.getElementById('groupDescription').value;
         
+        // Validate required fields
+        if (!groupName || !groupCourse || !groupDescription) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
         try {
             const response = await fetch('/api/groups', {
                 method: 'POST',
@@ -142,7 +148,10 @@ if (form) {
                 })
             });
             
-            if (!response.ok) throw new Error('Failed to create group');
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create group');
+            }
             
             const newGroup = await response.json();
             const groupsGrid = document.getElementById('groupsGrid');
@@ -154,7 +163,7 @@ if (form) {
             
             groupCards = document.querySelectorAll('.group-card');
             closeCreateGroupModal();
-            alert('Group ' + groupName + ' created successfully!');
+            alert('Group "' + groupName + '" created successfully!');
             updateStudyGroupsBadge();
             
         } catch (error) {
@@ -176,7 +185,10 @@ async function joinGroup(button) {
             headers: { 'Content-Type': 'application/json' }
         });
         
-        if (!response.ok) throw new Error('Failed to join group');
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to join group');
+        }
         
         button.innerText = '✓ Joined';
         button.classList.remove('btn-primary');
@@ -209,7 +221,10 @@ async function leaveGroup(button) {
             headers: { 'Content-Type': 'application/json' }
         });
         
-        if (!response.ok) throw new Error('Failed to leave group');
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to leave group');
+        }
         
         button.innerText = 'Join Group';
         button.classList.remove('btn-success');
@@ -232,7 +247,11 @@ async function leaveGroup(button) {
 
 // View details - open modal or redirect
 function viewDetails(groupId) {
-    window.open(`/group-details?id=${groupId}`, '_blank');
+    if (groupId) {
+        window.open(`/group-details?id=${groupId}`, '_blank');
+    } else {
+        alert('Group ID not found');
+    }
 }
 
 // Update badge count
@@ -247,6 +266,7 @@ async function updateStudyGroupsBadge() {
         badge.textContent = joinedCount;
     } catch (error) {
         console.error('Error updating badge:', error);
+        badge.textContent = '0';
     }
 }
 
@@ -280,9 +300,9 @@ function updateFilterChips() {
             this.classList.add('active');
             
             const filterValue = this.dataset.filter;
-            const groupCards = document.querySelectorAll('.group-card');
+            const allGroupCards = document.querySelectorAll('.group-card');
             
-            groupCards.forEach(card => {
+            allGroupCards.forEach(card => {
                 if (filterValue === 'all') {
                     card.style.display = '';
                 } else if (filterValue === 'available') {
@@ -337,6 +357,7 @@ function populateCategoryDropdown() {
 }
 
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
