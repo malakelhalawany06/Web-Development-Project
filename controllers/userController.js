@@ -1,39 +1,131 @@
-import { findByUsername } from './models/userModel.js';
 import bcrypt from 'bcrypt';
+import { connectToDatabase } from '../config/db.js';
+import { sendWelcomeEmail } from '../utils/emailService.js';
+import { findByEmail, findByUsername, createUser } from '../models/userModel.js';
 
-export async function loginUser(req, res) {
+// ==================================================================
+// 1. REGISTRATION CONTROLLER HANDLER
+// ==================================================================
+export async function registerUser(req, res) {
+    const errors = {};
+    const fname = req.body.fname ? req.body.fname.trim() : '';
+    const lname = req.body.lname ? req.body.lname.trim() : '';
+    const email = req.body.email ? req.body.email.trim() : '';
+    const university = req.body.university ? req.body.university.trim() : '';
+    const major = req.body.major ? req.body.major.trim() : '';
+    const username = req.body.username ? req.body.username.trim() : '';
+    const password = req.body.password ? req.body.password : '';
+    const confirmPassword = req.body.confirmPassword ? req.body.confirmPassword : '';
+    const rawRole = req.body.role ? req.body.role.trim() : 'Student';
+    const year = req.body.year ? req.body.year.trim() : '';
+
+    const oldData = { fname, lname, email, university, major, username, role: rawRole, year };
+
+    if (!fname) errors.fname = "First name is required.";
+    if (!lname) errors.lname = "Last name is required.";
+    if (!email) errors.email = "Email address is required.";
+    if (!username) errors.username = "Username creation is required.";
+    if (!password) errors.password = "Password field cannot be empty.";
+    if (password.length < 8) errors.password = "Password must be at least 8 characters long.";
+    if (password !== confirmPassword) errors.confirmPassword = "Passwords do not match.";
+    if (rawRole === 'Student' && !year) errors.year = "Students must supply an academic year.";
+    if (rawRole.toLowerCase() === 'admin') errors.role = "Unauthorized operation.";
+
     try {
-        const { username, password } = req.body;
+        if (email && await findByEmail(email)) errors.email = "This email is already in use.";
+        if (username && await findByUsername(username)) errors.username = "This username is already taken.";
 
-        // Step 1: Check if the user exists in the database
-        const user = await findByUsername(username);
-        
+        if (Object.keys(errors).length > 0) return res.render('signup', { errors, oldData });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const databaseCollectionTarget = (rawRole === 'Instructor') ? 'instructors' : 'students';
+
+        const newUserDocument = {
+            name: `${fname} ${lname}`,
+            username: username,
+            hashed_password: hashedPassword,
+            university: university,
+            major: major,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            profile_picture: '/images/default-avatar.png'
+        };
+
+        if (databaseCollectionTarget === 'instructors') {
+            newUserDocument.mail = email; 
+            newUserDocument.subject = "To Be Assigned"; 
+        } else {
+            newUserDocument.email = email;
+            newUserDocument.academic_year = parseInt(year); 
+        }
+
+        const savedAccount = await createUser(databaseCollectionTarget, newUserDocument);
+
+        // Establish session persistence tracking properties
+        req.session.userId = savedAccount.id || savedAccount._id;
+        req.session.userEmail = email;
+        req.session.userRole = databaseCollectionTarget; 
+
+        // 🌟 Trigger greeting email asynchronously without slowing down redirection load speed
+        sendWelcomeEmail(email, `${fname} ${lname}`);
+
+        res.redirect('/dashboard');
+    } catch (err) {
+        console.error('Account Creation Error Block:', err);
+        res.render('signup', { errors: { username: "Database save transaction failed." }, oldData });
+    }
+}
+
+// ==================================================================
+// 2. LOGIN CONTROLLER HANDLER
+// ==================================================================
+export async function loginUser(req, res) {
+    const email = req.body.email ? req.body.email.trim() : '';
+    const password = req.body.password ? req.body.password.trim() : '';
+
+    console.log("=== 🚀 Secure Multi-Collection Login Attempt ===");
+
+    if (!email || !password) {
+        return res.render('index', { error: 'Email and password are required.' });
+    }
+
+    try {
+        // Step 1: Scan across students, instructors, and admins simultaneously
+        const user = await findByEmail(email);
+
         if (!user) {
-            // Security Tip: Keep error messages generic so hackers don't know if the username exists
-            return res.status(401).json({ message: "Invalid username or password" });
+            console.log("❌ Login failed: Email not found in any user collection.");
+            return res.render('index', { error: 'Invalid email or password.' });
         }
 
-        // Step 2: Check if the password matches
-        // (bcrypt automatically extracts the salt from user.hashed_password to test your plain text password)
-        const isPasswordMatch = await bcrypt.compare(password, user.hashed_password);
+        console.log(`✅ User identified! Collection Target: [${user.role.toUpperCase()}]`);
 
-        if (!isPasswordMatch) {
-            return res.status(401).json({ message: "Invalid username or password" });
+        // Handle variations in key naming definitions inside older schemas
+        const databaseHash = (user.password_hash || user.hashed_password || '').trim();
+
+        if (!databaseHash) {
+            console.log("❌ Login failed: This user document is missing a password hash field.");
+            return res.render('index', { error: 'Invalid email or password.' });
         }
 
-        // Success! The user exists and the password matches.
-        return res.status(200).json({ 
-            message: "Login successful!", 
-            user: {
-                id: user._id,
-                name: user.name,
-                username: user.username,
-                email: user.mail
-            }
-        });
+        // Step 2: Compare plain text submission against the database crypt text
+        const isPasswordValid = await bcrypt.compare(password, databaseHash);
+        console.log("Does the typed password match?", isPasswordValid ? "✅ YES!" : "❌ NO");
+
+        if (!isPasswordValid) {
+            return res.render('index', { error: 'Invalid email or password.' });
+        }
+
+        // Step 3: Success! Establish secure state cookie indicators
+        req.session.userId = user._id;
+        req.session.userEmail = user.email || user.mail;
+        req.session.userRole = user.role.toLowerCase(); // Stores 'students', 'instructors', or 'admins'
+
+        console.log(`🎉 SUCCESS! Routing ${user.role} to dashboard view...`);
+        res.redirect('/dashboard');
 
     } catch (error) {
-        console.error("Login error:", error);
-        return res.status(500).json({ message: "An internal server error occurred" });
+        console.error('Login engine runtime error:', error);
+        res.render('index', { error: 'An internal server error occurred.' });
     }
 }
