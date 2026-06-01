@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 import { connectToDatabase } from './config/db.js';
 import { findById } from './models/userModel.js';
 
-
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
 import pageRoutes from './routes/pageRoutes.js';
@@ -79,3 +78,4 @@ connectToDatabase().then(() => {
     console.error('Failed to connect to database:', err);
     process.exit(1);
 });
+

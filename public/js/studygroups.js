@@ -45,6 +45,7 @@ window.onclick = function(event) {
 
 // ===== API FUNCTIONS =====
 
+
 // Load groups from server
 async function loadUserStudyGroups() {
     try {
@@ -57,10 +58,41 @@ async function loadUserStudyGroups() {
         
         groupsGrid.innerHTML = '';
         
-        groups.forEach(group => {
-            const groupCard = createGroupCard(group);
-            groupsGrid.appendChild(groupCard);
-        });
+        // Separate joined and available groups
+        const joinedGroups = groups.filter(g => g.status === 'joined');
+        const availableGroups = groups.filter(g => g.status === 'available');
+        
+        // Display joined groups first
+        if (joinedGroups.length > 0) {
+            const joinedHeader = document.createElement('div');
+            joinedHeader.className = 'section-header';
+            joinedHeader.innerHTML = '<h3>📘 My Study Groups</h3>';
+            joinedHeader.style.gridColumn = '1/-1';
+            groupsGrid.appendChild(joinedHeader);
+            
+            joinedGroups.forEach(group => {
+                const groupCard = createGroupCard(group);
+                groupsGrid.appendChild(groupCard);
+            });
+        }
+        
+        // Display available groups
+        if (availableGroups.length > 0) {
+            const availableHeader = document.createElement('div');
+            availableHeader.className = 'section-header';
+            availableHeader.innerHTML = '<h3>🔍 Groups You Can Join (Same Major)</h3>';
+            availableHeader.style.gridColumn = '1/-1';
+            groupsGrid.appendChild(availableHeader);
+            
+            availableGroups.forEach(group => {
+                const groupCard = createGroupCard(group);
+                groupsGrid.appendChild(groupCard);
+            });
+        }
+        
+        if (groups.length === 0) {
+            groupsGrid.innerHTML = '<div style="text-align: center; padding: 2rem; grid-column: 1/-1;">No groups available. Create your first study group!</div>';
+        }
         
         groupCards = document.querySelectorAll('.group-card');
         updateStudyGroupsBadge();
@@ -68,12 +100,11 @@ async function loadUserStudyGroups() {
         console.error('Error loading groups:', error);
     }
 }
-
 // Create group card from data
 function createGroupCard(group) {
     const card = document.createElement('div');
     card.className = 'group-card';
-    card.setAttribute('data-status', group.status || 'joined');
+    card.setAttribute('data-status', group.status || 'available');
     card.setAttribute('data-category', group.category);
     card.setAttribute('data-id', group._id || group.id);
     
@@ -102,12 +133,15 @@ function createGroupCard(group) {
             </div>
         </div>
         <div class="group-stats">
-            <div class="stat">👥 ${group.memberCount || group.members || 0} members</div>
-            <div class="stat">📝 ${group.resourceCount || group.resources || 0} resources</div>
-            <div class="stat">💬 ${group.messageCount || group.messages || 0} messages</div>
+            <div class="stat">👥 ${group.memberCount || group.members?.length || 0} members</div>
+            <div class="stat">📝 ${group.resourceCount || 0} resources</div>
+            <div class="stat">💬 ${group.messageCount || 0} messages</div>
         </div>
         <div class="group-description">
             ${escapeHtml(group.description || 'Study group for ' + group.course)}
+        </div>
+        <div class="group-major" style="font-size: 11px; color: var(--text3); margin-bottom: 8px;">
+            🎓 ${escapeHtml(group.major || 'All Majors')} • Created by ${escapeHtml(group.createdByName || 'Someone')}
         </div>
         <div class="group-actions">
             <button class="btn btn-outline btn-sm" onclick="viewDetails('${group._id || group.id}')">View Details</button>
@@ -119,7 +153,6 @@ function createGroupCard(group) {
     `;
     return card;
 }
-
 // Create new group via API
 if (form) {
     form.addEventListener('submit', async function(e) {
@@ -248,7 +281,7 @@ async function leaveGroup(button) {
 // View details - open modal or redirect
 function viewDetails(groupId) {
     if (groupId) {
-        window.open(`/group-details?id=${groupId}`, '_blank');
+        window.location.href = `/group-details?id=${groupId}`;
     } else {
         alert('Group ID not found');
     }

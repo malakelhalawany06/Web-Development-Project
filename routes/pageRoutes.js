@@ -54,5 +54,8 @@ router.get('/studygroups', requireLogin, (req, res) => {
 router.get('/notes-files', requireLogin, (req, res) => {
     res.render('notes&files', { user: res.locals.user, activePage: 'notes-files' });
 });
-
+// GET Route: Group Details Page
+router.get('/group-details', requireLogin, (req, res) => {
+    res.render('group-details', { user: res.locals.user });
+});
 export default router;

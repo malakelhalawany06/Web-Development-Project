@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/project web.css">
+    <link rel="stylesheet" href="/css/group-details.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">📚</div>
+                <div class="logo-text">Loom<span>Hub</span></div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Overview</div>
+                <a class="nav-item" href="/dashboard">🏠 Dashboard</a>
+                <a class="nav-item" href="/profile">👤 My Profile</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Collaborate</div>
+                <a class="nav-item active" href="/studygroups">👥 Study Groups</a>
+            </div>
+        </aside>
+
+        <div class="main">
+            <header class="topbar">
+                <div>
+                    <div class="topbar-title" id="groupName">Loading...</div>
+                    <div class="topbar-subtitle" id="groupCourse"></div>
+                </div>
+                <div class="topbar-right">
+                    <div class="avatar sm"><%= user ? (user.name?.charAt(0) || user.name?.charAt(0) || 'G') : 'G' %></div>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="group-info-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <strong>📊 Group Stats</strong>
+                            <div class="stats-row" style="margin-top: 0.5rem;">
+                                <span class="stat-badge">👥 <span id="memberCount">1</span> members</span>
+                                <span class="stat-badge">💬 <span id="messageCount">0</span> messages</span>
+                                <span class="stat-badge">📁 <span id="resourceCount">0</span> resources</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline btn-sm" onclick="window.location.href='/studygroups'">← Back to Groups</button>
+                    </div>
+                    <div class="member-list" id="memberList">
+                        Loading members...
+                    </div>
+                </div>
+
+                <div class="group-details-container">
+                    <!-- Chat Section -->
+                    <div class="chat-section">
+                        <div class="section-header">
+                            💬 Group Chat
+                            <span class="section-count" id="chatCount">0</span>
+                        </div>
+                        <div class="messages-container" id="messagesContainer">
+                            <div style="text-align: center; color: var(--text3); padding: 2rem;">Loading messages...</div>
+                        </div>
+                        <div class="message-input-area">
+                            <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button class="btn btn-primary btn-sm" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+
+                    <!-- Resources Section -->
+                    <div class="resources-section">
+                        <div class="section-header">
+                            📁 Shared Resources
+                            <span class="section-count" id="resourceCountBadge">0</span>
+                        </div>
+                        <div class="resources-container" id="resourcesContainer">
+                            <div style="text-align: center; color: var(--text3); padding: 2rem;">Loading resources...</div>
+                        </div>
+                        <div class="upload-resource-area">
+                            <input type="text" id="resourceName" placeholder="Resource name...">
+                            <input type="text" id="resourceUrl" placeholder="URL (optional)">
+                            <button class="btn btn-primary btn-sm" onclick="uploadResource()">➕ Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+     <script src="/js/group-details.js"></script>
+    </body>
+    
+</html>
