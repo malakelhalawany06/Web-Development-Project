@@ -12,6 +12,7 @@ import pageRoutes from './routes/pageRoutes.js';
 import apiRoutes from './routes/apiRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
 import fileRoutes from './routes/fileRoutes.js';
+import sharedRoutes from './routes/sharedRoutes.js';
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -68,10 +69,12 @@ app.use(async (req, res, next) => {
 // MOUNTING ROUTERS (Keeps things organized!)
 // ------------------------------------------------------------------
 app.use('/', pageRoutes);       // Mounts front page layout views
-app.use('/', authRoutes);       // Mounts login / signup form posts
+app.use('/', authRoutes);   
+app.use('/', pageRoutes);    
 app.use('/api/user', apiRoutes); // Mounts asset image post routines
 app.use('/api/groups', groupRoutes);
 app.use('/api/files',fileRoutes);
+app.use('/api/shared', sharedRoutes);
 connectToDatabase().then(() => {
     app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
 }).catch(err => {

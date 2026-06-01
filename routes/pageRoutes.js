@@ -58,4 +58,7 @@ router.get('/notes-files', requireLogin, (req, res) => {
 router.get('/group-details', requireLogin, (req, res) => {
     res.render('group-details', { user: res.locals.user });
 });
+router.get('/shared-materials', requireLogin, (req, res) => {
+    res.render('sharedMaterials', { user: res.locals.user, activePage: 'shared-materials' });
+});
 export default router;
