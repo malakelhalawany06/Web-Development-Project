@@ -50,12 +50,17 @@ export async function findById(id) {
     if (!id) return null;
     const db = await connectToDatabase();
     
-    // Check all collections cleanly to verify who this unique ID belongs to
+    // Check all collections cleanly and verify role data assignment variables
     let user = await db.collection('students').findOne({ _id: new ObjectId(id) });
-    if (!user) user = await db.collection('instructors').findOne({ _id: new ObjectId(id) });
-    if (!user) user = await db.collection('admins').findOne({ _id: new ObjectId(id) });
+    if (user) { user.role = 'students'; return user; }
     
-    return user;
+    user = await db.collection('instructors').findOne({ _id: new ObjectId(id) });
+    if (user) { user.role = 'instructors'; return user; }
+    
+    user = await db.collection('admins').findOne({ _id: new ObjectId(id) });
+    if (user) { user.role = 'admins'; return user; }
+    
+    return null;
 }
 /**
  * CREATE

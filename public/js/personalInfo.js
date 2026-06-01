@@ -1,320 +1,179 @@
-// personalInfo.js – Universal profile manager for LoomHub
+// public/js/personalInfo.js – Fixed Profile Manager for LoomHub
 
 (function() {
-    // ---------- Helper functions ----------
-    function saveToLocalStorage(user) {
-        localStorage.setItem('userFirstName', user.firstName);
-        localStorage.setItem('userLastName', user.lastName);
-        localStorage.setItem('userMajor', user.major);
-        localStorage.setItem('userYear', user.year);
-        localStorage.setItem('userUniversity', user.university);
-        localStorage.setItem('userEmail',user.email);
-        localStorage.setItem('userUsername',user.username)
-    }
-
-    function loadFromLocalStorage() {
-        const firstName = localStorage.getItem('userFirstName');
-        const lastName = localStorage.getItem('userLastName');
-        const major = localStorage.getItem('userMajor');
-        const year = localStorage.getItem('userYear');
-        const university = localStorage.getItem('userUniversity');
-        const email= localStorage.getItem('userEmail');
-        const username=localStorage.getItem('userUsername');
-
-        if (firstName && lastName && major && year && university && email && username) {
-            return { firstName, lastName, major, year, university,email,username };
-        }
-        return null;
-    }
-
-    // Update EVERY possible profile element on the page
-    function applyUserDataToPage(user) {
-        // 1. Sidebar profile (name, role, avatar initials)
-        const sidebarName = document.querySelector('.sidebar-profile .name');
-        const sidebarRole = document.querySelector('.sidebar-profile .role');
-        const sidebarAvatar = document.querySelector('.sidebar-profile .avatar');
-        if (sidebarName) sidebarName.textContent = `${user.firstName} ${user.lastName}`;
-        if (sidebarRole) sidebarRole.textContent = `${user.major} · Yr ${user.year}`;
-        const initials = (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase();
-        if (sidebarAvatar) sidebarAvatar.textContent = initials || 'AK';
-
-        // 2. Top‑bar avatar (small circle, class .avatar.sm inside .topbar-right)
-        const topbarAvatar = document.querySelector('.topbar-right .avatar.sm');
-        if (topbarAvatar) topbarAvatar.textContent = initials || 'AK';
-
-        // 3. Main profile display on profile.html (inside the card with .profile-info)
-        const profileName = document.querySelector('.card .profile-info .name');
-        const profileRole = document.querySelector('.card .profile-info .role');
-        const profileUni = document.querySelector('.card .profile-info .uni');
-        const profileUsername= document.querySelector('.card .profile-info .username');
-
-
-        if (profileName) profileName.textContent = `${user.firstName} ${user.lastName}`;
-        if (profileRole) profileRole.textContent = `${user.major} · Yr ${user.year}`;
-        if(profileUni)profileUni.textContent=`${user.university}`;
-        if(profileUsername)profileUsername.textContent=`${user.username}`;
-
-        // 4. Update any form fields on the edit page (personalInfo.html)
-        const fnameInput = document.getElementById('fname');
-        const lnameInput = document.getElementById('lname');
-        const majorSelect = document.getElementById('major');
-        const yearInput = document.getElementById('year');
-        const uniSelect = document.getElementById('uni');
-        const emailInput=document.getElementById('email');
-        const usernameInput=document.getElementById('username');
-
-        if (fnameInput) fnameInput.value = user.firstName;
-        if (lnameInput) lnameInput.value = user.lastName;
-        if (yearInput) yearInput.value = user.year;
-        if(emailInput) emailInput.value=user.email;
-        if(usernameInput)usernameInput.value=user.username;
-
-        if (majorSelect) {
-            for (let i = 0; i < majorSelect.options.length; i++) {
-                if (majorSelect.options[i].value === user.major) {
-                    majorSelect.selectedIndex = i;
-                    break;
-                }
-            }
-        }
-        if (uniSelect) {
-            for (let i = 0; i < uniSelect.options.length; i++) {
-                if (uniSelect.options[i].value === user.university) {
-                    uniSelect.selectedIndex = i;
-                    break;
-                }
-            }
-        }
-    }
-
-    // Read hardcoded sidebar values (fallback for first run)
-    function getUserFromSidebar() {
-        const nameElement = document.querySelector('.sidebar-profile .name');
-        const roleElement = document.querySelector('.sidebar-profile .role');
-        if (!nameElement || !roleElement) return null;
-
-        const fullName = nameElement.textContent.trim();
-        const roleText = roleElement.textContent.trim();
-        const nameParts = fullName.split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
-
-        let major = '', year = '';
-        if (roleText.includes('·')) {
-            const parts = roleText.split('·').map(p => p.trim());
-            major = parts[0] || '';
-            const yearMatch = parts[1]?.match(/\d+/);
-            year = yearMatch ? yearMatch[0] : '';
-        }
-        // Default university if not found
-        const uniSelect = document.getElementById('uni');
-        const university = uniSelect ? uniSelect.value : 'MIU';
-        return { firstName, lastName, major, year, university };
-    }
-
-    // Initialize the page: load from localStorage, or fallback to sidebar, or use defaults
-    function initPage() {
-    // Try to get user from UserManager first (if logged in)
-    let user = null;
-    if (window.UserManager) {
-        const currentUser = window.UserManager.getCurrentUser();
-        if (currentUser) {
-            user = {
-                firstName: currentUser.firstName,
-                lastName: currentUser.lastName,
-                major: currentUser.major,
-                year: currentUser.academicYear,
-                university: currentUser.university,
-                email: currentUser.email,
-                username: currentUser.username
-            };
-            saveToLocalStorage(user); // sync to personalInfo storage
-        }
-    }
-    if (!user) user = loadFromLocalStorage();
-    if (!user) user = getUserFromSidebar();
-    if (!user) user = { firstName: 'Ahmed', lastName: 'Khalid', major: 'CS', year: '3', university: 'MIU' };
-    applyUserDataToPage(user);
-}
-
-    // Save function triggered by the "Save Changes" button (on personalInfo.html)
-    window.saveProfileChanges = function() {
-        const firstName = document.getElementById('fname')?.value.trim();
-        const lastName = document.getElementById('lname')?.value.trim();
-        const major = document.getElementById('major')?.value;
-        const year = document.getElementById('year')?.value.trim();
-        const university = document.getElementById('uni')?.value;
-        const email=document.getElementById('email')?.value;
-        const username=document.getElementById('username')?.value;
-
-
-        let emailRegex=/^[\w.-]+@([\w-]+\.)+[\w-]{2,}$/;
-
-        let valid=true;
-
-
-        // Validations 
-        if (!firstName) {
-             document.getElementById('fnameError').innerHTML="You must enter a first name";
-            document.getElementById('fnameError').setAttribute('style','color: red');
-           // alert('Please enter both first and last name.');
-            valid= false;
-        }else{
-            document.getElementById('fnameError').innerHTML="";
-            
-        } 
-        if(firstName.length< 3){
-            document.getElementById('fnameError').innerHTML="Name must be more than 3 characters";
-            document.getElementById('fnameError').setAttribute('style','color: red');
-            valid= false;
-        }
-        else{  document.getElementById('fnameError').innerHTML="";
-
-        }
-
-        if(!lastName){
-            document.getElementById('lnameError').innerHTML="You must enter a last name";
-            document.getElementById('lnameError').setAttribute('style','color: red');
-            valid= false;
-        }else{
-              document.getElementById('lnameError').innerHTML="";
-        }
-
-        if(lastName.length< 3){
-
-         document.getElementById('lnameError').innerHTML="Name must be more than 3 characters";
-            document.getElementById('lnameError').setAttribute('style','color: red');
-            valid= false;
-        }
-        else{  document.getElementById('lnameError').innerHTML="";
-
-        }
-
-
-        if (!year || isNaN(parseInt(year)) || year<0 || year==0) {
-            document.getElementById('yearError').innerHTML="Please enter a valid year (e.g., 1, 2, 3, 4).";
-            document.getElementById('yearError').setAttribute('style','color: red');
-           // alert('Please enter a valid year (e.g., 1, 2, 3, 4).');
-            valid= false;
-        }else if(year > 0){
-            document.getElementById('yearError').innerHTML="";
-        }
-
-       if(!email || email.trim() === "" || !emailRegex.test(email))
-        {
-            document.getElementById('emailError').innerHTML="Invalid email format";
-            document.getElementById('emailError').setAttribute('style','color: red');
-            valid=false;
-        }else {
-             document.getElementById('emailError').innerHTML="";
-        }
-
-        //validation of username for later when there are users 
-        //if()
-
-        if(!valid){
-            return valid;
-        }
-
-        const updatedUser = {
-            firstName: firstName,
-            lastName: lastName,
-            major: major,
-            year: year,
-            university: university || 'MIU',
-            email: email,
-            username: username
-        };
-
-        saveToLocalStorage(updatedUser);
-        syncToUserManager(updatedUser);
-        applyUserDataToPage(updatedUser);  // update current page immediately
-
-        // Visual feedback on the save button
-        const saveBtn = document.getElementById('saveChangesBtn');
-        if (saveBtn) {
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = '✓ Saved!';
-            setTimeout(() => {
-                saveBtn.textContent = originalText;
-            }, 1500);
-        }
-        return true;
-    };
-
-    // Sync updated profile back to UserManager (users.js)
-function syncToUserManager(updatedUser) {
-    if (!window.UserManager) return;
-    const currentUsername = localStorage.getItem('app_current_user');
-    if (!currentUsername) return;
-    
-    // Map fields: personalInfo uses 'year', UserManager uses 'academicYear'
-    window.UserManager.updateUser(currentUsername, {
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        major: updatedUser.major,
-        academicYear: updatedUser.year,
-        university: updatedUser.university,
-        email: updatedUser.email
-    });
-}
-
-    // Listen for changes made in another tab (so profile page updates live)
-    window.addEventListener('storage', function(event) {
-        if (event.key && event.key.startsWith('user')) {
-            const user = loadFromLocalStorage();
-            if (user) applyUserDataToPage(user);
-        }
+    // Execute initialization routines as soon as DOM completes layout analysis
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("🚀 Custom profile utilities running securely...");
+        initPasswordModalEvents();
+        initProfileValidationEvents();
     });
 
-    // Run initialization when DOM is ready
-    document.addEventListener('DOMContentLoaded', initPage);
+    // --- 1. KEYBOARD/CLICK PASSWORD MODAL HANDLERS ---
+    function initPasswordModalEvents() {
+        const modal = document.getElementById('passwordModal');
+        const openBtn = document.getElementById('openPasswordModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const passwordForm = document.getElementById('passwordForm');
+
+        if (!modal) return console.warn("Password modal wrapper container elements are missing.");
+
+        if (openBtn) {
+            openBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                modal.style.display = 'block';
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const matchErrorSpan = document.getElementById('passwordMatchError');
+
+                if (newPassword !== confirmPassword) {
+                    matchErrorSpan.textContent = "❌ Passwords do not match.";
+                    matchErrorSpan.style.color = "red";
+                    return;
+                }
+                matchErrorSpan.textContent = "";
+
+                try {
+                    const response = await fetch('/personal-info/change-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ currentPassword, newPassword })
+                    });
+
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert('🔑 Password updated successfully!');
+                        passwordForm.reset();
+                        modal.style.display = 'none';
+                    } else {
+                        alert(result.error || 'Failed to update user security password.');
+                    }
+                } catch (err) {
+                    console.error('Password patch pipeline structural network error:', err);
+                }
+            });
+        }
+    }
+
+    // --- 2. DYNAMIC FRONTEND PROFILE ACCURACY DISPATCHER ---
+    function initProfileValidationEvents() {
+        const profileForm = document.getElementById('profileForm');
+        if (!profileForm) return;
+
+        profileForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const firstName = document.getElementById('fname')?.value.trim();
+            const lastName = document.getElementById('lname')?.value.trim();
+            const year = document.getElementById('year')?.value.trim();
+            const email = document.getElementById('email')?.value.trim();
+            const username = document.getElementById('username')?.value.trim();
+            const major = document.getElementById('major')?.value;
+            const uni = document.getElementById('uni')?.value;
+
+            let emailRegex = /^[\w.-]+@([\w-]+\.)+[\w-]{2,}$/;
+            let valid = true;
+
+            // First Name Validation Check
+            if (!firstName) {
+                showError('fnameError', 'You must enter a first name');
+                valid = false;
+            } else if (firstName.length < 3) {
+                showError('fnameError', 'Name must be more than 3 characters');
+                valid = false;
+            } else {
+                clearError('fnameError');
+            }
+
+            // Last Name Validation Check
+            if (!lastName) {
+                showError('lnameError', 'You must enter a last name');
+                valid = false;
+            } else if (lastName.length < 3) {
+                showError('lnameError', 'Name must be more than 3 characters');
+                valid = false;
+            } else {
+                clearError('lnameError');
+            }
+
+            // Academic Year Input Check
+            // Inside your public/js/personalInfo.js validation block check:
+const yearInput = document.getElementById('year');
+
+// Only run strict verification if the year field exists and is visible on screen!
+if (yearInput && yearInput.offsetParent !== null) {
+    if (!yearInput.value.trim()) {
+        showError('yearError', 'Please enter a valid academic year track.');
+        valid = false;
+    } else {
+        clearError('yearError');
+    }
+} else {
+    // If hidden or missing (for instructors), bypass validation entirely
+    clearError('yearError');
+}
+
+            // Email Address Format Check
+            if (!email || !emailRegex.test(email)) {
+                showError('emailError', 'Invalid email structure format.');
+                valid = false;
+            } else {
+                clearError('emailError');
+            }
+
+            if (!valid) return;
+
+            try {
+                const response = await fetch('/personal-info/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fname: firstName, lname: lastName, username, email, major, year, uni })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    const saveBtn = document.getElementById('saveChangesBtn');
+                    if (saveBtn) {
+                        const baseText = saveBtn.textContent;
+                        saveBtn.textContent = '✓ Profile Saved!';
+                        setTimeout(() => { saveBtn.textContent = baseText; }, 1500);
+                    }
+                } else {
+                    alert(result.error || 'General transaction modification error.');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+    }
+
+    function showError(id, msg) {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = msg; el.style.color = 'red'; }
+    }
+    function clearError(id) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = "";
+    }
 })();
-
-// Update badges on any page that loads this script
-document.addEventListener('DOMContentLoaded', function() {
-    const currentUser = UserManager.getCurrentUser();
-    if (!currentUser) return;
-    
-    // Update notes badge
-    const notesBadge = document.getElementById('notesFilesBadge');
-    if (notesBadge) {
-        const userFiles = UserManager.getUserNotesFiles(currentUser.username);
-        notesBadge.textContent = userFiles.length;
-    }
-    
-    // Update study groups badge
-    setTimeout(updateAllBadges, 100);
-});
-// Also run when window is fully loaded
-window.addEventListener('load', function() {
-    updateAllBadges();
-});
-function updateAllBadges() {
-    console.log("Updating badges...");
-    
-    const currentUser = UserManager.getCurrentUser();
-    if (!currentUser) {
-        console.log("No user logged in, badges will stay 0");
-        return;
-    }
-    
-    console.log("Current user:", currentUser.username);
-    
-    // Update study groups badge
-    const groupsBadge = document.getElementById('studyGroupsBadge');
-    if (groupsBadge) {
-        const userGroups = UserManager.getUserStudyGroups(currentUser.username);
-        const joinedCount = userGroups.filter(g => g.status === 'joined').length;
-        console.log("Joined groups:", joinedCount);
-        groupsBadge.textContent = joinedCount;
-    }
-    
-    // Update notes files badge
-    const notesBadge = document.getElementById('notesFilesBadge');
-    if (notesBadge) {
-        const userFiles = UserManager.getUserNotesFiles(currentUser.username);
-        console.log("User files:", userFiles.length);
-        notesBadge.textContent = userFiles.length;
-    }
-}

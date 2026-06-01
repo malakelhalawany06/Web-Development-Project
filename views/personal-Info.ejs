@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/project web.css">
+    <link rel="stylesheet" href="/css/personalInfo.css">
+    <title>LoomHub — Personal Information</title>
+</head>
+<body>
+    <div class="layout">
+       <% 
+  let isInstructor = false;
+  if (user && user.role) {
+      const currentRole = String(user.role).toLowerCase();
+      if (currentRole.includes('instructor') || currentRole.includes('professor')) {
+          isInstructor = true;
+      }
+  }
+%>
+
+<% if (isInstructor) { %>
+    <%- include('partials/sidebar-instructor', { user: user, activePage: activePage }) %>
+<% } else { %>
+    <%- include('partials/sidebar-student', { user: user, activePage: activePage }) %>
+<% } %>
+
+        <div class="main">
+            <%- include('partials/topbar') %>
+
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">✏️ Edit your profile</span>
+                    </div>
+
+                    <% if (messages.success) { %>
+                        <div class="alert alert-success"><%= messages.success %></div>
+                    <% } %>
+                    <% if (messages.error) { %>
+                        <div class="alert alert-danger"><%= messages.error %></div>
+                    <% } %>
+
+                    <form action="/profile/update" method="POST" id="profileForm" class="info-form">
+                        <label for="fname">First Name:</label><br>
+                        <span id="fnameError" class="error-msg"></span>
+                        <input id="fname" name="fname" type="text" value="<%= user.fname %>"><br>
+
+                        <label for="lname">Last Name:</label><br>
+                        <span id="lnameError" class="error-msg"></span>
+                        <input id="lname" name="lname" type="text" value="<%= user.lname %>"><br>
+
+                        <label for="username">Username:</label><br>
+                        <span id="userError" class="error-msg"></span>
+                        <input type="text" id="username" name="username" value="<%= user.username %>"><br>
+
+                        <label for="email">Email:</label><br>
+                        <span id="emailError" class="error-msg"></span>
+                        <input type="email" id="email" name="email" value="<%= user.email %>"><br>
+
+                        <label for="major">Major:</label><br>
+                        <select id="major" name="major">
+                            <% const majors = ['Computer Science', 'Engineering', 'Business', 'Dentistry', 'Pharmacy', 'Business Informatics', 'Law']; %>
+                            <% majors.forEach(m => { %>
+                                <option value="<%= m %>" <%= user.major === m ? 'selected' : '' %>><%= m %></option>
+                            <% }); %>
+                        </select><br>
+
+                        <div style="<%= (user.role && user.role.toLowerCase().includes('instructor')) ? 'display: none;' : '' %>">
+    <label for="year">Year:</label><br>
+    <span id="yearError" class="error-msg"></span>
+    <input id="year" type="text" value="<%= user.year || '' %>"><br>
+</div>
+                        <label for="uni">University:</label><br>
+                        <select id="uni" name="uni">
+                            <% const unis = ['MIU', 'BUE', 'AUC', 'MSA']; %>
+                            <% unis.forEach(u => { %>
+                                <option value="<%= u %>" <%= user.uni === u ? 'selected' : '' %>><%= u %></option>
+                            <% }); %>
+                        </select><br>
+
+                        <div class="form-actions">
+                            <button type="submit" id="saveChangesBtn">💾 Save Changes</button>
+                            <button type="button" id="openPasswordModalBtn" class="btn-secondary">🔑 Change Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Change Password</h3>
+            <form action="/profile/change-password" method="POST" id="passwordForm">
+                <label for="currentPassword">Current Password:</label><br>
+                <input type="password" id="currentPassword" name="currentPassword" required><br>
+                
+                <label for="newPassword">New Password:</label><br>
+                <input type="password" id="newPassword" name="newPass; flex-direction: column;word" required><br>
+                <small>Must be at least 8 characters, with a letter and a number.</small><br>
+                
+                <label for="confirmPassword">Confirm New Password:</label><br>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <span id="passwordMatchError" class="error-msg"></span>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="btn-danger">Update Password</button>
+                    <button type="button" id="closeModalBtn" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+  <script src="/js/personalInfo.js"></script>
+</body>
+</html>

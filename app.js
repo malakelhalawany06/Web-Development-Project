@@ -13,6 +13,8 @@ import apiRoutes from './routes/apiRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
 import fileRoutes from './routes/fileRoutes.js';
 import sharedRoutes from './routes/sharedRoutes.js';
+import profileRoutes from './routes/profileRoutes.js'; // 💡 1. IMPORT PROFILE ROUTES
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,7 +38,6 @@ app.use(session({
 }));
 
 // Global user session state initialization middleware 
-// Global user session state initialization middleware inside app.js
 app.use(async (req, res, next) => {
     try {
         if (req.session.userId) {
@@ -48,7 +49,7 @@ app.use(async (req, res, next) => {
                 // Unify academic year tracking properties 
                 user.year = user.year || user.academic_year; 
 
-                // 🌟 FORCE DEFAULT AVATAR IF FIELD IS EMPTY, NULL, OR MISSING
+                // FORCE DEFAULT AVATAR IF FIELD IS EMPTY, NULL, OR MISSING
                 if (!user.profile_picture || user.profile_picture.trim() === "") {
                     user.profile_picture = '/images/default-avatar.png';
                 }
@@ -65,20 +66,21 @@ app.use(async (req, res, next) => {
     }
     next();
 });
+
 // ------------------------------------------------------------------
 // MOUNTING ROUTERS (Keeps things organized!)
 // ------------------------------------------------------------------
-app.use('/', pageRoutes);       // Mounts front page layout views
+app.use('/', pageRoutes);        // Mounts front page layout views
 app.use('/', authRoutes);   
-app.use('/', pageRoutes);    
+app.use('/personal-info', profileRoutes); // 💡 2. MOUNT PROFILE ROUTER (Base URL path is now /profile)
 app.use('/api/user', apiRoutes); // Mounts asset image post routines
 app.use('/api/groups', groupRoutes);
-app.use('/api/files',fileRoutes);
+app.use('/api/files', fileRoutes);
 app.use('/api/shared', sharedRoutes);
+
 connectToDatabase().then(() => {
     app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
 }).catch(err => {
     console.error('Failed to connect to database:', err);
     process.exit(1);
 });
-

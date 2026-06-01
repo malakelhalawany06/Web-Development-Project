@@ -46,3 +46,7 @@
     button:hover {
       background: #2563eb;
     }
+  .passwordForm{
+    
+    align-items: center;
+  }
