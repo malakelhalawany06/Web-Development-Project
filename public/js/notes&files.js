@@ -26,7 +26,6 @@ async function loadSubjectsFromDB() {
     }
 }
 
-// Populate List View
 function populateListView() {
     const listView = document.getElementById('listView');
     const fileCards = document.querySelectorAll('.file-card');
@@ -44,10 +43,13 @@ function populateListView() {
         if (card.style.display !== 'none') {
             const fileName = card.querySelector('.file-name')?.innerText || '';
             const fileMeta = card.querySelector('.file-meta')?.innerText || '';
-            const fileSize = card.querySelector('.file-size')?.innerText || '';
-            const course = fileMeta.split(' • ')[0] || '';
-            const sharedBy = fileMeta.split(' • ')[1] || '';
-            const sizeOnly = fileSize.split(' • ')[0] || '';
+            
+            // Expected format: "Data Structures • 2.4 MB • Shared by Ahmed K. • 6/1/2026"
+            const parts = fileMeta.split(' • ');
+            
+            const course = parts[0] || '';
+            const sizeOnly = parts[1] || '';
+            const sharedBy = parts[2] ? parts[2].replace('Shared by ', '') : '';
             
             const listItem = document.createElement('div');
             listItem.className = 'list-item';
@@ -61,30 +63,6 @@ function populateListView() {
                 </span>
             `;
             listView.appendChild(listItem);
-        }
-    });
-}
-
-// Search Functionality
-const searchInput = document.querySelector('.topbar-search input');
-if (searchInput) {
-    searchInput.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        const fileCards = document.querySelectorAll('.file-card');
-        
-        fileCards.forEach(card => {
-            const fileName = card.querySelector('.file-name')?.innerText.toLowerCase() || '';
-            if (fileName.includes(searchTerm)) {
-                card.classList.remove('hidden');
-                card.style.display = 'flex';
-            } else {
-                card.classList.add('hidden');
-                card.style.display = 'none';
-            }
-        });
-        
-        if (document.getElementById('listView').style.display === 'block') {
-            populateListView();
         }
     });
 }
@@ -187,7 +165,6 @@ async function updateSubjectFilterChips() {
     });
 }
 
-// Create file card
 function createFileCard(file) {
     const fileCard = document.createElement('div');
     fileCard.className = 'file-card';
@@ -196,14 +173,16 @@ function createFileCard(file) {
     
     const sharedByName = file.sharedBy || 'Unknown';
     const subject = file.course || file.description || 'General';
+    const fileSizeValue = file.fileSize || '0 MB';
     const date = file.createdAt ? new Date(file.createdAt).toLocaleDateString() : 'Unknown';
     
+    // Consistent format: Subject • Size • Shared by Name • Date
     fileCard.innerHTML = `
         <div class="file-icon">${file.fileIcon || '📄'}</div>
         <div class="file-info">
             <div class="file-name">${escapeHtml(file.title || file.fileName)}</div>
             <div class="file-meta" style="font-size: 10px; color: var(--text3);">
-                ${escapeHtml(subject)} • ${escapeHtml(file.fileSize || '0 MB')} • Shared by ${escapeHtml(sharedByName)} • ${date}
+                ${escapeHtml(subject)} • ${escapeHtml(fileSizeValue)} • Shared by ${escapeHtml(sharedByName)} • ${date}
             </div>
         </div>
         <div class="file-actions">

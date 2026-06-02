@@ -74,13 +74,13 @@
                 </a>
             </div>
 
-            <div class="sidebar-profile">
-                <div class="avatar"><%= user ? user.name?.charAt(0) || 'G' : 'G' %></div>
-                <div class="profile-info">
-                    <div class="name"><%= user ? user.name : 'Guest' %></div>
-                    <div class="role"><%= user ? (user.major || 'Student') : 'Please login' %> · Year <%= user ? user.academic_year : '?' %></div>
+            <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='/profile'">
+                    <div class="avatar"><%= user ? user.name.charAt(0) : 'G' %></div>
+                    <div class="profile-info">
+                        <div class="name"><%= user ? user.name : 'Guest' %></div>
+                        <div class="role"><%= user ? (user.major || 'Student') : 'Please login' %> · Yr <%= user ? (user.academic_year || '?') : '?' %></div>
+                    </div>
                 </div>
-            </div>
         </aside>
 
         <main class="main">
