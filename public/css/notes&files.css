@@ -1,4 +1,24 @@
 /* Main card styling (matching studygroups) */
+.btn-icon {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+}
+
+.btn-icon:hover {
+    background: var(--accent);
+    color: white;
+}
 .card {
     background: var(--bg2);
     border: 1px solid var(--border);
@@ -77,7 +97,7 @@
 /* Files Grid */
 .files-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
     margin-top: 1rem;
 }
@@ -85,13 +105,14 @@
 .file-card {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 12px;
+    padding: 10px;
     transition: all 0.2s;
 }
+
 
 .file-card:hover {
     border-color: var(--accent);
@@ -101,7 +122,42 @@
 .file-card.hidden {
     display: none;
 }
+.file-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+}
+.file-info {
+    flex: 1;
+    min-width: 0; /* Allows text truncation */
+    overflow: hidden;
+}
+.file-name {
+    font-weight: 600;
+    font-size: 12px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
+.file-meta {
+    font-size: 9px;
+    color: var(--text3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-size {
+    font-size: 9px;
+    color: var(--text3);
+}
+
+.file-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
 /* Files List View */
 .files-list {
     background: var(--surface);
