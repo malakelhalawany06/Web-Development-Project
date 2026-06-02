@@ -17,10 +17,6 @@
                     <div class="topbar-subtitle">Study Materials</div>
                 </div>
                 <div class="topbar-right">
-                    <div class="topbar-search">
-                        <span>🔍</span>
-                        <input type="text" id="topbar-search-input" placeholder="Search files...">
-                    </div>
                     <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
                     <div class="avatar sm">
                         <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'I' %>
@@ -29,17 +25,34 @@
             </header>
 
             <div class="content">
-                <div class="upload-bar">
-                    <button class="btn btn-primary" onclick="window.location.href='/instructor-shared-materials'">+ Upload New File</button>
-                    <div class="view-toggle">
-                        <button class="view-btn active" onclick="setView('grid')">📱 Grid View</button>
-                        <button class="view-btn" onclick="setView('list')">📋 List View</button>
+                <!-- Main Card Container (matching student version) -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h1 class="card-title">📚 Study Materials</h1>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" onclick="window.location.href='/instructor-shared-materials'">+ Share Material</button>
+                            <div class="view-toggle">
+                                <button class="view-btn active" onclick="setView('grid')">📱 Grid View</button>
+                                <button class="view-btn" onclick="setView('list')">📋 List View</button>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="filter-section"></div>
-                <div id="gridView" class="files-grid"></div>
-                <div id="listView" class="files-list" style="display: none;"></div>
+                    <!-- Filter Section for subject chips -->
+                    <div class="filter-section">
+                        <!-- Filter chips will be dynamically added by JavaScript -->
+                    </div>
+
+                    <!-- Files Grid View -->
+                    <div id="gridView" class="files-grid">
+                        <!-- Files will be loaded here by JavaScript -->
+                    </div>
+
+                    <!-- List View -->
+                    <div id="listView" class="files-list" style="display: none;"></div>
+                </div>
             </div>
         </div>
     </div>
