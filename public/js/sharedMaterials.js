@@ -239,7 +239,6 @@ if (uploadBtn) {
         const title = uploadTitleInput.value.trim();
         const subject = uploadSubjectSelect?.value;
         const academicYearSelect = document.getElementById('upload-academic-year');
-        const academicYear = academicYearSelect?.value;
         const file = fileInput?.files[0];
         
         if (title === "") {
@@ -252,7 +251,8 @@ if (uploadBtn) {
             return;
         }
         
-        if (!academicYear || academicYear === "") {
+        // ONLY check academic year if the dropdown EXISTS on the page
+        if (academicYearSelect && (!academicYearSelect.value || academicYearSelect.value === "")) {
             showModal("Please select a target academic year.");
             return;
         }
@@ -263,11 +263,13 @@ if (uploadBtn) {
             return;
         }
         
+        const academicYear = academicYearSelect ? academicYearSelect.value : null;
+        
         const success = await uploadMaterial(title, subject, academicYear, file);
         
         if (success) {
             uploadTitleInput.value = '';
-            if (uploadSubjectSelect) uploadSubjectSelect.value = '';
+            uploadSubjectSelect.value = '';
             if (academicYearSelect) academicYearSelect.value = '';
             if (fileInput) fileInput.value = '';
             if (fileNameDisplay) fileNameDisplay.textContent = "No file chosen";
