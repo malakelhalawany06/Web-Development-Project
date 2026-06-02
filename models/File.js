@@ -111,17 +111,11 @@ export async function getSharedFiles(userId) {
  * Add a shared file (from Shared Materials page)
  */
 // models/File.js - Make sure addSharedFile saves year as number
+// models/File.js - Update addSharedFile
 export async function addSharedFile(fileData) {
     const db = await connectToDatabase();
     
-    // Ensure year is a number
-    const yearNum = parseInt(fileData.sharedByYear);
-    
-    console.log(`💾 Saving shared file:`);
-    console.log(`   - Title: ${fileData.title}`);
-    console.log(`   - SharedBy: ${fileData.sharedBy}`);
-    console.log(`   - Major: ${fileData.sharedByMajor}`);
-    console.log(`   - Year: ${yearNum} (${typeof yearNum})`);
+    const yearNum = fileData.sharedByYear ? parseInt(fileData.sharedByYear) : null;
     
     const newFile = {
         title: fileData.title,
@@ -133,61 +127,37 @@ export async function addSharedFile(fileData) {
         sharedBy: fileData.sharedBy,
         sharedById: new ObjectId(fileData.sharedById),
         sharedByMajor: fileData.sharedByMajor,
-        sharedByYear: yearNum,  // Save as number, not string
+        sharedByYear: yearNum,
+        isInstructor: fileData.isInstructor || false,
         isShared: true,
         createdAt: new Date(),
         updatedAt: new Date()
     };
     
-    const result = await db.collection(COLLECTION).insertOne(newFile);
-    console.log(`✅ File saved with ID: ${result.insertedId}`);
-    
+    const result = await db.collection('notes_files').insertOne(newFile);
     return { id: result.insertedId, ...newFile };
 }
-/**
- * Get files filtered by major AND academic year (for Notes & Files page)
- */
-// models/File.js - Make sure this function is correct
 export async function getFilesByMajorAndYear(major, academicYear) {
     const db = await connectToDatabase();
     
-    // Convert to number and handle both string and number inputs
     const targetYear = parseInt(academicYear);
-    
-    console.log(`🔍 Looking for files with:`);
-    console.log(`   - sharedByMajor: "${major}"`);
-    console.log(`   - sharedByYear: ${targetYear} (${typeof targetYear})`);
-    
-    // Query with exact match
-    const files = await db.collection(COLLECTION)
+    const files = await db.collection('notes_files')
         .find({ 
             sharedByMajor: major,
-            sharedByYear: targetYear
+            $or: [
+                // Student files: exact year match
+                { sharedByYear: targetYear, isInstructor: { $ne: true } },
+                // Instructor files targeting this specific year
+                { sharedByYear: targetYear, isInstructor: true },
+                // Instructor files targeting all years
+                { sharedByYear: null, isInstructor: true }
+            ]
         })
         .sort({ createdAt: -1 })
         .toArray();
     
-    console.log(`📁 Found ${files.length} files for ${major} year ${targetYear}`);
-    
-    // Also log all files in collection for debugging
-    const allFiles = await db.collection(COLLECTION).find({}).toArray();
-    console.log(`📊 Total files in notes_files: ${allFiles.length}`);
-    
-    if (allFiles.length > 0) {
-        console.log('📄 Sample file:', JSON.stringify({
-            title: allFiles[0].title,
-            sharedByMajor: allFiles[0].sharedByMajor,
-            sharedByYear: allFiles[0].sharedByYear,
-            yearType: typeof allFiles[0].sharedByYear
-        }, null, 2));
-    }
-    
     return files;
 }
-
-/**
- * Get user's own uploaded files (for Shared Materials history)
- */
 export async function getUserUploadedFiles(userId) {
     const db = await connectToDatabase();
     

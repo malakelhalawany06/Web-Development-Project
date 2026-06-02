@@ -83,7 +83,7 @@ function populateSubjectDropdown() {
 // Load user's own shared materials history
 async function loadMySharedHistory() {
     try {
-        const response = await fetch('/api/shared');
+        const response = await fetch('/api/shared/my-shared');
         if (!response.ok) throw new Error('Failed to load');
         const materials = await response.json();
         displayMyMaterials(materials);
@@ -91,7 +91,6 @@ async function loadMySharedHistory() {
         console.error('Error:', error);
     }
 }
-
 function displayMyMaterials(materials) {
     const feedContainer = document.getElementById('feed-container');
     if (!feedContainer) return;
@@ -135,18 +134,25 @@ function displayMyMaterials(materials) {
         feedContainer.appendChild(newPost);
     });
 }
-
-async function uploadMaterial(title, subject, file) {
+async function uploadMaterial(title, subject, academicYear, file) {
     const user = getCurrentUser();
-    if (!user) return false;
+    if (!user) {
+        console.error('No user found');
+        alert('Please login first');
+        return false;
+    }
     
+    console.log('Uploading as user:', user);
+    
+    // Send as JSON
     const materialData = {
         title: title,
-        description: subject,  // Use subject as description
+        description: subject,
+        course: subject,
         fileName: file ? file.name : "",
         fileSize: file ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : "",
         fileIcon: file ? getFileIcon(file.name) : '📄',
-        course: subject  // Store subject as course
+        targetYear: academicYear  // Add target academic year
     };
     
     try {
@@ -156,13 +162,22 @@ async function uploadMaterial(title, subject, file) {
             body: JSON.stringify(materialData)
         });
         
-        return response.ok;
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Server error:', error);
+            alert('Failed to share: ' + (error.error || 'Unknown error'));
+            return false;
+        }
+        
+        return true;
     } catch (error) {
         console.error('Upload error:', error);
+        alert('Failed to share. Please try again.');
         return false;
     }
 }
-
 function downloadFile(fileName) {
     alert(`Downloading "${fileName}"...`);
 }
@@ -217,13 +232,14 @@ if (fileInput) {
         fileNameDisplay.textContent = this.files.length > 0 ? this.files[0].name : "No file chosen";
     });
 }
-
 if (uploadBtn) {
     uploadBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         
         const title = uploadTitleInput.value.trim();
         const subject = uploadSubjectSelect?.value;
+        const academicYearSelect = document.getElementById('upload-academic-year');
+        const academicYear = academicYearSelect?.value;
         const file = fileInput?.files[0];
         
         if (title === "") {
@@ -236,17 +252,23 @@ if (uploadBtn) {
             return;
         }
         
+        if (!academicYear || academicYear === "") {
+            showModal("Please select a target academic year.");
+            return;
+        }
+        
         const user = getCurrentUser();
         if (!user) {
             showModal("Please login first.");
             return;
         }
         
-        const success = await uploadMaterial(title, subject, file);
+        const success = await uploadMaterial(title, subject, academicYear, file);
         
         if (success) {
             uploadTitleInput.value = '';
             if (uploadSubjectSelect) uploadSubjectSelect.value = '';
+            if (academicYearSelect) academicYearSelect.value = '';
             if (fileInput) fileInput.value = '';
             if (fileNameDisplay) fileNameDisplay.textContent = "No file chosen";
             
@@ -259,7 +281,6 @@ if (uploadBtn) {
         }
     });
 }
-
 // Initialize
 window.onload = function() {
     if (window.currentUser && window.currentUser.id) {

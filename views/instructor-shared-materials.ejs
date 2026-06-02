@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoomHub - Shared Materials</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/sharedMaterials.css">
+    <link rel="stylesheet" href="/css/project web.css">
+</head>
+<body>
+    <div class="layout">
+  
+        <!-- ===== SIDEBAR (INSTRUCTOR VERSION) ===== -->
+        <%- include('partials/sidebar-instructor', { activePage: 'shared-materials' }) %>
+
+        <main class="main">
+            <header class="topbar">
+                <div>
+                    <div class="topbar-title">📤 Share Material</div>
+                    <div class="topbar-subtitle">Share your notes and files with students</div>
+                </div>
+                <div class="topbar-right">
+                    <div class="icon-btn">🔔<span class="notif-dot"></span></div>
+                    <div class="avatar sm"><%= user ? user.name?.charAt(0) || 'G' : 'G' %></div>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- Upload Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Upload New Material</div>
+                    </div>
+                    
+                    <input type="text" id="upload-title" class="feed-input" placeholder="Material Title (e.g., Chapter 7 Notes)">
+                    
+                    <!-- Subject Dropdown -->
+                    <select id="upload-subject" class="feed-input" required>
+                        <option value="">Select a subject...</option>
+                    </select>
+                    <!-- Academic Year Dropdown -->
+<select id="upload-academic-year" class="feed-input" required>
+    <option value="">Select target academic year...</option>
+    <option value="1">Year 1</option>
+    <option value="2">Year 2</option>
+    <option value="3">Year 3</option>
+    <option value="4">Year 4</option>
+    <option value="3">Year 5 (Pharmacy/Dentistry Students)</option>
+    <option value="4">Year 6 (Pharmacy/Dentistry Students)</option>
+    <option value="all">All Years (All students in this major)</option>
+</select>
+                    <div class="upload-footer">
+                        <div class="file-input-wrapper">
+                            <label for="upload-file" class="btn btn-ghost">📁 Choose File</label>
+                            <span class="file-name-display" style="font-size: 12px; color: var(--text2);">No file chosen</span>
+                            <input type="file" id="upload-file" hidden>
+                        </div>
+                        <button id="upload-btn" class="btn btn-primary">Share Material</button>
+                    </div>
+                </div>
+
+                <!-- My Shared Materials History -->
+                <div class="card-header" style="margin-bottom: -10px; margin-top: 10px;">
+                    <div class="card-title">📖 My Shared Materials History</div>
+                </div>
+                
+                <div id="feed-container">
+                    <!-- My shared materials history will appear here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content card">
+            <h3 class="card-title">Notification</h3>
+            <p id="modal-message" style="color: var(--text2); font-size: 13px; margin-bottom: 20px;"></p>
+            <button id="close-modal-btn" class="btn btn-primary">OK</button>
+        </div>
+    </div>
+
+    <script>
+        window.currentUser = {
+            id: '<%= user ? user._id : "" %>',
+            name: '<%= user ? user.name : "" %>',
+            major: '<%= user ? user.major : "" %>',
+            role: 'instructor',
+            username: '<%= user ? user.username : "" %>'
+        };
+    </script>
+    <script src="/js/users.js"></script>
+    <script src="/js/sharedMaterials.js"></script>
+</body>
+</html>
