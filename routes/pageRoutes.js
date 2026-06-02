@@ -54,6 +54,18 @@ router.get('/studygroups', requireLogin, (req, res) => {
 router.get('/notes-files', requireLogin, (req, res) => {
     res.render('notes&files', { user: res.locals.user, activePage: 'notes-files' });
 });
+// Instructor Notes & Files
+router.get('/instructor-notes-files', (req, res) => {
+    if (!req.session.userId) return res.redirect('/');
+    res.render('instructor-notes-files', { user: res.locals.user });
+});
+
+// Instructor Shared Materials
+router.get('/instructor-shared-materials', (req, res) => {
+    if (!req.session.userId) return res.redirect('/');
+    res.render('instructor-shared-materials', { user: res.locals.user });
+});
+
 // GET Route: Group Details Page
 router.get('/group-details', requireLogin, (req, res) => {
     res.render('group-details', { user: res.locals.user });

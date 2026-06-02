@@ -1,5 +1,5 @@
-// notes&files.js - API ONLY VERSION (no localStorage)
 
+let API_ENDPOINT = window.notesApiEndpoint || '/api/files/shared';
 // Subjects by major (same as sharedMaterials.js)
 const subjectsByMajor = {
     'Computer Science': [
@@ -106,7 +106,7 @@ if (searchInput) {
 // Load shared files from API (filtered by major + academic year)
 async function loadSharedFiles() {
     try {
-        const response = await fetch('/api/files/shared');
+        const response = await fetch(API_ENDPOINT);
         if (!response.ok) throw new Error('Failed to load files');
         
         const files = await response.json();

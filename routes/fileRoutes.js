@@ -24,9 +24,65 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
-// Get files filtered by major AND academic year (for Notes & Files page)
-// routes/fileRoutes.js - Update the /shared endpoint
+// Get files for instructors (filtered by their major)
+router.get('/instructor', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
+    
+    try {
+        const db = await connectToDatabase();
+        
+        // Get instructor from instructors collection
+        let instructor = await db.collection('instructors').findOne({ 
+            _id: new ObjectId(req.session.userId) 
+        });
+        
+        // If not found in instructors, check students (for debugging)
+        if (!instructor) {
+            instructor = await db.collection('students').findOne({ 
+                _id: new ObjectId(req.session.userId) 
+            });
+        }
+        
+        console.log('Instructor found:', instructor?.name);
+        console.log('Instructor major:', instructor?.major);
+        console.log('Instructor subject:', instructor?.subject);
+        
+        // Try multiple ways to get the instructor's subject/major
+        let instructorMajor = instructor?.major || instructor?.subject || instructor?.department;
+        
+        // If still no major, try to get from the courses they teach
+        if (!instructorMajor && instructor?.subject) {
+            instructorMajor = instructor.subject;
+        }
+        
+        console.log('Using major for filtering:', instructorMajor);
+        
+        // If no major found, return empty array
+        if (!instructorMajor) {
+            console.log('⚠️ No major found for instructor, returning empty array');
+            return res.json([]);
+        }
+        
+        // Find files where sharedByMajor matches instructor's major
+        // Also include files where course name matches the instructor's subject
+        const files = await db.collection('notes_files')
+            .find({
+                $or: [
+                    { sharedByMajor: instructorMajor },
+                    { course: { $regex: instructorMajor, $options: 'i' } }
+                ]
+            })
+            .sort({ createdAt: -1 })
+            .toArray();
+        
+        console.log(`📤 Returning ${files.length} files for instructor ${instructor?.name}`);
+        
+        res.json(files);
+    } catch (error) {
+        console.error('Error getting instructor files:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 router.get('/shared', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     

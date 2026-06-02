@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/project web.css">
+    <link rel="stylesheet" href="/css/notes&files.css">
+</head>
+<body>
+    <div class="layout">
+
+        <%- include('partials/sidebar-instructor', { activePage: 'notes-files' }) %>
+
+        <div class="main">
+            <header class="topbar" style="height:64.17px">
+                <div>
+                    <div class="topbar-title">📂 Notes & Files</div>
+                    <div class="topbar-subtitle">Study Materials</div>
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-search">
+                        <span>🔍</span>
+                        <input type="text" id="topbar-search-input" placeholder="Search files...">
+                    </div>
+                    <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+                    <div class="avatar sm">
+                        <%= user && user.name ? user.name.charAt(0).toUpperCase() : 'I' %>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="upload-bar">
+                    <button class="btn btn-primary" onclick="window.location.href='/instructor-shared-materials'">+ Upload New File</button>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="setView('grid')">📱 Grid View</button>
+                        <button class="view-btn" onclick="setView('list')">📋 List View</button>
+                    </div>
+                </div>
+
+                <div class="filter-section"></div>
+                <div id="gridView" class="files-grid"></div>
+                <div id="listView" class="files-list" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.currentUser = {
+            id: '<%= user ? user._id : "" %>',
+            name: '<%= user ? user.name : "" %>',
+            major: '<%= user ? user.major : "" %>',
+            role: 'instructor',
+            username: '<%= user ? user.username : "" %>'
+        };
+        window.notesApiEndpoint = '/api/files/instructor';
+    </script>
+    <script src="/js/users.js"></script>
+    <script src="/js/notes&files.js"></script>
+</body>
+</html>
