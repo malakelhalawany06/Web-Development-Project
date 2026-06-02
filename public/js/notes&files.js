@@ -1,42 +1,30 @@
-
+// notes&files.js
 let API_ENDPOINT = window.notesApiEndpoint || '/api/files/shared';
-// Subjects by major (same as sharedMaterials.js)
-const subjectsByMajor = {
-    'Computer Science': [
-        'Data Structures', 'Algorithms', 'Database Systems', 'Networking',
-        'Web Development', 'Artificial Intelligence', 'Operating Systems', 'Software Engineering'
-    ],
-    'Business Informatics': [
-        'Data Analysis', 'Digital Marketing', 'Business Analytics', 'Finance',
-        'E-commerce', 'Supply Chain Management', 'Business Intelligence'
-    ],
-    'Applied Arts': [
-        'Graphic Design', 'UI/UX Design', 'Digital Art', 'Photography',
-        'Illustration', 'Motion Graphics', '3D Modeling'
-    ],
-    'Law': [
-        'Constitutional Law', 'Criminal Law', 'International Law', 'Contract Law',
-        'Corporate Law', 'Human Rights', 'Legal Writing'
-    ],
-    'Pharmacy': [
-        'Pharmacology', 'Pharmaceutical Chemistry', 'Clinical Pharmacy', 'Pharmacotherapy',
-        'Drug Delivery Systems', 'Toxicology', 'Pharmacy Practice', 'Medicinal Chemistry'
-    ],
-    'Dentistry': [
-        'Human Anatomy', 'Oral Pathology', 'Clinical Dentistry', 'Dental Radiology',
-        'Orthodontics', 'Periodontics', 'Oral Surgery'
-    ],
-    'Networks': [
-        'Network Security', 'Cloud Computing', 'Cyber Security', 'Network Protocols',
-        'Routing & Switching', 'Wireless Networks'
-    ],
-    'System Admin': [
-        'Server Management', 'DevOps', 'Cloud Infrastructure', 'Linux Administration',
-        'Windows Server', 'Virtualization'
-    ]
-};
 
 let currentFileCards = [];
+
+// Load subjects from database for filter chips (based on major AND academic_year)
+async function loadSubjectsFromDB() {
+    const user = window.currentUser;
+    if (!user) return [];
+    
+    const major = user.major;
+    const academic_year = user.academic_year;  // Use academic_year
+    
+    console.log('Loading subjects for major:', major, 'year:', academic_year);
+    
+    try {
+        // Get subjects for this specific major AND academic_year
+        const response = await fetch(`/api/subjects?major=${encodeURIComponent(major)}&year=${academic_year}`);
+        if (!response.ok) throw new Error('Failed to load subjects');
+        const subjects = await response.json();
+        console.log('Subjects loaded:', subjects);
+        return subjects;
+    } catch (error) {
+        console.error('Error loading subjects:', error);
+        return [];
+    }
+}
 
 // Populate List View
 function populateListView() {
@@ -103,7 +91,7 @@ if (searchInput) {
 
 // ===== API FUNCTIONS =====
 
-// Load shared files from API (filtered by major + academic year)
+// Load shared files from API (filtered by major + academic_year)
 async function loadSharedFiles() {
     try {
         const response = await fetch(API_ENDPOINT);
@@ -123,7 +111,7 @@ async function loadSharedFiles() {
         updateNotesFilesBadge(files.length);
         
         // Update filter chips after loading files
-        updateSubjectFilterChips();
+        await updateSubjectFilterChips();
     } catch (error) {
         console.error('Error loading files:', error);
         const filesGrid = document.getElementById('gridView');
@@ -145,13 +133,13 @@ function updateNotesFilesBadge(count) {
     if (badge) badge.textContent = count || 0;
 }
 
-// Update subject filter chips
-function updateSubjectFilterChips() {
+// Update subject filter chips from database (based on major AND academic_year)
+async function updateSubjectFilterChips() {
     const user = window.currentUser;
     if (!user) return;
     
-    const major = user.major;
-    const subjects = subjectsByMajor[major] || subjectsByMajor['Computer Science'];
+    // Load subjects for this specific major AND academic_year
+    const subjects = await loadSubjectsFromDB();
     const filterSection = document.querySelector('.filter-section');
     
     if (!filterSection) return;
@@ -253,10 +241,11 @@ function setView(view) {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Set current user from window.currentUser (set in EJS)
+document.addEventListener('DOMContentLoaded', async function() {
     if (window.currentUser) {
         console.log('User loaded:', window.currentUser.name);
+        console.log('User academic_year:', window.currentUser.academic_year);
+        console.log('User major:', window.currentUser.major);
     }
-    loadSharedFiles();
+    await loadSharedFiles();
 });

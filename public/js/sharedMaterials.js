@@ -24,49 +24,38 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Subjects by major
-const subjectsByMajor = {
-    'Computer Science': [
-        'Data Structures', 'Algorithms', 'Database Systems', 'Networks',
-        'Web Development', 'Artificial Intelligence', 'Operating Systems', 'Software Engineering'
-    ],
-    'Business Informatics': [
-        'Data Analysis', 'Digital Marketing', 'Business Analytics', 'Finance',
-        'E-commerce', 'Supply Chain Management', 'Business Intelligence'
-    ],
-    'Applied Arts': [
-        'Graphic Design', 'UI/UX Design', 'Digital Art', 'Photography',
-        'Illustration', 'Motion Graphics', '3D Modeling'
-    ],
-    'Law': [
-        'Constitutional Law', 'Criminal Law', 'International Law', 'Contract Law',
-        'Corporate Law', 'Human Rights', 'Legal Writing'
-    ],
-    'Pharmacy': [
-        'Pharmacology', 'Pharmaceutical Chemistry', 'Clinical Pharmacy', 'Pharmacotherapy',
-        'Drug Delivery Systems', 'Toxicology', 'Pharmacy Practice', 'Medicinal Chemistry'
-    ],
-    'Dentistry': [
-        'Human Anatomy', 'Oral Pathology', 'Clinical Dentistry', 'Dental Radiology',
-        'Orthodontics', 'Periodontics', 'Oral Surgery'
-    ],
-    'Networks': [
-        'Network Security', 'Cloud Computing', 'Cyber Security', 'Network Protocols',
-        'Routing & Switching', 'Wireless Networks'
-    ],
-    'System Admin': [
-        'Server Management', 'DevOps', 'Cloud Infrastructure', 'Linux Administration',
-        'Windows Server', 'Virtualization'
-    ]
-};
+// Load subjects from database
+async function loadSubjectsFromDB() {
+    const user = getCurrentUser();
+    if (!user) return [];
+    
+    const major = user.major;
+    const isInstructor = user.role === 'instructor';
+    
+    try {
+        let url = `/api/subjects?major=${encodeURIComponent(major)}`;
+        
+        // For students, filter by their academic_year (use academic_year, not academicYear)
+        if (!isInstructor && user.academic_year) {
+            url += `&year=${user.academic_year}`;
+        }
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to load subjects');
+        const subjects = await response.json();
+        return subjects;
+    } catch (error) {
+        console.error('Error loading subjects:', error);
+        return [];
+    }
+}
 
-// Populate subject dropdown
-function populateSubjectDropdown() {
+// Populate subject dropdown from database
+async function populateSubjectDropdown() {
     const user = getCurrentUser();
     if (!user) return;
     
-    const major = user.major;
-    const subjects = subjectsByMajor[major] || subjectsByMajor['Computer Science'];
+    const subjects = await loadSubjectsFromDB();
     const subjectSelect = document.getElementById('upload-subject');
     
     if (!subjectSelect) return;
@@ -91,6 +80,7 @@ async function loadMySharedHistory() {
         console.error('Error:', error);
     }
 }
+
 function displayMyMaterials(materials) {
     const feedContainer = document.getElementById('feed-container');
     if (!feedContainer) return;
@@ -134,7 +124,8 @@ function displayMyMaterials(materials) {
         feedContainer.appendChild(newPost);
     });
 }
-async function uploadMaterial(title, subject, academicYear, file) {
+
+async function uploadMaterial(title, subject, academic_year, file) {
     const user = getCurrentUser();
     if (!user) {
         console.error('No user found');
@@ -151,9 +142,13 @@ async function uploadMaterial(title, subject, academicYear, file) {
         course: subject,
         fileName: file ? file.name : "",
         fileSize: file ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : "",
-        fileIcon: file ? getFileIcon(file.name) : '📄',
-        targetYear: academicYear  // Add target academic year
+        fileIcon: file ? getFileIcon(file.name) : '📄'
     };
+    
+    // Only add targetYear if provided (instructor only)
+    if (academic_year) {
+        materialData.targetYear = academic_year;
+    }
     
     try {
         const response = await fetch('/api/shared', {
@@ -178,6 +173,7 @@ async function uploadMaterial(title, subject, academicYear, file) {
         return false;
     }
 }
+
 function downloadFile(fileName) {
     alert(`Downloading "${fileName}"...`);
 }
@@ -232,6 +228,7 @@ if (fileInput) {
         fileNameDisplay.textContent = this.files.length > 0 ? this.files[0].name : "No file chosen";
     });
 }
+
 if (uploadBtn) {
     uploadBtn.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -251,7 +248,7 @@ if (uploadBtn) {
             return;
         }
         
-        // ONLY check academic year if the dropdown EXISTS on the page
+        // ONLY check academic year if the dropdown EXISTS on the page (instructor only)
         if (academicYearSelect && (!academicYearSelect.value || academicYearSelect.value === "")) {
             showModal("Please select a target academic year.");
             return;
@@ -263,9 +260,9 @@ if (uploadBtn) {
             return;
         }
         
-        const academicYear = academicYearSelect ? academicYearSelect.value : null;
+        const academic_year = academicYearSelect ? academicYearSelect.value : null;
         
-        const success = await uploadMaterial(title, subject, academicYear, file);
+        const success = await uploadMaterial(title, subject, academic_year, file);
         
         if (success) {
             uploadTitleInput.value = '';
@@ -283,11 +280,12 @@ if (uploadBtn) {
         }
     });
 }
+
 // Initialize
-window.onload = function() {
+window.onload = async function() {
     if (window.currentUser && window.currentUser.id) {
         currentUser = window.currentUser;
     }
-    populateSubjectDropdown();
+    await populateSubjectDropdown();
     loadMySharedHistory();
 };

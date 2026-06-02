@@ -14,6 +14,7 @@ import groupRoutes from './routes/groupRoutes.js';
 import fileRoutes from './routes/fileRoutes.js';
 import sharedRoutes from './routes/sharedRoutes.js';
 import profileRoutes from './routes/profileRoutes.js'; // 💡 1. IMPORT PROFILE ROUTES
+import subjectRoutes from './routes/subjectRoutes.js';
 
 dotenv.config();
 
@@ -77,6 +78,7 @@ app.use('/api/user', apiRoutes); // Mounts asset image post routines
 app.use('/api/groups', groupRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/shared', sharedRoutes);
+app.use('/api/subjects', subjectRoutes);
 
 connectToDatabase().then(() => {
     app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));

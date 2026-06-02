@@ -1,40 +1,6 @@
+// studygroups.js
 
-// Define subjects by major globally (add at top of file after imports)
-const subjectsByMajor = {
-    'Computer Science': [
-        'Data Structures', 'Algorithms', 'Database Systems', 'Networks',
-        'Web Development', 'Artificial Intelligence', 'Operating Systems', 'Software Engineering'
-    ],
-    'Business Informatics': [
-        'Data Analysis', 'Digital Marketing', 'Business Analytics', 'Finance',
-        'E-commerce', 'Supply Chain Management', 'Business Intelligence'
-    ],
-    'Applied Arts': [
-        'Graphic Design', 'UI/UX Design', 'Digital Art', 'Photography',
-        'Illustration', 'Motion Graphics', '3D Modeling'
-    ],
-    'Law': [
-        'Constitutional Law', 'Criminal Law', 'International Law', 'Contract Law',
-        'Corporate Law', 'Human Rights', 'Legal Writing'
-    ],
-    'Pharmacy': [
-        'Pharmacology', 'Pharmaceutical Chemistry', 'Clinical Pharmacy', 'Pharmacotherapy',
-        'Drug Delivery Systems', 'Toxicology', 'Pharmacy Practice', 'Medicinal Chemistry'
-    ],
-    'Dentistry': [
-        'Human Anatomy', 'Oral Pathology', 'Clinical Dentistry', 'Dental Radiology',
-        'Orthodontics', 'Periodontics', 'Oral Surgery'
-    ],
-    'Networks': [
-        'Network Security', 'Cloud Computing', 'Cyber Security', 'Network Protocols',
-        'Routing & Switching', 'Wireless Networks'
-    ],
-    'System Admin': [
-        'Server Management', 'DevOps', 'Cloud Infrastructure', 'Linux Administration',
-        'Windows Server', 'Virtualization'
-    ]
-};
-
+// ===== CONSTANTS (Keep emojis and category mapping) =====
 const majorEmojis = {
     'Computer Science': '💻',
     'Business Informatics': '📊',
@@ -43,7 +9,9 @@ const majorEmojis = {
     'Pharmacy': '💊',
     'Dentistry': '🦷',
     'Networks': '🌐',
-    'System Admin': '🖥️'
+    'System Admin': '🖥️',
+    'Electrical Engineering': '⚡',
+    'Mechanical Engineering': '🔧'
 };
 
 const categoryMap = {
@@ -54,8 +22,11 @@ const categoryMap = {
     'Dentistry': 'science',
     'Pharmacy': 'science',
     'Networks': 'cs',
-    'System Admin': 'admin'
+    'System Admin': 'admin',
+    'Electrical Engineering': 'engineering',
+    'Mechanical Engineering': 'engineering'
 };
+
 function getIconClass(category) {
     const icons = { math: 'purple', engineering: 'cyan', business: 'green', arts: 'pink' };
     return icons[category] || 'blue';
@@ -65,6 +36,23 @@ function getIcon(category) {
     const icons = { math: '🧮', engineering: '⚡', business: '📊', arts: '🎨' };
     return icons[category] || '💻';
 }
+
+// ===== LOAD SUBJECTS FROM DATABASE (based on major AND academic_year) =====
+async function loadSubjectsFromDB(major, academic_year) {
+    try {
+        console.log('Loading subjects for:', { major, academic_year });
+        // Get subjects for this specific major AND academic_year
+        const response = await fetch(`/api/subjects?major=${encodeURIComponent(major)}&year=${academic_year}`);
+        if (!response.ok) throw new Error('Failed to load subjects');
+        const subjects = await response.json();
+        console.log('Subjects loaded:', subjects);
+        return subjects;
+    } catch (error) {
+        console.error('Error loading subjects:', error);
+        return [];
+    }
+}
+
 // Search functionality
 const searchInput = document.getElementById('groupSearchInput');
 let groupCards = document.querySelectorAll('.group-card');
@@ -175,8 +163,6 @@ async function loadUserStudyGroups() {
 }
 
 // Create group card from data
-// Create group card from data
-// Create group card from data
 function createGroupCard(group) {
     const card = document.createElement('div');
     card.className = 'group-card';
@@ -200,7 +186,6 @@ function createGroupCard(group) {
             <div class="stat">💬 ${group.messageCount || 0} messages</div>
         </div>
         <div class="group-description">${escapeHtml(group.description || 'Study group for ' + group.course)}</div>
-        <!-- REMOVED the group-major line with emoji -->
         <div class="group-actions">
             <button class="btn btn-outline btn-sm" onclick="viewDetails('${group._id || group.id}')">View Details</button>
             ${group.status === 'joined' 
@@ -210,6 +195,7 @@ function createGroupCard(group) {
     `;
     return card;
 }
+
 // Create new group via API
 if (form) {
     form.addEventListener('submit', async function(e) {
@@ -228,7 +214,6 @@ if (form) {
         const major = currentUser?.major || 'Computer Science';
         
         // Map major to category for filtering
-        
         const category = categoryMap[major] || 'cs';
         
         try {
@@ -366,8 +351,7 @@ async function updateStudyGroupsBadge() {
     }
 }
 
-// Filter chips - updated to work with API loaded cards
-// Update filter chips based on user's major subjects
+// Update filter chips based on user's major AND academic_year
 async function updateFilterChips() {
     const filterSection = document.querySelector('.filter-section');
     if (!filterSection) return;
@@ -375,7 +359,8 @@ async function updateFilterChips() {
     let currentUser = window.currentUser || (typeof UserManager !== 'undefined' ? UserManager.getCurrentUser() : null);
     if (!currentUser) return;
     
-    const subjects = subjectsByMajor[currentUser.major] || subjectsByMajor['Computer Science'];
+    // Load subjects for this specific major AND academic_year
+    const subjects = await loadSubjectsFromDB(currentUser.major, currentUser.academic_year);
     
     const chips = [
         { filter: 'all', name: 'All Groups' },
@@ -395,7 +380,7 @@ async function updateFilterChips() {
         if (chip.filter === 'all') chipDiv.classList.add('active');
         chipDiv.setAttribute('data-filter', chip.filter);
         chipDiv.textContent = chip.name;
-        chipDiv.addEventListener('click', (e) => handleFilterClick(chip.filter,e));
+        chipDiv.addEventListener('click', (e) => handleFilterClick(chip.filter, e));
         filterSection.appendChild(chipDiv);
     });
 }
@@ -418,6 +403,7 @@ function handleFilterClick(filterValue, event) {
         }
     });
 }
+
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -425,8 +411,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Populate subjects dropdown based on user's major
-// Populate subjects dropdown and major field based on user's major
+// Populate subjects dropdown based on user's major AND academic_year
 async function populateSubjectsAndMajor() {
     let currentUser = window.currentUser || (typeof UserManager !== 'undefined' ? UserManager.getCurrentUser() : null);
     if (!currentUser) return;
@@ -438,7 +423,8 @@ async function populateSubjectsAndMajor() {
     if (majorInput) majorInput.value = major || 'Computer Science';
     if (!subjectsSelect) return;
     
-    const subjects = subjectsByMajor[major] || subjectsByMajor['Computer Science'];
+    // Load subjects for this specific major AND academic_year
+    const subjects = await loadSubjectsFromDB(major, currentUser.academic_year);
     
     subjectsSelect.innerHTML = '<option value="">Select a subject...</option>';
     subjects.forEach(subject => {
@@ -448,10 +434,9 @@ async function populateSubjectsAndMajor() {
         subjectsSelect.appendChild(option);
     });
 }
+
 // Initialize buttons (for join/leave/view details)
 function initializeButtons() {
-    // This function is called from DOMContentLoaded
-    // It should re-attach event listeners to dynamic buttons
     const joinButtons = document.querySelectorAll('.group-actions .btn-primary.btn-sm, .group-actions .btn-success.btn-sm');
     joinButtons.forEach(button => {
         const newButton = button.cloneNode(true);
@@ -472,10 +457,11 @@ function initializeButtons() {
 }
 
 // Update DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('DOM loaded, initializing...');
-    populateSubjectsAndMajor();
-    updateFilterChips();
+    console.log('window.currentUser:', window.currentUser);
+    await populateSubjectsAndMajor();
+    await updateFilterChips();
     initializeButtons();
     loadUserStudyGroups();
 });
