@@ -27,9 +27,10 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Serve static assets first so they don't break session configurations
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'fallback-secret',
@@ -71,8 +72,8 @@ app.use(async (req, res, next) => {
 // ------------------------------------------------------------------
 // MOUNTING ROUTERS (Keeps things organized!)
 // ------------------------------------------------------------------
+app.use('/', authRoutes);        // Authenticate requests before page routing triggers
 app.use('/', pageRoutes);        // Mounts front page layout views
-app.use('/', authRoutes);   
 app.use('/personal-info', profileRoutes); // 💡 2. MOUNT PROFILE ROUTER (Base URL path is now /profile)
 
 // APPLIES ROUTING PATH FOR BUTTON ACTIONS TO TALK TO MONGO INTERFACES

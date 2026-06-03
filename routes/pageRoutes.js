@@ -6,7 +6,10 @@ const router = express.Router();
 
 // Middleware checking loop verifying active secure login states
 const requireLogin = (req, res, next) => {
-    if (!req.session.userId) return res.redirect('/');
+    // Check both session and res.locals to be absolutely sure the user object loaded cleanly
+    if (!req.session.userId || !res.locals.user) {
+        return res.redirect('/');
+    }
     next();
 };
 
@@ -78,9 +81,15 @@ router.get('/shared-materials', requireLogin, (req, res) => {
     res.render('sharedMaterials', { user: res.locals.user, userRole: req.session.userRole, activePage: 'shared-materials' });
 });
 
-// GET Route: GPA Calculator Page
+// ===================================================
+// 🎓 FIXED ROUTE: GPA CALCULATOR WITH LOGIN FIX
+// ===================================================
 router.get('/gpa-calculator', requireLogin, (req, res) => {
-    res.render('gpa-calculator', { user: res.locals.user, userRole: req.session.userRole, activePage: 'gpa-calculator' });
+    res.render('gpa-calculator', { 
+        user: res.locals.user, 
+        userRole: req.session.userRole || 'students', // Ensure role state doesn't drop
+        activePage: 'gpa-calculator' 
+    });
 });
 
 // GET Route: Project Manager Core Data Pipeline View Loader
