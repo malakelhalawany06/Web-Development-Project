@@ -74,7 +74,10 @@ app.use(async (req, res, next) => {
 app.use('/', pageRoutes);        // Mounts front page layout views
 app.use('/', authRoutes);   
 app.use('/personal-info', profileRoutes); // 💡 2. MOUNT PROFILE ROUTER (Base URL path is now /profile)
-app.use('/api/user', apiRoutes); // Mounts asset image post routines
+
+// APPLIES ROUTING PATH FOR BUTTON ACTIONS TO TALK TO MONGO INTERFACES
+app.use('/api', apiRoutes); 
+
 app.use('/api/groups', groupRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/shared', sharedRoutes);
@@ -86,4 +89,3 @@ connectToDatabase().then(() => {
     console.error('Failed to connect to database:', err);
     process.exit(1);
 });
-

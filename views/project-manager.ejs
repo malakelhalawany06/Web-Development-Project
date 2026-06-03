@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Manager</title>
+  <link rel="stylesheet" href="/css/project web.css">
+  <link rel="stylesheet" href="/css/project-manager.css">
+</head>
+
+<body>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>" href="/dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'profile' ? 'active' : '' %>" href="/profile">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Academic</div>
+      <a class="nav-item" href="/gpa-calculator">
+        <span class="nav-icon">🎓</span> GPA Calculator
+      </a>
+     
+      <a class="nav-item" href="/reminders">
+        <span class="nav-icon">⏰</span> Tasks & Reminders
+        <span class="nav-badge warn">2</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Resources</div>
+      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'notes-files' ? 'active' : '' %>" href="/notes-files">
+        <span class="nav-icon">📂</span> Notes & Files
+        <span class="nav-badge" id="notesFilesBadge">0</span>
+      </a>
+      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'shared-materials' ? 'active' : '' %>" href="/shared-materials">
+        <span class="nav-icon">🔗</span> Shared Materials
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      <a class="nav-item" href="/studygroups">
+        <span class="nav-icon">👥</span> Study Groups
+        <span class="nav-badge green">0</span>
+      </a>
+      <a class="nav-item active" href="/project-manager">
+        <span class="nav-icon">🗂</span> Project Manager
+      </a>
+      <a class="nav-item" href="/qa-forum">
+        <span class="nav-icon">💬</span> Q&amp;A Forum
+      </a>
+    </div>
+
+    <% if (typeof userRole !== 'undefined' && userRole === 'admins') { %>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Admin Panel</div>
+      <a class="nav-item" href="/user-management">
+        <span class="nav-icon">🛡</span> User Management
+      </a>
+      <a class="nav-item" href="/analytics">
+        <span class="nav-icon">📊</span> Analytics
+      </a>
+    </div>
+    <% } %>
+
+    <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='/profile'">
+      <div class="avatar">
+        <%= user && user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U' %>
+      </div>
+      <div class="profile-info">
+        <div class="name"><%= user ? user.name : 'User' %></div>
+        <div class="role">
+            <%= user && user.major ? user.major : 'Student' %> 
+            <%= user && (user.academic_year || user.year) ? '· Yr ' + (user.academic_year || user.year) : '' %>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+        <div>
+            <div class="topbar-title">🗂 Project Manager</div>
+            <div class="topbar-subtitle">Track and manage your projects</div>
+        </div>
+        <div class="topbar-right">
+            <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+            <div class="avatar sm">
+                <%= user && user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U' %>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Create Project Task</h2>
+            </div>
+            <div class="task-form-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="form-group">
+                    <label>Task Name</label>
+                    <input type="text" id="taskName" class="form-control" placeholder="Enter task name">
+                </div>
+                <div class="form-group">
+                    <label>Deadline</label>
+                    <input type="date" id="deadline" class="form-control">
+                </div>
+            </div>
+            <button class="btn" onclick="addTask()">+ Add Task</button>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Project Tasks Assigned To You</h2>
+            </div>
+            
+            <div class="tasks-grid" id="taskTable">
+              <% if (typeof projects === 'undefined' || projects.length === 0 || projects.every(p => !p.tasks || p.tasks.length === 0)) { %>
+                <p style="color: #94a3b8; padding: 20px;">No tasks assigned to you at the moment.</p>
+              <% } else { %>
+                <% projects.forEach(project => { %>
+                  <% if (project.tasks) { %>
+                    <% project.tasks.forEach(task => { %>
+                      <div class="task-card">
+                        <div class="task-card-header">
+                          <div class="task-info">
+                            <h3><%= task.taskName %></h3>
+                            <p style="color: #3b82f6; font-size: 0.85rem;"><%= project.projectName || 'Main Project' %></p>
+                          </div>
+                        </div>
+
+                        <div class="task-meta">
+                          <div>Due: <%= task.deadline ? new Date(task.deadline).toDateString() : 'N/A' %></div>
+                        </div>
+
+                        <div class="progress-section">
+                          <div id="text-<%= task._id %>"><%= task.completionPercentage || 0 %>%</div>
+                          <div class="progress-bar">
+                            <div class="progress-fill" id="bar-<%= task._id %>" style="width:<%= task.completionPercentage || 0 %>%"></div>
+                          </div>
+                        </div>
+
+                        <div class="task-card-actions">
+                          <input type="number" id="prog-<%= task._id %>" value="<%= task.completionPercentage || 0 %>" min="0" max="100">
+                          <button onclick="updateTaskProgress('<%= project._id %>', '<%= task._id %>')">Update</button>
+                          <button onclick="deleteTask('<%= project._id %>', '<%= task._id %>')">Delete</button>
+                        </div>
+                      </div>
+                    <% }) %>
+                  <% } %>
+                <% }) %>
+              <% } %>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 class="panel-title">Project Progress</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">Overall Progress: <strong id="projectProgressText" style="color: white;"><%= typeof overallProgress !== 'undefined' ? overallProgress : 0 %>%</strong></p>
+            
+            <div class="progress-ring-container">
+                <div class="circular-progress" id="projectProgressRing" style="background: conic-gradient(#3b82f6 <%= (typeof overallProgress !== 'undefined' ? overallProgress : 0) * 3.6 %>deg, #212631 0deg);">
+                    <span class="progress-value" id="projectProgressValue"><%= typeof overallProgress !== 'undefined' ? overallProgress : 0 %>%</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="/js/users.js"></script>
+<script src="/js/project-manager.js"></script>
+<script src="/js/personalInfo.js"></script>
+</body>
+</html>

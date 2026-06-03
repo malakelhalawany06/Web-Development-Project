@@ -1,65 +1,96 @@
 import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../config/db.js';
 
 const router = express.Router();
 
-// Ensure image directory exists
-const uploadDir = 'public/images';
-if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Parse body streams cleanly
+router.use(express.json());
+router.use(express.urlencoded({ extended: true }));
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'public/images/'),
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname).toLowerCase();
-        cb(null, `avatar-${req.session.userId}-${Date.now()}${ext}`);
+// Gate restricting operations exclusively to student roles
+const requireStudentAPI = (req, res, next) => {
+    if (req.session && req.session.userId && req.session.userRole === 'students') {
+        return next();
     }
-});
-
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    if (extname && mimetype) return cb(null, true);
-    cb(new Error('Only image files are allowed!'));
+    return res.status(403).json({ success: false, message: "Unauthorized action." });
 };
 
-const upload = multer({ 
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: { fileSize: 1024 * 1024 * 3 } 
-});
-
-// POST Route: Handle Profile Picture Upload
-router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
-    if (!req.session.userId || !req.session.userRole) {
-        return res.status(401).json({ success: false, error: 'Unauthorized active session window.' });
-    }
+// API Endpoint: Add Task
+router.post('/projects/add-task', requireStudentAPI, async (req, res) => {
     try {
-        if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded.' });
+        const studentId = req.session.userId;
+        const { taskName, deadline } = req.body;
 
-        const savedWebPath = `/images/${req.file.filename}`;
-        const db = await connectToDatabase(); 
-       // 1. Update the database record securely
-        await db.collection(req.session.userRole).updateOne(
-            { _id: new ObjectId(req.session.userId) },
-            { $set: { profile_picture: savedWebPath, updatedAt: new Date() } }
-        );
-
-        // 2. 🌟 THE CRUCIAL ADDITION: Force-update the session cache right now!
-        if (req.session.userObject) {
-            req.session.userObject.profile_picture = savedWebPath;
+        if (!taskName || !deadline) {
+            return res.status(400).json({ success: false, message: "Missing required fields." });
         }
 
-        res.json({ success: true, url: savedWebPath });
+        const db = await connectToDatabase();
+        let project = await db.collection('projects').findOne({});
+        if (!project) {
+            const result = await db.collection('projects').insertOne({
+                projectName: "LoomHub Workspace Group Tasks",
+                description: "Collaborative and personal progress tracking framework.",
+                tasks: []
+            });
+            project = { _id: result.insertedId };
+        }
+
+        const newTask = {
+            _id: new ObjectId(),
+            taskName,
+            assignedStudent: new ObjectId(studentId),
+            completionPercentage: 0,
+            deadline: new Date(deadline),
+            createdAt: new Date()
+        };
+
+        await db.collection('projects').updateOne(
+            { _id: project._id },
+            { $push: { tasks: newTask } }
+        );
+
+        res.json({ success: true, message: "Task created." });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, error: 'Internal server upload failure.' });
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// API Endpoint: Progress Update Action Dispatcher
+router.post('/projects/:projectId/tasks/:taskId/progress', requireStudentAPI, async (req, res) => {
+    try {
+        const { projectId, taskId } = req.params;
+        let completionPercentage = parseInt(req.body.completionPercentage);
+
+        if (isNaN(completionPercentage) || completionPercentage < 0 || completionPercentage > 100) {
+            return res.status(400).json({ success: false, message: "Invalid value." });
+        }
+
+        const db = await connectToDatabase();
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(projectId), "tasks._id": new ObjectId(taskId) },
+            { $set: { "tasks.$.completionPercentage": completionPercentage } }
+        );
+
+        res.json({ success: true, message: "Progress saved!" });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// API Endpoint: Delete Task
+router.post('/projects/:projectId/tasks/:taskId/delete', requireStudentAPI, async (req, res) => {
+    try {
+        const { projectId, taskId } = req.params;
+        const db = await connectToDatabase();
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(projectId) },
+            { $pull: { tasks: { _id: new ObjectId(taskId) } } }
+        );
+        res.json({ success: true, message: "Task removed." });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />   
+    <link rel="stylesheet" href="/css/project web.css">
+    <link rel="stylesheet" href="/css/Gpa-calculator.css">
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>" href="/dashboard">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'profile' ? 'active' : '' %>" href="/profile">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Academic</div>
+      <a class="nav-item active" href="/gpa-calculator">
+        <span class="nav-icon">🎓</span> GPA Calculator
+      </a>
+      
+      <a class="nav-item" href="/reminders">
+        <span class="nav-icon">⏰</span> Tasks & Reminders
+        <span class="nav-badge warn">2</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Resources</div>
+      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'notes-files' ? 'active' : '' %>" href="/notes-files">
+        <span class="nav-icon">📂</span> Notes & Files
+        <span class="nav-badge" id="notesFilesBadge">0</span>
+      </a>
+      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'shared-materials' ? 'active' : '' %>" href="/shared-materials">
+        <span class="nav-icon">🔗</span> Shared Materials
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      <a class="nav-item" href="/studygroups">
+        <span class="nav-icon">👥</span> Study Groups
+        <span class="nav-badge green">3</span>
+      </a>
+      
+      <% if (typeof userRole !== 'undefined' && userRole === 'students') { %>
+      <a class="nav-item" href="/project-manager">
+        <span class="nav-icon">🗂</span> Project Manager
+      </a>
+      <% } %>
+      
+      <a class="nav-item" href="/qa-forum">
+        <span class="nav-icon">💬</span> Q&amp;A Forum
+      </a>
+    </div>
+
+    <% if (typeof userRole !== 'undefined' && userRole === 'admins') { %>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Admin Panel</div>
+      <a class="nav-item" href="/user-management">
+        <span class="nav-icon">🛡</span> User Management
+      </a>
+      <a class="nav-item" href="/analytics">
+        <span class="nav-icon">📊</span> Analytics
+      </a>
+    </div>
+    <% } %>
+
+    <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='/profile'">
+      <div class="avatar">
+        <%= user && user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U' %>
+      </div>
+      <div class="profile-info">
+        <div class="name"><%= user ? user.name : 'User' %></div>
+        <div class="role">
+            <%= user && user.major ? user.major : 'LoomHub User' %> 
+            <%= user && (user.academic_year || user.year) ? '· Yr ' + (user.academic_year || user.year) : '' %>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+
+    <header class="topbar">
+        <div>
+            <div class="topbar-title">🎓GPA Calculator</div>
+            <div class="topbar-subtitle">University GPA System</div>
+        </div>
+        <div class="topbar-right">
+            <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+            <div class="avatar sm">
+                <%= user && user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U' %>
+            </div>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">➕ Add Course</span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="courseName">Course Name</label>
+                    <input type="text" id="courseName" placeholder="Enter course name" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="credits">Credit Hours</label>
+                    <input type="number" id="credits" placeholder="E.g. 3" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="grade">Grade</label>
+                    <select id="grade" class="form-input">
+                        <option value="">Select Grade</option>
+                        <option value="4.0">A</option>
+                        <option value="3.7">A-</option>
+                        <option value="3.3">B+</option>
+                        <option value="3.0">B</option>
+                        <option value="2.7">B-</option>
+                        <option value="2.3">C+</option>
+                        <option value="2.0">C</option>
+                        <option value="1.0">D</option>
+                        <option value="0.0">F</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn
