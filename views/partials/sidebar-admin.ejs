@@ -1,0 +1,34 @@
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">LH</div>
+    <div class="logo-text">LoomHub <span>Admin</span></div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Platform</div>
+    
+    <a class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'dashboard') ? 'active' : '' %>" href="/admin/dashboard">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    
+    <a class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'users') ? 'active' : '' %>" href="/admin/users">
+      <span class="nav-icon">👥</span> Manage Users
+    </a>
+
+    <a class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'courses') ? 'active' : '' %>" href="/admin/courses">
+      <span class="nav-icon">📚</span> Courses
+    </a>
+    
+    <a class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'analytics') ? 'active' : '' %>" href="/admin/analytics">
+      <span class="nav-icon">📈</span> Analytics
+    </a>
+  </div>
+
+  <div class="sidebar-profile">
+    <div class="avatar lg purple">A</div>
+    <div class="profile-info">
+      <div class="name">System Admin</div>
+      <div class="role">Full Access</div>
+    </div>
+  </div>
+</div>
