@@ -18,15 +18,17 @@ export async function registerUser(req, res) {
     const confirmPassword = req.body.confirmPassword ? req.body.confirmPassword : '';
     const rawRole = req.body.role ? req.body.role.trim() : 'Student';
     const year = req.body.year ? req.body.year.trim() : '';
-
+    const emailRegex=/^\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/;
     const oldData = { fname, lname, email, university, major, username, role: rawRole, year };
-
+    const passRegex=/.{8,}/;
+    
     if (!fname) errors.fname = "First name is required.";
     if (!lname) errors.lname = "Last name is required.";
     if (!email) errors.email = "Email address is required.";
+    if(!emailRegex.test(email)) errors.email = "Please enter a valid email address.";
     if (!username) errors.username = "Username creation is required.";
     if (!password) errors.password = "Password field cannot be empty.";
-    if (password.length < 8) errors.password = "Password must be at least 8 characters long.";
+    if (!passRegex.test(password)) errors.password = "Password must be at least 8 characters long.";
     if (password !== confirmPassword) errors.confirmPassword = "Passwords do not match.";
     if (rawRole === 'Student' && !year) errors.year = "Students must supply an academic year.";
     if (rawRole.toLowerCase() === 'admin') errors.role = "Unauthorized operation.";
@@ -82,13 +84,16 @@ export async function registerUser(req, res) {
 export async function loginUser(req, res) {
     const email = req.body.email ? req.body.email.trim() : '';
     const password = req.body.password ? req.body.password.trim() : '';
+    const emailRegex=/^\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/;
 
     console.log("=== 🚀 Secure Multi-Collection Login Attempt ===");
 
     if (!email || !password) {
         return res.render('index', { error: 'Email and password are required.' });
     }
-
+    if(!emailRegex.test(email)){
+        return res.render('index', { error: 'Please enter a valid email address.' });
+    }
     try {
         // Step 1: Scan across students, instructors, and admins simultaneously
         const user = await findByEmail(email);
