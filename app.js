@@ -20,7 +20,7 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+const qaRoutes = require('./routes/Q&ARoutes');
 const app = express(); 
 const PORT = process.env.PORT || 3000;
 
@@ -83,7 +83,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/shared', sharedRoutes);
 app.use('/api/subjects', subjectRoutes);
-
+app.use('/qa', qaRoutes);
 connectToDatabase().then(() => {
     app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
 }).catch(err => {

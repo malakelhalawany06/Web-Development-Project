@@ -1,6 +1,6 @@
-const Question = require('../models/qaModel');
+// Update this path to match your exact model filename
+const Question = require('../models/Q&AModel');
 
-// Replaces your old loadData() & renderQuestions() filtering logic
 exports.getQApage = async (req, res) => {
   try {
     const currentFilter = req.query.tag || 'all';
@@ -13,11 +13,18 @@ exports.getQApage = async (req, res) => {
     const questions = await Question.find(queryFilter).sort({ timestamp: -1 });
     const currentUser = req.session.user || { firstName: "Ahmed", lastName: "Khalid", major: "Computer Science", academicYear: "3" };
 
-    res.render('qa', { questions, currentFilter, currentUser });
+    // This renders your view template. If your view is named 'Q&A.ejs', leave this as 'Q&A'
+    res.render('Q&A', { 
+      questions, 
+      currentFilter, 
+      currentUser 
+    });
   } catch (err) {
     res.status(500).send('Error loading Q&A Forum data.');
   }
 };
+
+// (The rest of the controller methods remain exactly the same as before!)
 
 // Replaces your old client-side addQuestion() function
 exports.addQuestion = async (req, res) => {
