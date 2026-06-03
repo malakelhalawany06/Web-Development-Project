@@ -177,3 +177,4 @@ if (yearInput && yearInput.offsetParent !== null) {
         if (el) el.textContent = "";
     }
 })();
+
