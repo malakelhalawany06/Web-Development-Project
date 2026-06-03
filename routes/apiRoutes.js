@@ -8,6 +8,22 @@ const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 
+// ===================================================
+// 👤 NEW ENDPOINT: FETCH ACTIVE SESSION PROFILE 
+// ===================================================
+router.get('/user', (req, res) => {
+    if (res.locals.user) {
+        return res.json({
+            success: true,
+            user: res.locals.user
+        });
+    }
+    res.status(401).json({ 
+        success: false, 
+        message: "No user session active." 
+    });
+});
+
 // Gate restricting operations exclusively to student roles
 const requireStudentAPI = (req, res, next) => {
     if (req.session && req.session.userId && req.session.userRole === 'students') {

@@ -88,7 +88,7 @@
       <div class="profile-info">
         <div class="name"><%= user ? user.name : 'User' %></div>
         <div class="role">
-            <%= user && user.major ? user.major : 'LoomHub User' %> 
+            <%= user && user.major ? user.major : 'Student' %> 
             <%= user && (user.academic_year || user.year) ? '· Yr ' + (user.academic_year || user.year) : '' %>
         </div>
       </div>
@@ -99,7 +99,7 @@
 
     <header class="topbar">
         <div>
-            <div class="topbar-title">🎓GPA Calculator</div>
+            <div class="topbar-title">🎓 GPA Calculator</div>
             <div class="topbar-subtitle">University GPA System</div>
         </div>
         <div class="topbar-right">
@@ -145,4 +145,144 @@
                 </div>
             </div>
 
-            <button class="btn
+            <button class="btn btn-primary" style="margin-top: 1.25rem;" onclick="addCourse()">+ Add Course</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📊 Courses</span>
+            </div>
+
+            <table class="gpa-table">
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Credits</th>
+                        <th>Grade</th>
+                        <th>Points</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="courseTable"></tbody>
+            </table>
+
+            <div class="gpa-result">
+                <div>
+                    <div style="font-size:11px;color:var(--text3);">Database GPA</div>
+                    <div class="gpa-val" id="gpaValue">
+                        <%= (user && typeof user.gpa !== 'undefined') ? Number(user.gpa).toFixed(2) : '0.00' %>
+                    </div>
+                </div>
+
+                <div class="gpa-bar-wrap">
+                    <% 
+                        let dbGpaPercentage = 0;
+                        if (user && typeof user.gpa !== 'undefined') {
+                            dbGpaPercentage = (Number(user.gpa) / 4.0) * 100;
+                        }
+                    %>
+                    <div class="gpa-bar-fill" id="gpaBar" style="width: <%= dbGpaPercentage %>%"></div>
+                </div>
+
+                <div>
+                    <div style="font-size:11px;color:var(--text3);">Scale</div>
+                    <div>4.0</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let courses = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("Embedded GPA Calculator Active.");
+    updateGPADisplay();
+});
+
+function addCourse() {
+    const nameInput = document.getElementById("courseName");
+    const creditsInput = document.getElementById("credits");
+    const gradeSelect = document.getElementById("grade");
+
+    const name = nameInput.value.trim();
+    const credits = parseInt(creditsInput.value);
+    const gradeValue = parseFloat(gradeSelect.value);
+    const gradeText = gradeSelect.options[gradeSelect.selectedIndex].text;
+
+    if (!name || isNaN(credits) || isNaN(gradeValue)) {
+        alert("Please fill out all course details correctly.");
+        return;
+    }
+
+    const points = (credits * gradeValue).toFixed(2);
+    const course = { id: Date.now(), name, credits, gradeValue, gradeText, points };
+    courses.push(course);
+
+    nameInput.value = "";
+    creditsInput.value = "";
+    gradeSelect.value = "";
+
+    renderTable();
+    calculateLiveGPA();
+}
+
+function removeCourse(id) {
+    courses = courses.filter(c => c.id !== id);
+    renderTable();
+    calculateLiveGPA();
+}
+
+function renderTable() {
+    const tbody = document.getElementById("courseTable");
+    tbody.innerHTML = "";
+
+    courses.forEach(c => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><strong>${c.name}</strong></td>
+            <td>${c.credits} hrs</td>
+            <td><span class="badge">${c.gradeText}</span></td>
+            <td>${c.points}</td>
+            <td><button class="btn" style="background:#ff4a4a;padding:4px 8px;font-size:11px;" onclick="removeCourse(${c.id})">🗑 Delete</button></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function calculateLiveGPA() {
+    if (courses.length === 0) {
+        updateGPADisplay();
+        return;
+    }
+
+    let totalCredits = 0;
+    let totalPoints = 0;
+
+    courses.forEach(c => {
+        totalCredits += c.credits;
+        totalPoints += parseFloat(c.points);
+    });
+
+    const liveGPA = (totalPoints / totalCredits).toFixed(2);
+    
+    // Update live layout interface view 
+    document.getElementById("gpaValue").innerText = liveGPA;
+    const percentage = (liveGPA / 4.0) * 100;
+    document.getElementById("gpaBar").style.width = `${Math.min(percentage, 100)}%`;
+}
+
+function updateGPADisplay() {
+    const gpaValBox = document.getElementById("gpaValue");
+    const currentVal = parseFloat(gpaValBox.innerText) || 0.00;
+    const percentage = (currentVal / 4.0) * 100;
+    document.getElementById("gpaBar").style.width = `${Math.min(percentage, 100)}%`;
+}
+</script>
+
+</body>
+</html>
