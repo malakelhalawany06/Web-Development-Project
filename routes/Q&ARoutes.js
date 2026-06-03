@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const qaController = require('../controllers/qaController');
+
+// Update this path to match your exact controller filename
+const qaController = require('../controllers/Q&AController');
 
 router.get('/', qaController.getQApage);
 router.post('/add', qaController.addQuestion);
