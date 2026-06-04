@@ -20,4 +20,4 @@ const questionSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 });
 
-export default mongoose.model('Question', questionSchema);
+export default mongoose.model('Question', questionSchema, 'Q&A');
