@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Project Manager</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/project web.css">
   <link rel="stylesheet" href="/css/project-manager.css">
 </head>
@@ -21,10 +20,10 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Overview</div>
-      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>" href="/dashboard">
+      <a class="nav-item" href="/dashboard">
         <span class="nav-icon">🏠</span> Dashboard
       </a>
-      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'profile' ? 'active' : '' %>" href="/profile">
+      <a class="nav-item" href="/profile">
         <span class="nav-icon">👤</span> My Profile
       </a>
     </div>
@@ -34,7 +33,7 @@
       <a class="nav-item" href="/gpa-calculator">
         <span class="nav-icon">🎓</span> GPA Calculator
       </a>
-     
+      
       <a class="nav-item" href="/reminders">
         <span class="nav-icon">⏰</span> Tasks & Reminders
         <span class="nav-badge warn">2</span>
@@ -43,11 +42,11 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Resources</div>
-      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'notes-files' ? 'active' : '' %>" href="/notes-files">
+      <a class="nav-item" href="/notes-files">
         <span class="nav-icon">📂</span> Notes & Files
         <span class="nav-badge" id="notesFilesBadge">0</span>
       </a>
-      <a class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'shared-materials' ? 'active' : '' %>" href="/shared-materials">
+      <a class="nav-item" href="/shared-materials">
         <span class="nav-icon">🔗</span> Shared Materials
       </a>
     </div>
@@ -113,7 +112,7 @@
             <div class="panel-header">
                 <h2 class="panel-title">Create Project Task</h2>
             </div>
-            <div class="task-form-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="task-form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                 <div class="form-group">
                     <label>Task Name</label>
                     <input type="text" id="taskName" class="form-control" placeholder="Enter task name">
@@ -123,7 +122,7 @@
                     <input type="date" id="deadline" class="form-control">
                 </div>
             </div>
-            <button class="btn" onclick="addTask()">+ Add Task</button>
+            <button class="btn" style="margin-top: 15px;" onclick="addTask()">+ Add Task</button>
         </div>
 
         <div class="panel">
@@ -138,7 +137,7 @@
                 <% projects.forEach(project => { %>
                   <% if (project.tasks) { %>
                     <% project.tasks.forEach(task => { %>
-                      <div class="task-card">
+                      <div class="task-card" id="card-box-<%= task._id %>">
                         <div class="task-card-header">
                           <div class="task-info">
                             <h3><%= task.taskName %></h3>
@@ -153,7 +152,7 @@
                         <div class="progress-section">
                           <div id="text-<%= task._id %>"><%= task.completionPercentage || 0 %>%</div>
                           <div class="progress-bar">
-                            <div class="progress-fill" id="bar-<%= task._id %>" style="width:<%= task.completionPercentage || 0 %>%"></div>
+                            <div class="progress-fill" id="bar-<%= task._id %>" style="width: <%= task.completionPercentage || 0 %>%"></div>
                           </div>
                         </div>
 
@@ -185,8 +184,6 @@
   </div>
 </div>
 
-<script src="/js/users.js"></script>
 <script src="/js/project-manager.js"></script>
-<script src="/js/personalInfo.js"></script>
 </body>
 </html>
