@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LoomHub — Analytics</title>
+    <title>LoomHub — Analytics Dashboard</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/css/project web.css">
@@ -14,94 +14,148 @@
 </head>
 
 <body>
-    <% 
-        const currentStats = locals.stats || { totalUsers: 0, totalTrend: 0, activeUsers: 0, activeTrend: 0, newUsers: 0, newTrend: 0 }; 
-        const safeUser = locals.user || { firstName: 'A', lastName: 'D' };
-        const safeChartData = locals.chartData || { labels: [], data: [] };
-    %>
-
     <div class="layout">
-  
         <%- include('partials/sidebar-admin', { activePage: 'analytics' }) %>
-
+        
         <div class="main">
-            <div class="topbar-right">
-                <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
-                <div class="avatar sm">
-                    <% if (safeUser && safeUser.firstName && safeUser.lastName) { %>
-                        <%= safeUser.firstName.charAt(0) %><%= safeUser.lastName.charAt(0) %>
-                    <% } else { %>
-                        AD
-                    <% } %>
+            <!-- Use your existing topbar partial -->
+            <%- include('partials/topbar', { user: locals.user, userRole: userRole }) %>
+            
+            <main class="main-content">
+                <!-- Stats Cards -->
+                <div class="analytics-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total Users</h3>
+                            <div class="stat-number" id="totalUsers"><%= locals.totalUsers || 0 %></div>
+                            <div class="stat-trend positive">
+                                <i class="fas fa-chart-line"></i> 
+                                <span>All time</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1); color: #22c55e;">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Students</h3>
+                            <div class="stat-number" id="totalStudents"><%= locals.totalStudents || 0 %></div>
+                            <div class="stat-trend positive">
+                                <i class="fas fa-user-graduate"></i> 
+                                <span>Active learners</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
+                            <i class="fas fa-chalkboard-user"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Instructors</h3>
+                            <div class="stat-number" id="totalInstructors"><%= locals.totalInstructors || 0 %></div>
+                            <div class="stat-trend positive">
+                                <i class="fas fa-star"></i> 
+                                <span>Content creators</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                            <i class="fas fa-circle-user"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Active Now</h3>
+                            <div class="stat-number" id="activeUsers"><%= locals.activeUsers || 0 %></div>
+                            <div class="stat-trend" id="activeStatus">
+                                <i class="fas fa-clock"></i> 
+                                <span>Last 5 minutes</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <!-- User Growth Chart -->
+                <div class="panel chart-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-chart-line"></i>
+                            User Growth Over Time
+                        </div>
+                        <div class="chart-toggle">
+                            <button class="toggle-btn active" data-period="7">Last 7 Days</button>
+                            <button class="toggle-btn" data-period="30">Last 30 Days</button>
+                            <button class="toggle-btn" data-period="90">Last 90 Days</button>
+                        </div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Additional Stats -->
+                <div class="stats-row">
+                    <div class="panel stats-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-chart-pie"></i>
+                                User Distribution
+                            </div>
+                        </div>
+                        <div class="stats-content">
+                            <div class="distribution-item">
+                                <span class="distribution-label">
+                                    <i class="fas fa-graduation-cap" style="color: #22c55e;"></i> Students
+                                </span>
+                                <div class="distribution-bar">
+                                    <div class="bar-fill student-bar" id="studentBar" style="width: 0%;"></div>
+                                </div>
+                                <span class="distribution-percent" id="studentPercent">0%</span>
+                            </div>
+                            <div class="distribution-item">
+                                <span class="distribution-label">
+                                    <i class="fas fa-chalkboard-user" style="color: #a855f7;"></i> Instructors
+                                </span>
+                                <div class="distribution-bar">
+                                    <div class="bar-fill instructor-bar" id="instructorBar" style="width: 0%;"></div>
+                                </div>
+                                <span class="distribution-percent" id="instructorPercent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel activity-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <i class="fas fa-bolt"></i>
+                                Recent Activity
+                            </div>
+                        </div>
+                        <div class="activity-list" id="activityList">
+                            <div class="loading">Loading activities...</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
-    <main class="main-content" style="flex: 1; padding: 20px 40px; overflow-y: auto;">
-        
-        <div class="analytics-grid">
-            <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-details">
-                    <h3>Total Users</h3>
-                    <div class="stat-number"><%= currentStats.totalUsers %></div>
-                    <div class="stat-trend <%= currentStats.totalTrend >= 0 ? 'positive' : 'negative' %>">
-                        <i class="fas fa-arrow-<%= currentStats.totalTrend >= 0 ? 'up' : 'down' %>"></i> 
-                        <%= Math.abs(currentStats.totalTrend) %>% this month
-                    </div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1); color: #22c55e;">
-                    <i class="fas fa-user-check"></i>
-                </div>
-                <div class="stat-details">
-                    <h3>Active Users</h3>
-                    <div class="stat-number"><%= currentStats.activeUsers %></div>
-                    <div class="stat-trend <%= currentStats.activeTrend >= 0 ? 'positive' : 'negative' %>">
-                        <i class="fas fa-arrow-<%= currentStats.activeTrend >= 0 ? 'up' : 'down' %>"></i> 
-                        <%= Math.abs(currentStats.activeTrend) %>% this week
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <div class="stat-details">
-                    <h3>New Users</h3>
-                    <div class="stat-number"><%= currentStats.newUsers %></div>
-                    <div class="stat-trend <%= currentStats.newTrend >= 0 ? 'positive' : 'negative' %>">
-                        <i class="fas fa-arrow-<%= currentStats.newTrend >= 0 ? 'up' : 'down' %>"></i> 
-                        <%= Math.abs(currentStats.newTrend) %>% since yesterday
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel chart-panel">
-            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <div class="panel-title">User Growth</div>
-                <div class="chart-toggle">
-                    <button class="toggle-btn active" onclick="updateChart('daily')">Daily</button>
-                    <button class="toggle-btn" onclick="updateChart('weekly')">Weekly</button>
-                </div>
-            </div>
-            <div class="canvas-container" style="position: relative; height: 350px; width: 100%;">
-                <canvas id="growthChart"></canvas>
-            </div>
-        </div>
-
-    </main>
-
     <script>
-        // Safely injected tracking data with array layout fallbacks
-        const serverChartData = <%- JSON.stringify(safeChartData) %>;
+        // Pass data from MongoDB to JavaScript
+        window.initialStats = {
+            totalUsers: <%= locals.totalUsers || 0 %>,
+            totalStudents: <%= locals.totalStudents || 0 %>,
+            totalInstructors: <%= locals.totalInstructors || 0 %>,
+            activeUsers: <%= locals.activeUsers || 0 %>
+        };
+        window.chartData = <%- JSON.stringify(locals.chartData || { labels: [], data: [] }) %>;
+        window.recentActivities = <%- JSON.stringify(locals.recentActivities || []) %>;
     </script>
     <script src="/js/analytics.js"></script>
 </body>
