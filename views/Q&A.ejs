@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoomHub — Q&A Forum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/Q&A.css" />
+</head>
+<body>
+<div class="layout">
+  
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item" href="/dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-item" href="/profile"><span class="nav-icon">👤</span> My Profile</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Academic</div>
+      <a class="nav-item" href="/gpa"><span class="nav-icon">🎓</span> GPA Calculator</a>
+      <a class="nav-item" href="/reminders">
+        <span class="nav-icon">⏰</span> Tasks & Reminders <span class="nav-badge warn">2</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Resources</div>
+      <a class="nav-item" href="/notes"><span class="nav-icon">📂</span> Notes & Files</a>
+      <a class="nav-item" href="/materials"><span class="nav-icon">🔗</span> Shared Materials</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      <a class="nav-item" href="/studygroups"><span class="nav-icon">👥</span> Study Groups</a>
+      <a class="nav-item" href="/project-manager"><span class="nav-icon">🗂</span> Project Manager</a>
+      <a class="nav-item active" href="/qa"><span class="nav-icon">💬</span> Q&amp;A Forum</a>
+    </div>
+
+    <div class="sidebar-profile" onclick="window.location.href='/profile'">
+      <div class="avatar"><%= currentUser.firstName[0] %><%= currentUser.lastName[0] %></div>
+      <div class="profile-info">
+        <div class="name"><%= currentUser.firstName %> <%= currentUser.lastName %></div>
+        <div class="role"><%= currentUser.major %> · Yr <%= currentUser.academicYear %></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">💬 Q&A Forum</div>
+        <div class="topbar-subtitle">Ask, answer, upvote</div>
+      </div>
+      <div class="topbar-right">
+        <input type="text" id="localSearchInput" placeholder="🔍 Search questions..." class="search-bar" />
+        <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+        <div class="avatar sm"><%= currentUser.firstName[0] %><%= currentUser.lastName[0] %></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📢 Questions & Discussions</span>
+          <button class="btn-ghost" id="showAskBtn">+ Ask a Question</button>
+        </div>
+
+        <form id="askFormContainer" style="display: none;" class="ask-form" action="/qa/add" method="POST">
+          <input type="text" name="title" placeholder="Question title" required />
+          <textarea name="body" placeholder="Describe your question in detail..."></textarea>
+          <select name="tag">
+            <option value="Data Structures">Data Structures</option>
+            <option value="Calculus">Calculus</option>
+            <option value="Networks">Networks</option>
+            <option value="Database">Database</option>
+            <option value="General" selected>General</option>
+          </select>
+          <button type="submit">Post Question</button>
+          <button type="button" id="cancelAskBtn" class="btn-ghost" style="margin-left: 8px;">Cancel</button>
+        </form>
+
+        <div class="filter-tabs">
+          <a href="/qa?tag=all" class="filter-tab <%= currentFilter === 'all' ? 'active' : '' %>">All</a>
+          <a href="/qa?tag=Data Structures" class="filter-tab <%= currentFilter === 'Data Structures' ? 'active' : '' %>">Data Structures</a>
+          <a href="/qa?tag=Calculus" class="filter-tab <%= currentFilter === 'Calculus' ? 'active' : '' %>">Calculus</a>
+          <a href="/qa?tag=Networks" class="filter-tab <%= currentFilter === 'Networks' ? 'active' : '' %>">Networks</a>
+          <a href="/qa?tag=Database" class="filter-tab <%= currentFilter === 'Database' ? 'active' : '' %>">Database</a>
+        </div>
+
+        <div id="questionsContainer">
+          <% if (questions.length === 0) { %>
+            <div class="empty-state">✨ No questions found under this category. Be the first to ask! ✨</div>
+          <% } else { %>
+            <% questions.forEach(function(q) { %>
+              <div class="question-item">
+                <div class="question-header">
+                  <div class="question-title target-toggle"><%= q.title %></div>
+                  <div class="question-tag"><%= q.tag %></div>
+                  <div class="expand-icon target-toggle">▼</div>
+                  
+                  <% if (q.author === (currentUser.firstName + ' ' + currentUser.lastName)) { %>
+                    <form action="/qa/delete/<%= q._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Delete this question?');">
+                      <button type="submit" class="delete-question-btn">🗑️</button>
+                    </form>
+                  <% } %>
+                </div>
+                
+                <div class="question-meta">
+                  <span>👤 <%= q.author %></span>
+                  <span>📅 <%= new Date(q.timestamp).toLocaleDateString() %></span>
+                  <span class="answer-count">💬 <%= q.answers.length %> answers</span>
+                </div>
+
+                <% if (q.body) { %>
+                  <p style="font-size: 13px; color: var(--text2); margin: 4px 0 10px;"><%= q.body %></p>
+                <% } %>
+                
+                <div class="vote-area">
+                  <form action="/qa/upvote/<%= q._id %>" method="POST">
+                    <button type="submit" class="vote-btn">▲ <%= q.upvotes %></button>
+                  </form>
+                </div>
+
+                <div class="answers-section">
+                  <div class="answers-list">
+                    <% q.answers.forEach(function(a) { %>
+                      <div class="answer-item">
+                        <div class="answer-text"><%= a.text %></div>
+                        <div class="answer-meta">
+                          <span>— <%= a.author %></span>
+                          <span><%= new Date(a.timestamp).toLocaleDateString() %></span>
+                        </div>
+                      </div>
+                    <% }); %>
+                  </div>
+                  
+                  <form class="add-answer-form" action="/qa/answer/<%= q._id %>" method="POST">
+                    <input type="text" name="answerText" placeholder="Write an answer..." required />
+                    <button type="submit">Answer</button>
+                  </form>
+                </div>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('showAskBtn').addEventListener('click', () => {
+    document.getElementById('askFormContainer').style.display = 'block';
+    document.getElementById('showAskBtn').style.display = 'none';
+  });
+
+  document.getElementById('cancelAskBtn').addEventListener('click', () => {
+    document.getElementById('askFormContainer').style.display = 'none';
+    document.getElementById('showAskBtn').style.display = 'inline-block';
+  });
+
+  document.querySelectorAll('.question-item').forEach(item => {
+    item.querySelectorAll('.target-toggle').forEach(element => {
+      element.addEventListener('click', () => {
+        item.querySelector('.answers-section').classList.toggle('open');
+      });
+    });
+  });
+
+  document.getElementById('localSearchInput').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.question-item').forEach(item => {
+      const title = item.querySelector('.question-title').innerText.toLowerCase();
+      item.style.display = title.includes(query) ? 'block' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

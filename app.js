@@ -15,14 +15,17 @@ import fileRoutes from './routes/fileRoutes.js';
 import sharedRoutes from './routes/sharedRoutes.js';
 import profileRoutes from './routes/profileRoutes.js'; // 💡 1. IMPORT PROFILE ROUTES
 import subjectRoutes from './routes/subjectRoutes.js';
+import qaRoutes from './routes/Q&ARoutes.js';
+import remindersRoutes from './routes/remindersRoutes.js';
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const app = express(); 
 const PORT = process.env.PORT || 3000;
+const qaRoutes = require('./routes/Q&ARoutes');
+const remindersRoutes = require('./routes/remindersRoutes');
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -83,6 +86,8 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/shared', sharedRoutes);
 app.use('/api/subjects', subjectRoutes);
+app.use('/qa', qaRoutes);
+app.use('/reminders', remindersRoutes);
 
 connectToDatabase().then(() => {
     app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));

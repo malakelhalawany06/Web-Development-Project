@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoomHub — Tasks & Reminders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/reminders.css" />
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">Loom<span>Hub</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item" href="/dashboard"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-item" href="/profile"><span class="nav-icon">👤</span> My Profile</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Academic</div>
+      <a class="nav-item" href="/gpa"><span class="nav-icon">🎓</span> GPA Calculator</a>
+      <a class="nav-item active" href="/reminders">
+        <span class="nav-icon">⏰</span> Tasks & Reminders
+        <span class="nav-badge warn"><%= stats.pendingReminders %></span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Resources</div>
+      <a class="nav-item" href="/notes"><span class="nav-icon">📂</span> Notes & Files</a>
+      <a class="nav-item" href="/materials"><span class="nav-icon">🔗</span> Shared Materials</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Collaborate</div>
+      <a class="nav-item" href="/studygroups"><span class="nav-icon">👥</span> Study Groups</a>
+      <a class="nav-item" href="/project-manager"><span class="nav-icon">🗂</span> Project Manager</a>
+      <a class="nav-item" href="/qa"><span class="nav-icon">💬</span> Q&amp;A Forum</a>
+    </div>
+
+    <div class="sidebar-profile" onclick="window.location.href='/profile'">
+      <div class="avatar"><%= currentUser.firstName[0] %><%= currentUser.lastName[0] %></div>
+      <div class="profile-info">
+        <div class="name"><%= currentUser.firstName %> <%= currentUser.lastName %></div>
+        <div class="role"><%= currentUser.major %> · Yr <%= currentUser.academicYear %></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">⏰ Tasks & Reminders</div>
+        <div class="topbar-subtitle">Manage your tasks</div>
+      </div>
+      <div class="topbar-right">
+        <input type="text" id="backendSearchInput" placeholder="🔍 Search reminders..." class="search-bar" style="outline:none;" />
+        <div class="icon-btn">🔔 <div class="notif-dot"></div></div>
+        <div class="avatar sm"><%= currentUser.firstName[0] %><%= currentUser.lastName[0] %></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon">📌</div><div class="stat-val"><%= stats.totalReminders %></div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val"><%= stats.completedReminders %></div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val"><%= stats.pendingReminders %></div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-val"><%= stats.urgentReminders %></div><div class="stat-label">High priority</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 My reminders</span>
+          <form action="/reminders/clear-completed" method="POST" onsubmit="return confirm('Delete all completed reminders?');">
+            <button type="submit" class="btn btn-ghost">🗑️ Clear completed</button>
+          </form>
+        </div>
+
+        <div id="remindersContainer" class="reminders-list">
+          <% if (reminders.length === 0) { %>
+            <div class="empty-message">✨ No reminders yet. Add one below ✨</div>
+          <% } else { %>
+            <% reminders.forEach(function(rem) { %>
+              <div class="reminder-item" data-text="<%= rem.text.toLowerCase() %>">
+                <form action="/reminders/toggle/<%= rem._id %>" method="POST" style="margin: 0; display: flex; align-items: center;">
+                  <input type="checkbox" class="reminder-check" <%= rem.completed ? "checked" : "" %> onclick="this.form.submit();" />
+                </form>
+                
+                <div class="reminder-text <%= rem.completed ? 'completed' : '' %>" style="flex-direction:column; align-items:flex-start;">
+                  <div>
+                    <%= rem.text %>
+                    
+                    <% if (rem.priority === 'high') { %>
+                      <span class="priority-badge priority-high">HIGH</span>
+                    <% } else if (rem.priority === 'medium') { %>
+                      <span class="priority-badge priority-medium">MEDIUM</span>
+                    <% } else { %>
+                      <span class="priority-badge priority-low">LOW</span>
+                    <% } %>
+
+                    <% if (rem.notes && rem.notes.trim() !== "") { %>
+                      <button class="reminder-notes-toggle" onclick="document.getElementById('notes-<%= rem._id %>').classList.toggle('show');">📄 Notes</button>
+                    <% } %>
+                  </div>
+
+                  <% if (rem.dueDate) { 
+                      const due = new Date(rem.dueDate);
+                      const now = new Date();
+                      const diffDays = Math.ceil((due - now) / (1000*60*60*24));
+                      let dateClass = "";
+                      let dateLabel = "";
+                      if (diffDays < 0) { dateClass = "overdue"; dateLabel = `Overdue by ${Math.abs(diffDays)}d`; }
+                      else if (diffDays === 0) { dateClass = "soon"; dateLabel = "Due today"; }
+                      else if (diffDays === 1) { dateClass = "soon"; dateLabel = "Due tomorrow"; }
+                      else if (diffDays <= 3) { dateClass = "soon"; dateLabel = `Due in ${diffDays} days`; }
+                      else { dateLabel = `Due ${due.toLocaleDateString()}`; }
+                      const timeString = due.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+                  %>
+                    <div class="reminder-due <%= dateClass %>">📅 <%= dateLabel %> at <%= timeString %></div>
+                  <% } %>
+
+                  <% if (rem.notes && rem.notes.trim() !== "") { %>
+                    <div class="reminder-notes" id="notes-<%= rem._id %>">📝 <%= rem.notes %></div>
+                  <% } %>
+                </div>
+
+                <form action="/reminders/delete/<%= rem._id %>" method="POST" style="margin:0;">
+                  <button type="submit" class="delete-reminder" title="Delete reminder">🗑️</button>
+                </form>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+
+        <form class="add-reminder-form" action="/reminders/add" method="POST">
+          <input type="text" name="text" placeholder="Task title" autocomplete="off" required />
+          <select name="priority">
+            <option value="high">🔴 High</option>
+            <option value="medium" selected>🟠 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+          <input type="datetime-local" name="dueDate" />
+          <textarea name="notes" placeholder="Notes (optional)" rows="1"></textarea>
+          <button type="submit" class="btn btn-primary">+ Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // High speed instant live text element search matching original architecture actions
+  document.getElementById('backendSearchInput').addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.reminder-item').forEach(function(item) {
+      const matchText = item.getAttribute('data-text');
+      if (matchText.includes(query)) {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+</script>
+</body>
+</html>
