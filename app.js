@@ -17,6 +17,7 @@ import profileRoutes from './routes/profileRoutes.js'; // 💡 1. IMPORT PROFILE
 import subjectRoutes from './routes/subjectRoutes.js';
 import qaRoutes from './routes/Q&ARoutes.js';
 import remindersRoutes from './routes/remindersRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 dotenv.config();
 

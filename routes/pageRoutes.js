@@ -151,24 +151,6 @@ router.get('/project-manager', requireLogin, async (req, res) => {
     }
 });
 
-//export default router;
-// ===================================================
-// 📈 ADMIN ANALYTICS PAGE ROUTE
-// ===================================================
-router.get('/admin/analytics', requireLogin, (req, res) => {
-    if (req.session.userRole !== 'admins') {
-        return res.redirect('/dashboard');
-    }
 
-    // Force pass valid objects so EJS can read properties safely
-    res.render('analytics', { 
-        user: { firstName: 'Admin', lastName: 'User' },
-        currentUser: { firstName: 'Admin', lastName: 'User' },
-        stats: { totalUsers: 120, totalTrend: 5, activeUsers: 85, activeTrend: 2, newUsers: 12, newTrend: -1 },
-        chartData: { labels: ['Mon', 'Tue', 'Wed'], data: [10, 20, 30] },
-        userRole: req.session.userRole, 
-        activePage: 'analytics' 
-    });
-});
 
 export default router; // <-- This MUST stay at the very, very bottom
