@@ -1,9 +1,8 @@
 // controllers/adminController.js
 import { connectToDatabase } from '../config/db.js';
 import { ObjectId } from 'mongodb';
-import bcrypt from 'bcrypt'; // make sure bcrypt is installed
+import bcrypt from 'bcrypt';
 
-// Helper: Get user growth data for last N days
 async function getUserGrowthData(days) {
   const db = await connectToDatabase();
   const labels = [];
@@ -14,7 +13,12 @@ async function getUserGrowthData(days) {
 
   const pipeline = [
     { $match: { createdAt: { $gte: startDate } } },
-    { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+        count: { $sum: 1 }
+      }
+    },
     { $sort: { _id: 1 } }
   ];
 
@@ -34,16 +38,20 @@ async function getUserGrowthData(days) {
     labels.push(dateStr);
     data.push(merged.get(dateStr) || 0);
   }
+
   return { labels, data };
 }
 
-// GET /admin/dashboard
+// ==================== PAGE CONTROLLERS ====================
+
 export const getAdminDashboard = async (req, res) => {
   try {
     const db = await connectToDatabase();
+
     const totalStudents = await db.collection('students').countDocuments();
-    const activeToday = await db.collection('students').countDocuments({ lastActive: { $gte: new Date(Date.now() - 24*60*60*1000) } });
-    // Placeholder values – replace with real data if you have courses collection
+    const activeToday = await db.collection('students').countDocuments({
+      lastActive: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+    });
     const totalCourses = 64;
     const completionRate = 87;
     const assignmentsToday = 3405;
@@ -54,7 +62,15 @@ export const getAdminDashboard = async (req, res) => {
       user: res.locals.user,
       userRole: req.session.userRole,
       activePage: 'dashboard',
-      stats: { totalStudents, activeToday, totalCourses, completionRate, assignmentsToday, avgScore, pendingGrading }
+      stats: {
+        totalStudents,
+        activeToday,
+        totalCourses,
+        completionRate,
+        assignmentsToday,
+        avgScore,
+        pendingGrading
+      }
     });
   } catch (err) {
     console.error(err);
@@ -62,25 +78,51 @@ export const getAdminDashboard = async (req, res) => {
   }
 };
 
-// GET /admin/analytics
 export const getAnalytics = async (req, res) => {
   try {
     const db = await connectToDatabase();
-    const totalStudents = await db.collection('students').countDocuments();
-    const totalInstructors = await db.collection('instructors').countDocuments();
+
+    const [totalStudents, totalInstructors] = await Promise.all([
+      db.collection('students').countDocuments(),
+      db.collection('instructors').countDocuments()
+    ]);
+
     const totalUsers = totalStudents + totalInstructors;
-    const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const activeStudents = await db.collection('students').countDocuments({ lastActive: { $gte: fiveMinsAgo } });
-    const activeInstructors = await db.collection('instructors').countDocuments({ lastActive: { $gte: fiveMinsAgo } });
-    const activeUsers = activeStudents + activeInstructors;
 
-    const chartData = await getUserGrowthData(7); // default 7 days
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const activeUsers = await db.collection('students').countDocuments({
+      lastActive: { $gte: fiveMinutesAgo }
+    });
 
-    // Recent activities (you can extend with a real activities collection)
+    // Recent activity feed: last 10 registrations across students & instructors
+    const recentStudents = await db.collection('students')
+      .find({})
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .toArray();
+
+    const recentInstructors = await db.collection('instructors')
+      .find({})
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .toArray();
+
     const recentActivities = [
-      { type: 'student', text: 'Devin Kumar joined LoomHub', time: '2 hours ago' },
-      { type: 'instructor', text: 'Prof. Alan Turing uploaded new materials', time: '5 hours ago' }
-    ];
+      ...recentStudents.map(u => ({
+        type: 'student',
+        text: `${u.firstName || u.name || 'A student'} joined as a student`,
+        time: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recently'
+      })),
+      ...recentInstructors.map(u => ({
+        type: 'instructor',
+        text: `${u.firstName || u.name || 'An instructor'} joined as an instructor`,
+        time: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recently'
+      }))
+    ]
+      .sort((a, b) => new Date(b.time) - new Date(a.time))
+      .slice(0, 10);
+
+    const chartData = await getUserGrowthData(7);
 
     res.render('analytics', {
       user: res.locals.user,
@@ -99,17 +141,10 @@ export const getAnalytics = async (req, res) => {
   }
 };
 
-// API: GET /api/admin/analytics/growth?period=7|30|90
-export const getGrowthDataAPI = async (req, res) => {
-  const days = parseInt(req.query.period) || 7;
-  const data = await getUserGrowthData(days);
-  res.json(data);
-};
-
-// GET /admin/users
 export const getUserManagement = async (req, res) => {
   try {
     const db = await connectToDatabase();
+
     const students = await db.collection('students').find({}).toArray();
     const instructors = await db.collection('instructors').find({}).toArray();
     const admins = await db.collection('admins').find({}).toArray();
@@ -132,20 +167,25 @@ export const getUserManagement = async (req, res) => {
   }
 };
 
-// POST /admin/users/status
+// ==================== API CONTROLLERS ====================
+
 export const updateUserStatus = async (req, res) => {
   try {
     const { id, collection, status } = req.body;
-    if (!['active', 'suspended', 'banned'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    if (!['active', 'suspended', 'banned'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
     const db = await connectToDatabase();
-    await db.collection(collection).updateOne({ _id: new ObjectId(id) }, { $set: { status } });
+    await db.collection(collection).updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status } }
+    );
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// POST /admin/users/delete
 export const deleteUser = async (req, res) => {
   try {
     const { id, collection } = req.body;
@@ -157,7 +197,6 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// POST /admin/users/reset-password
 export const resetPassword = async (req, res) => {
   try {
     const { id, collection } = req.body;
@@ -174,24 +213,24 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// POST /admin/users/force-reset
 export const forceReset = async (req, res) => {
   try {
     const { id, collection } = req.body;
     const db = await connectToDatabase();
-    await db.collection(collection).updateOne({ _id: new ObjectId(id) }, { $set: { forcePasswordReset: true } });
+    await db.collection(collection).updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { forcePasswordReset: true } }
+    );
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// POST /admin/users/logout-all
 export const logoutAllDevices = async (req, res) => {
   try {
     const { userId } = req.body;
     const db = await connectToDatabase();
-    // Assumes you are using a sessions collection (e.g., with express-mongo-session)
     await db.collection('sessions').deleteMany({ 'session.userId': userId });
     res.json({ success: true });
   } catch (err) {
@@ -199,12 +238,10 @@ export const logoutAllDevices = async (req, res) => {
   }
 };
 
-// POST /admin/users/send-warning
 export const sendWarning = async (req, res) => {
   try {
     const { id, collection, message } = req.body;
     const db = await connectToDatabase();
-    // Store warning in a separate collection
     await db.collection('warnings').insertOne({
       userId: new ObjectId(id),
       userCollection: collection,
@@ -217,13 +254,25 @@ export const sendWarning = async (req, res) => {
   }
 };
 
-// POST /admin/users/restrict
 export const restrictUser = async (req, res) => {
   try {
-    const { id, collection, restrict } = req.body; // restrict = true/false
+    const { id, collection, restrict } = req.body;
     const db = await connectToDatabase();
-    await db.collection(collection).updateOne({ _id: new ObjectId(id) }, { $set: { isRestricted: restrict } });
+    await db.collection(collection).updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isRestricted: restrict } }
+    );
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getGrowthDataAPI = async (req, res) => {
+  try {
+    const days = parseInt(req.query.period) || 7;
+    const data = await getUserGrowthData(days);
+    res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

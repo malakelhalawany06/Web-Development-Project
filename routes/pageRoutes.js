@@ -39,8 +39,8 @@ router.get('/dashboard', requireLogin, async (req, res) => {
     } else if (req.session.userRole === 'instructors') {
         return res.render('instructor-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
     } else if (req.session.userRole === 'admins') {
-        return res.render('admin-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
-    }
+    return res.redirect('/admin/dashboard');
+}
     res.redirect('/');
 });
 
@@ -151,6 +151,7 @@ router.get('/project-manager', requireLogin, async (req, res) => {
     }
 });
 
+//export default router;
 
 
 export default router; // <-- This MUST stay at the very, very bottom
