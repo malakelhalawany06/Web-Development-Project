@@ -146,83 +146,8 @@ function renderDashGpaTable() {
         tbody.appendChild(row);
     });
 }
-
-// ===== ASYNC PIPELINE: SHARED ACADEMIC NOTES ASSETS =====
-async function loadRecentNotes() {
-    try {
-        const response = await fetch('/api/files/shared');
-        if (response.ok) {
-            const files = await response.json();
-            const recentNotes = files.slice(0, 4);
-            const container = document.getElementById('recentNotesContainer');
-            
-            if (!container) return;
-            
-            if (recentNotes.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: var(--text3); grid-column: 1/-1; font-size:12px;">No active files distributed. Share a resource track asset to initialize logs!</div>';
-                return;
-            }
-            
-            container.innerHTML = recentNotes.map(file => `
-                <div class="note-card" onclick="window.location.href='/notes-files'" style="cursor:pointer;">
-                    <div class="note-icon">${file.fileIcon || '📄'}</div>
-                    <div class="note-name">${escapeHtml(file.title || file.fileName)}</div>
-                    <div class="note-meta">${escapeHtml(file.course || 'General')}</div>
-                </div>
-            `).join('');
-        }
-    } catch (error) {
-        console.error('Error loading recent notes asset layers:', error);
-    }
-}
-
-// ===== ASYNC PIPELINE: COLLABORATIVE STUDY GROUPS ENTITIES =====
-async function loadRecentGroups() {
-    try {
-        const response = await fetch('/api/groups');
-        if (response.ok) {
-            const groups = await response.json();
-            const myGroups = groups.filter(g => g.status === 'joined');
-            const recentGroups = myGroups.slice(0, 4);
-            const container = document.getElementById('recentGroupsContainer');
-            
-            if (!container) return;
-            
-            if (recentGroups.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text3); font-size:12px;">No study groups yet. Create or join your first group space registry!</div>';
-                return;
-            }
-            
-            const majorEmojis = {
-                'Computer Science': '💻', 'Business Informatics': '📊', 'Applied Arts': '🎨',
-                'Law': '⚖️', 'Pharmacy': '💊', 'Dentistry': '🦷', 'Networks': '🌐',
-                'System Admin': '🖥️', 'Electrical Engineering': '⚡', 'Mechanical Engineering': '🔧'
-            };
-            
-            container.innerHTML = recentGroups.map(group => `
-                <div class="group-item" style="cursor: pointer; margin-bottom:8px;" onclick="window.location.href='/group-details?id=${group._id}'">
-                    <div class="group-icon gi-blue">${majorEmojis[group.major] || '📚'}</div>
-                    <div class="group-info">
-                        <div class="name">${escapeHtml(group.name)}</div>
-                        <div class="members">${group.memberCount || group.members?.length || 0} members · ${escapeHtml(group.course)}</div>
-                    </div>
-                    <button class="join-btn joined">✓ Joined</button>
-                </div>
-            `).join('');
-        }
-    } catch (error) {
-        console.error('Error loading recent collaborative spaces:', error);
-        const container = document.getElementById('recentGroupsContainer');
-        if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--danger); font-size:12px;">Failed to initialize study spaces.</div>';
-        }
-    }
-}
-
 // ===== APP INITIALIZATION SIGNAL REGISTRY MOUNT =====
 document.addEventListener('DOMContentLoaded', function() {
-    loadRecentNotes();
-    loadRecentGroups();
 
     // Pull localized user transaction arrays dynamically from local cache matrices
     const appWrapperNode = document.getElementById("dashboardAppWrapper");
