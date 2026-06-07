@@ -14,11 +14,17 @@ export const getUserSharedMaterialsController = async (req, res) => {
     
     try {
         const db = await connectToDatabase();
+        const userId = req.session.userId;
+        
+        console.log('Looking for materials with uploadedBy:', userId);
+        
+        // Query with string (since it's stored as string in DB)
         const materials = await db.collection('shared_materials')
-            .find({ uploadedBy: new ObjectId(req.session.userId) })
+            .find({ uploadedBy: userId })  // NO ObjectId() wrapper
             .sort({ createdAt: -1 })
             .toArray();
         
+        console.log(`Found ${materials.length} shared materials`);
         res.json(materials);
     } catch (error) {
         console.error('Error getting user shared materials:', error);

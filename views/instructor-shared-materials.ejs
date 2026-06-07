@@ -36,20 +36,21 @@
                     <input type="text" id="upload-title" class="feed-input" placeholder="Material Title (e.g., Chapter 7 Notes)">
                     
                     <!-- Subject Dropdown -->
-                    <select id="upload-subject" class="feed-input" required>
-                        <option value="">Select a subject...</option>
+                    <select id="upload-academic-year" class="feed-input" required>
+                        <option value="">Select academic year...</option>
+                        <option value="1">Year 1</option>
+                        <option value="2">Year 2</option>
+                        <option value="3">Year 3</option>
+                        <option value="4">Year 4</option>
+                        <option value="3">Year 5</option>
+                        <option value="4">Year 6</option>
+                        <option value="all">All Years</option>
                     </select>
-                    <!-- Academic Year Dropdown -->
-<select id="upload-academic-year" class="feed-input" required>
-    <option value="">Select target academic year...</option>
-    <option value="1">Year 1</option>
-    <option value="2">Year 2</option>
-    <option value="3">Year 3</option>
-    <option value="4">Year 4</option>
-    <option value="3">Year 5 (Pharmacy/Dentistry Students)</option>
-    <option value="4">Year 6 (Pharmacy/Dentistry Students)</option>
-    <option value="all">All Years (All students in this major)</option>
-</select>
+                    
+                    <!-- Subject Dropdown - Populated based on selected year -->
+                    <select id="upload-subject" class="feed-input" required>
+                        <option value="">Select a year first...</option>
+                    </select>
                     <div class="upload-footer">
                         <div class="file-input-wrapper">
                             <label for="upload-file" class="btn btn-ghost">📁 Choose File</label>

@@ -25,19 +25,18 @@ function escapeHtml(text) {
 }
 
 // Load subjects from database
-async function loadSubjectsFromDB() {
+async function loadSubjectsFromDB(year) {
     const user = getCurrentUser();
     if (!user) return [];
     
     const major = user.major;
-    const isInstructor = user.role === 'instructor';
     
     try {
         let url = `/api/subjects?major=${encodeURIComponent(major)}`;
         
-        // For students, filter by their academic_year (use academic_year, not academicYear)
-        if (!isInstructor && user.academic_year) {
-            url += `&year=${user.academic_year}`;
+        // If year is provided and not 'all', filter by year
+        if (year && year !== 'all' && year !== '') {
+            url += `&year=${year}`;
         }
         
         const response = await fetch(url);
@@ -50,23 +49,54 @@ async function loadSubjectsFromDB() {
     }
 }
 
-// Populate subject dropdown from database
+// Populate subject dropdown based on selected year
 async function populateSubjectDropdown() {
     const user = getCurrentUser();
     if (!user) return;
     
-    const subjects = await loadSubjectsFromDB();
+    const isInstructor = user.role === 'instructor';
+    const yearSelect = document.getElementById('upload-academic-year');
     const subjectSelect = document.getElementById('upload-subject');
     
-    if (!subjectSelect) return;
+    // For students, hide year selector and load their year's subjects
+    if (!isInstructor) {
+        if (yearSelect) yearSelect.style.display = 'none';
+        const subjects = await loadSubjectsFromDB(user.academic_year);
+        if (subjectSelect) {
+            subjectSelect.innerHTML = '<option value="">Select a subject...</option>';
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                subjectSelect.appendChild(option);
+            });
+        }
+        return;
+    }
     
-    subjectSelect.innerHTML = '<option value="">Select a subject...</option>';
-    subjects.forEach(subject => {
-        const option = document.createElement('option');
-        option.value = subject;
-        option.textContent = subject;
-        subjectSelect.appendChild(option);
-    });
+    // For instructors, show year selector and load subjects based on selection
+    if (yearSelect) yearSelect.style.display = 'block';
+    
+    const selectedYear = yearSelect?.value;
+    
+    if (!selectedYear || selectedYear === '') {
+        if (subjectSelect) {
+            subjectSelect.innerHTML = '<option value="">Select a year first...</option>';
+        }
+        return;
+    }
+    
+    const subjects = await loadSubjectsFromDB(selectedYear);
+    
+    if (subjectSelect) {
+        subjectSelect.innerHTML = '<option value="">Select a subject...</option>';
+        subjects.forEach(subject => {
+            const option = document.createElement('option');
+            option.value = subject;
+            option.textContent = subject;
+            subjectSelect.appendChild(option);
+        });
+    }
 }
 
 // Load user's own shared materials history
@@ -125,18 +155,13 @@ function displayMyMaterials(materials) {
     });
 }
 
-async function uploadMaterial(title, subject, academic_year, file) {
+async function uploadMaterial(title, subject, academicYear, file) {
     const user = getCurrentUser();
     if (!user) {
-        console.error('No user found');
         alert('Please login first');
         return false;
     }
     
-    console.log('Uploading as user:', user);
-    console.log('File:', file ? file.name : 'No file');
-    
-    // Use FormData to send the actual file
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', subject);
@@ -144,32 +169,30 @@ async function uploadMaterial(title, subject, academic_year, file) {
     if (file) {
         formData.append('file', file);
     }
-    if (academic_year) {
-        formData.append('targetYear', academic_year);
+    if (academicYear) {
+        formData.append('targetYear', academicYear);
     }
     
     try {
         const response = await fetch('/api/shared', {
             method: 'POST',
-            body: formData  // Don't set Content-Type, browser will set it with boundary
+            body: formData
         });
         
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
+        if (response.ok) {
+            return true;
+        } else {
             const error = await response.json();
-            console.error('Server error:', error);
             alert('Failed to share: ' + (error.error || 'Unknown error'));
             return false;
         }
-        
-        return true;
     } catch (error) {
         console.error('Upload error:', error);
         alert('Failed to share. Please try again.');
         return false;
     }
 }
+
 function downloadFile(fileName) {
     alert(`Downloading "${fileName}"...`);
 }
@@ -216,8 +239,16 @@ window.onclick = function(event) {
 const uploadBtn = document.getElementById('upload-btn');
 const uploadTitleInput = document.getElementById('upload-title');
 const uploadSubjectSelect = document.getElementById('upload-subject');
+const uploadAcademicYearSelect = document.getElementById('upload-academic-year');
 const fileInput = document.getElementById('upload-file');
 const fileNameDisplay = document.querySelector('.file-name-display');
+
+// Listen for academic year change (for instructors)
+if (uploadAcademicYearSelect) {
+    uploadAcademicYearSelect.addEventListener('change', function() {
+        populateSubjectDropdown();
+    });
+}
 
 if (fileInput) {
     fileInput.addEventListener('change', function() {
@@ -231,7 +262,7 @@ if (uploadBtn) {
         
         const title = uploadTitleInput.value.trim();
         const subject = uploadSubjectSelect?.value;
-        const academicYearSelect = document.getElementById('upload-academic-year');
+        const academicYear = uploadAcademicYearSelect?.value;
         const file = fileInput?.files[0];
         
         if (title === "") {
@@ -244,30 +275,34 @@ if (uploadBtn) {
             return;
         }
         
-        // ONLY check academic year if the dropdown EXISTS on the page (instructor only)
-        if (academicYearSelect && (!academicYearSelect.value || academicYearSelect.value === "")) {
-            showModal("Please select a target academic year.");
-            return;
-        }
-        
         const user = getCurrentUser();
         if (!user) {
             showModal("Please login first.");
             return;
         }
         
-        const academic_year = academicYearSelect ? academicYearSelect.value : null;
+        // For instructors, require academic year
+        const isInstructor = user.role === 'instructor';
+        if (isInstructor && (!academicYear || academicYear === "")) {
+            showModal("Please select a target academic year.");
+            return;
+        }
         
-        const success = await uploadMaterial(title, subject, academic_year, file);
+        const success = await uploadMaterial(title, subject, academicYear, file);
         
         if (success) {
             uploadTitleInput.value = '';
-            uploadSubjectSelect.value = '';
-            if (academicYearSelect) academicYearSelect.value = '';
+            if (uploadAcademicYearSelect) uploadAcademicYearSelect.value = '';
+            if (uploadSubjectSelect) uploadSubjectSelect.value = '';
             if (fileInput) fileInput.value = '';
             if (fileNameDisplay) fileNameDisplay.textContent = "No file chosen";
             
             showModal("Material Shared Successfully!");
+            
+            // Reset subject dropdown for instructors
+            if (isInstructor && uploadSubjectSelect) {
+                uploadSubjectSelect.innerHTML = '<option value="">Select a year first...</option>';
+            }
             
             // Reload history
             loadMySharedHistory();
@@ -282,6 +317,15 @@ window.onload = async function() {
     if (window.currentUser && window.currentUser.id) {
         currentUser = window.currentUser;
     }
+    
+    const isInstructor = currentUser?.role === 'instructor';
+    const yearSelect = document.getElementById('upload-academic-year');
+    
+    // Hide year selector for students
+    if (!isInstructor && yearSelect) {
+        yearSelect.style.display = 'none';
+    }
+    
     await populateSubjectDropdown();
     loadMySharedHistory();
 };
