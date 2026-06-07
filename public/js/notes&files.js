@@ -265,7 +265,7 @@ async function deleteFile(button) {
     const uploadedBy = fileCard.dataset.uploadedBy;
     
     const currentUser = window.currentUser;
-    const isOwner = uploadedBy === currentUser?.id;
+    const isOwner = uploadedBy === currentUser?.id?.toString();
     
     const message = isOwner 
         ? `Are you sure you want to permanently delete "${fileName}"? This will remove it for ALL users.`

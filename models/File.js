@@ -74,13 +74,18 @@ export async function getFileById(fileId) {
  */
 export async function deleteFile(fileId, userId) {
     const db = await connectToDatabase();
-    
-    const result = await db.collection(COLLECTION).deleteOne({
+    const oid = new ObjectId(userId);
+    const uid = userId.toString();
+
+    return db.collection('notes_files').deleteOne({
         _id: new ObjectId(fileId),
-        uploadedBy: new ObjectId(userId)
+        $or: [
+            { uploadedBy: oid },
+            { uploadedBy: uid },
+            { sharedById: oid },
+            { sharedById: uid }
+        ]
     });
-    
-    return result;
 }
 
 /**
