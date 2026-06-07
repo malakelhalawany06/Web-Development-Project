@@ -209,7 +209,10 @@ function createFileCard(file) {
     const fileSizeValue = file.fileSize || '0 MB';
     const date = file.createdAt ? new Date(file.createdAt).toLocaleDateString() : 'Unknown';
     
-    // Consistent format: Subject • Size • Shared by Name • Date
+    // Get current user to check if they are the uploader
+    const currentUser = window.currentUser;
+    const isOwner = file.uploadedBy === currentUser?.id || file.sharedById === currentUser?.id;
+    
     fileCard.innerHTML = `
         <div class="file-icon">${file.fileIcon || '📄'}</div>
         <div class="file-info">
@@ -220,6 +223,7 @@ function createFileCard(file) {
         </div>
         <div class="file-actions">
             <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
+            ${isOwner ? `<button class="btn-icon" onclick="deleteFileForUser(this)" style="color: #f87171;">🗑️</button>` : ''}
         </div>
     `;
     return fileCard;
@@ -249,6 +253,42 @@ function setView(view) {
         listView.style.display = 'block';
         viewBtns[1].classList.add('active');
         populateListView();
+    }
+}
+
+// Delete file for current user only (hide from their view)
+async function deleteFileForUser(button) {
+    const fileCard = button.closest('.file-card');
+    const fileId = fileCard.dataset.id;
+    const fileName = fileCard.querySelector('.file-name')?.innerText || 'file';
+    
+    if (!confirm(`Are you sure you want to remove "${fileName}" from your view? The file will still be available for other users.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/files/${fileId}/hide`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to hide file');
+        }
+        
+        // Remove the card from UI
+        fileCard.remove();
+        
+        // Update badge count
+        const fileCards = document.querySelectorAll('.file-card');
+        updateNotesFilesBadge(fileCards.length);
+        
+        alert('File removed from your view');
+        
+    } catch (error) {
+        console.error('Error hiding file:', error);
+        alert('Failed to remove file: ' + error.message);
     }
 }
 

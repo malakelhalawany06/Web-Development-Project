@@ -18,27 +18,51 @@ export const getUserFilesController = async (req, res) => {
     }
 };
 
-// Get shared files (filtered by major and academic year)
+
 export const getSharedFilesController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
     try {
         const db = await connectToDatabase();
-        const user = await db.collection('students').findOne({ 
+        
+        // Get user
+        let user = await db.collection('students').findOne({ 
             _id: new ObjectId(req.session.userId) 
         });
+        
+        if (!user) {
+            user = await db.collection('instructors').findOne({ 
+                _id: new ObjectId(req.session.userId) 
+            });
+        }
         
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        const files = await getFilesByMajorAndYear(user.major, user.academic_year);
+        // Get user's hidden files IDs from hidden_files collection
+        const hiddenEntries = await db.collection('hidden_files')
+            .find({ userId: new ObjectId(req.session.userId) })
+            .toArray();
+        
+        const hiddenFileIds = hiddenEntries.map(entry => entry.fileId);
+        
+        // Get files, excluding hidden ones
+        const files = await db.collection('notes_files')
+            .find({ 
+                sharedByMajor: user.major,
+                sharedByYear: user.academic_year,
+                _id: { $nin: hiddenFileIds }
+            })
+            .sort({ createdAt: -1 })
+            .toArray();
+        
         res.json(files);
     } catch (error) {
+        console.error('Error getting shared files:', error);
         res.status(500).json({ error: error.message });
     }
 };
-
 // Get instructor files (all files for instructor's major)
 export const getInstructorFilesController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
@@ -201,6 +225,39 @@ export const shareFileController = async (req, res) => {
         await shareFile(req.params.id, targetUser._id);
         res.json({ success: true });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+// controllers/fileController.js - Add hideFileController
+
+// Hide a file for the current user (add to hidden_files collection)
+export const hideFileController = async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
+    
+    try {
+        const db = await connectToDatabase();
+        const userId = req.session.userId;
+        const fileId = req.params.id;
+        
+        // Check if already hidden
+        const existing = await db.collection('hidden_files').findOne({
+            userId: new ObjectId(userId),
+            fileId: new ObjectId(fileId)
+        });
+        
+        if (!existing) {
+            // Add to hidden_files collection
+            await db.collection('hidden_files').insertOne({
+                userId: new ObjectId(userId),
+                fileId: new ObjectId(fileId),
+                hiddenAt: new Date()
+            });
+        }
+        
+        res.json({ success: true, message: 'File hidden from your view' });
+        
+    } catch (error) {
+        console.error('Error hiding file:', error);
         res.status(500).json({ error: error.message });
     }
 };
