@@ -18,7 +18,6 @@ router.get('/user', (req, res) => {
 // 🎓 FIXED ENDPOINT: PERMANENTLY UPDATE MONGODB AND FORCE REFRESH THE SESSION
 router.post('/user/update-gpa', async (req, res) => {
     try {
-        // Fallback checks to find the user's ID from session variables
         const userId = req.session?.userId || req.session?.user?._id;
 
         if (!userId) {
@@ -46,13 +45,12 @@ router.post('/user/update-gpa', async (req, res) => {
             req.session.user.GPA = newGpa;
         }
         
-        // Also update res.locals context for the current rendering cycle
         if (res.locals.user) {
             res.locals.user.gpa = newGpa;
             res.locals.user.GPA = newGpa;
         }
 
-        // 3. FORCE BACKEND TO SAVE THE SESSION STATE PERMANENTLY BEFORE CORRESPONDING WITH FRONTEND
+        // 3. FORCE BACKEND TO SAVE THE SESSION STATE PERMANENTLY
         req.session.save((err) => {
             if (err) {
                 console.error("[SESSION SAVE ERROR]:", err);
@@ -63,6 +61,36 @@ router.post('/user/update-gpa', async (req, res) => {
 
     } catch (err) {
         console.error("[API ROUTE ERROR]:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 🗑️ GPA ARCHIVE ROUTE: ARCHIVES DELETED GPA COURSE INFO INTO HIDDEN_FILES
+router.post('/user/archive-deleted-course', async (req, res) => {
+    try {
+        const userId = req.session?.userId || req.session?.user?._id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized." });
+        }
+
+        const { courseName, credits, gradeText, points } = req.body;
+        const db = await connectToDatabase();
+
+        // Save a backup clone inside your 'hidden_files' trash bin collection
+        await db.collection('hidden_files').insertOne({
+            type: "deleted_gpa_course",
+            userId: new ObjectId(userId),
+            courseName,
+            credits,
+            gradeText,
+            points,
+            deletedAt: new Date()
+        });
+
+        console.log(`[ARCHIVE SUCCESS] Course "${courseName}" for User ${userId} sent to hidden_files.`);
+        res.json({ success: true, message: "Course backed up to hidden_files archive." });
+    } catch (err) {
+        console.error("[GPA ARCHIVE ERROR]:", err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -127,15 +155,44 @@ router.post('/projects/:projectId/tasks/:taskId/progress', requireStudentAPI, as
     }
 });
 
-// API Endpoint: Delete Task
+// 🗂️ API ENDPOINT: SOFT-DELETE TASK (Copies data to hidden_files before removal)
 router.post('/projects/:projectId/tasks/:taskId/delete', requireStudentAPI, async (req, res) => {
     try {
         const { projectId, taskId } = req.params;
         const db = await connectToDatabase();
-        await db.collection('projects').updateOne({ _id: new ObjectId(projectId) }, { $pull: { tasks: { _id: new ObjectId(taskId) } } });
-        res.json({ success: true });
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(projectId) });
+        
+        if (project && project.tasks) {
+            const targetTask = project.tasks.find(t => t._id.toString() === taskId.toString());
+            
+            if (targetTask) {
+                // Clone the task details securely into your 'hidden_files' recovery data tier
+                await db.collection('hidden_files').insertOne({
+                    type: "deleted_project_task",
+                    projectId: new ObjectId(projectId),
+                    projectName: project.projectName,
+                    taskId: targetTask._id,
+                    taskName: targetTask.taskName,
+                    assignedStudent: targetTask.assignedStudent,
+                    completionPercentage: targetTask.completionPercentage,
+                    deadline: targetTask.deadline,
+                    deletedAt: new Date()
+                });
+                console.log(`[ARCHIVE SUCCESS] Project Task ${taskId} safely cloned into hidden_files.`);
+            }
+        }
+
+        // Safely wipe the live task subdocument out of the projects array map
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(projectId) }, 
+            { $pull: { tasks: { _id: new ObjectId(taskId) } } }
+        );
+
+        res.json({ success: true, message: "Task archived and deleted successfully!" });
     } catch (err) {
-        res.status(500).json({ success: false });
+        console.error("[TASK ARCHIVE ERROR]:", err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 

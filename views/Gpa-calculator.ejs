@@ -10,9 +10,8 @@
 </head>
 <body>
 
-<div class="layout">
+<div id="gpaCalculatorApp" data-user-id="<%= user ? (user._id || 'guest') : 'guest' %>" class="layout">
 
-  <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">📚</div>
@@ -96,7 +95,6 @@
     </div>
   </aside>
 
-  <!-- ===== MAIN ===== -->
   <div class="main">
 
     <header class="topbar">
@@ -114,7 +112,6 @@
 
     <div class="content">
 
-        <!-- ADD COURSE -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">➕ Add Course</span>
@@ -151,7 +148,6 @@
             <button class="btn btn-primary" style="margin-top: 1.25rem;" onclick="addCourse()">+ Add Course</button>
         </div>
 
-        <!-- TABLE -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">📊 Courses</span>
@@ -185,14 +181,7 @@
                 </div>
 
                 <div class="gpa-bar-wrap">
-                    <% 
-                        let dbGpaPercentage = 0;
-                        if (user) {
-                            let rawGpa = typeof user.gpa !== 'undefined' ? user.gpa : (typeof user.GPA !== 'undefined' ? user.GPA : 0);
-                            dbGpaPercentage = (Number(rawGpa) / 4.0) * 100;
-                        }
-                    %>
-                    <div class="gpa-bar-fill" id="gpaBar" style="width: <%= dbGpaPercentage %>%"></div>
+                    <div class="gpa-bar-fill" id="gpaBar" style="width: 0%"></div>
                 </div>
 
                 <div>
@@ -207,128 +196,7 @@
   </div>
 </div>
 
-<!-- ===== FRONTEND ENGINE SCRIPT WITH STORAGE PERSISTENCE ===== -->
-<script>
-let courses = [];
-const currentUserId = "<%= user ? (user._id || 'guest') : 'guest' %>";
-
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("Embedded Cache-Persistent Live GPA Calculator Active.");
-    
-    // 💾 LOAD FROM LOCAL STORAGE REPOSITORY UPON VISIT
-    const storedCourses = localStorage.getItem(`loomhub_courses_${currentUserId}`);
-    if (storedCourses) {
-        courses = JSON.parse(storedCourses);
-        renderTable();
-    }
-    updateGPADisplay();
-});
-
-function addCourse() {
-    const nameInput = document.getElementById("courseName");
-    const creditsInput = document.getElementById("credits");
-    const gradeSelect = document.getElementById("grade");
-
-    const name = nameInput.value.trim();
-    const credits = parseInt(creditsInput.value);
-    const gradeValue = parseFloat(gradeSelect.value);
-    const gradeText = gradeSelect.options[gradeSelect.selectedIndex].text;
-
-    if (!name || isNaN(credits) || isNaN(gradeValue)) {
-        alert("Please fill out all course details correctly.");
-        return;
-    }
-
-    const points = (credits * gradeValue).toFixed(2);
-    const course = { id: Date.now(), name, credits, gradeValue, gradeText, points };
-    courses.push(course);
-
-    nameInput.value = "";
-    creditsInput.value = "";
-    gradeSelect.value = "";
-
-    // Save state locally
-    localStorage.setItem(`loomhub_courses_${currentUserId}`, JSON.stringify(courses));
-
-    renderTable();
-    calculateLiveGPA();
-}
-
-function removeCourse(id) {
-    courses = courses.filter(c => c.id !== id);
-    
-    // Update local cache configuration
-    localStorage.setItem(`loomhub_courses_${currentUserId}`, JSON.stringify(courses));
-    
-    renderTable();
-    calculateLiveGPA();
-}
-
-function renderTable() {
-    const tbody = document.getElementById("courseTable");
-    tbody.innerHTML = "";
-
-    courses.forEach(c => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td><strong>${c.name}</strong></td>
-            <td>${c.credits} hrs</td>
-            <td><span class="badge">${c.gradeText}</span></td>
-            <td>${c.points}</td>
-            <td><button class="btn" style="background:#ff4a4a;padding:4px 8px;font-size:11px;color:white;border:none;border-radius:4px;cursor:pointer;" onclick="removeCourse(${c.id})">🗑 Delete</button></td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-function calculateLiveGPA() {
-    let liveGPA = "0.00";
-
-    if (courses.length > 0) {
-        let totalCredits = 0;
-        let totalPoints = 0;
-
-        courses.forEach(c => {
-            totalCredits += c.credits;
-            totalPoints += parseFloat(c.points);
-        });
-
-        liveGPA = (totalPoints / totalCredits).toFixed(2);
-    } else {
-        liveGPA = "0.00";
-    }
-    
-    document.getElementById("gpaValue").innerText = liveGPA;
-    
-    const percentage = (parseFloat(liveGPA) / 4.0) * 100;
-    document.getElementById("gpaBar").style.width = `${Math.min(percentage, 100)}%`;
-
-    saveGpaToDatabase(liveGPA);
-}
-
-function updateGPADisplay() {
-    const gpaValBox = document.getElementById("gpaValue");
-    const currentVal = parseFloat(gpaValBox.innerText) || 0.00;
-    const percentage = (currentVal / 4.0) * 100;
-    document.getElementById("gpaBar").style.width = `${Math.min(percentage, 100)}%`;
-}
-
-async function saveGpaToDatabase(gpaValue) {
-    try {
-        const response = await fetch('/api/user/update-gpa', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gpa: gpaValue })
-        });
-        const data = await response.json();
-        if (data.success) {
-            console.log("Successfully synced database GPA reference:", gpaValue);
-        }
-    } catch (err) {
-        console.error("Failed to sync new GPA to the database server:", err);
-    }
-}
-</script>
+<script src="/js/gpa-calculator.js"></script>
 
 </body>
 </html>
