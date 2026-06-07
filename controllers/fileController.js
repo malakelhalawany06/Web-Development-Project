@@ -24,15 +24,16 @@ export const getSharedFilesController = async (req, res) => {
     
     try {
         const db = await connectToDatabase();
+        const userId = req.session.userId;
         
-        // Get user
+        // Get user to check major and year
         let user = await db.collection('students').findOne({ 
-            _id: new ObjectId(req.session.userId) 
+            _id: new ObjectId(userId) 
         });
         
         if (!user) {
             user = await db.collection('instructors').findOne({ 
-                _id: new ObjectId(req.session.userId) 
+                _id: new ObjectId(userId) 
             });
         }
         
@@ -40,9 +41,9 @@ export const getSharedFilesController = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        // Get user's hidden files IDs from hidden_files collection
+        // Get hidden file IDs from hidden_files collection
         const hiddenEntries = await db.collection('hidden_files')
-            .find({ userId: new ObjectId(req.session.userId) })
+            .find({ userId: new ObjectId(userId) })
             .toArray();
         
         const hiddenFileIds = hiddenEntries.map(entry => entry.fileId);
@@ -77,10 +78,20 @@ export const getInstructorFilesController = async (req, res) => {
             return res.status(404).json({ error: 'Instructor not found' });
         }
         
+        // Get hidden file IDs
+        const hiddenEntries = await db.collection('hidden_files')
+            .find({ userId: new ObjectId(req.session.userId) })
+            .toArray();
+        
+        const hiddenFileIds = hiddenEntries.map(entry => entry.fileId);
+        
         const instructorMajor = instructor?.major || instructor?.department || 'Computer Science';
         
         const files = await db.collection('notes_files')
-            .find({ sharedByMajor: instructorMajor })
+            .find({ 
+                sharedByMajor: instructorMajor,
+                _id: { $nin: hiddenFileIds }
+            })
             .sort({ createdAt: -1 })
             .toArray();
         
@@ -230,7 +241,7 @@ export const shareFileController = async (req, res) => {
 };
 // controllers/fileController.js - Add hideFileController
 
-// Hide a file for the current user (add to hidden_files collection)
+// controllers/fileController.js - Update hideFileController for hidden_files collection
 export const hideFileController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
@@ -255,7 +266,6 @@ export const hideFileController = async (req, res) => {
         }
         
         res.json({ success: true, message: 'File hidden from your view' });
-        
     } catch (error) {
         console.error('Error hiding file:', error);
         res.status(500).json({ error: error.message });

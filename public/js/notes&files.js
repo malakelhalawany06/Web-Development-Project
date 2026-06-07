@@ -197,21 +197,24 @@ async function updateSubjectFilterChips() {
         filterSection.appendChild(chipDiv);
     });
 }
-
 function createFileCard(file) {
     const fileCard = document.createElement('div');
     fileCard.className = 'file-card';
     fileCard.setAttribute('data-course', file.course);
     fileCard.setAttribute('data-id', file._id || file.id);
     
+    // Convert both to strings for comparison
+    const uploaderId = file.uploadedBy?.toString() || file.sharedById?.toString() || '';
+    fileCard.setAttribute('data-uploaded-by', uploaderId);
+    
     const sharedByName = file.sharedBy || 'Unknown';
     const subject = file.course || file.description || 'General';
     const fileSizeValue = file.fileSize || '0 MB';
     const date = file.createdAt ? new Date(file.createdAt).toLocaleDateString() : 'Unknown';
     
-    // Get current user to check if they are the uploader
-    const currentUser = window.currentUser;
-    const isOwner = file.uploadedBy === currentUser?.id || file.sharedById === currentUser?.id;
+    // Get current user ID as string
+    const currentUserId = window.currentUser?.id?.toString() || '';
+    const isOwner = uploaderId === currentUserId;
     
     fileCard.innerHTML = `
         <div class="file-icon">${file.fileIcon || '📄'}</div>
@@ -223,12 +226,11 @@ function createFileCard(file) {
         </div>
         <div class="file-actions">
             <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
-            ${isOwner ? `<button class="btn-icon" onclick="deleteFileForUser(this)" style="color: #f87171;">🗑️</button>` : ''}
+            <button class="btn-icon" onclick="deleteFile(this)" style="color: #f87171;">🗑️</button>
         </div>
     `;
     return fileCard;
 }
-
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -255,26 +257,39 @@ function setView(view) {
         populateListView();
     }
 }
-
-// Delete file for current user only (hide from their view)
-async function deleteFileForUser(button) {
+// Smart delete: deletes for everyone if you're the owner, otherwise hides for you only
+async function deleteFile(button) {
     const fileCard = button.closest('.file-card');
     const fileId = fileCard.dataset.id;
     const fileName = fileCard.querySelector('.file-name')?.innerText || 'file';
+    const uploadedBy = fileCard.dataset.uploadedBy;
     
-    if (!confirm(`Are you sure you want to remove "${fileName}" from your view? The file will still be available for other users.`)) {
+    const currentUser = window.currentUser;
+    const isOwner = uploadedBy === currentUser?.id;
+    
+    const message = isOwner 
+        ? `Are you sure you want to permanently delete "${fileName}"? This will remove it for ALL users.`
+        : `Hide "${fileName}" from your view? (Other users will still see it)`;
+    
+    if (!confirm(message)) {
         return;
     }
     
     try {
-        const response = await fetch(`/api/files/${fileId}/hide`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
+        let url = `/api/files/${fileId}`;
+        let options = { method: 'DELETE' };
+        
+        // If not owner, use hide endpoint
+        if (!isOwner) {
+            url = `/api/files/${fileId}/hide`;
+            options = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+        }
+        
+        const response = await fetch(url, options);
         
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error || 'Failed to hide file');
+            throw new Error(error.error || 'Failed');
         }
         
         // Remove the card from UI
@@ -282,16 +297,17 @@ async function deleteFileForUser(button) {
         
         // Update badge count
         const fileCards = document.querySelectorAll('.file-card');
-        updateNotesFilesBadge(fileCards.length);
+        if (typeof updateNotesFilesBadge === 'function') {
+            updateNotesFilesBadge(fileCards.length);
+        }
         
-        alert('File removed from your view');
+        alert(isOwner ? 'File permanently deleted' : 'File hidden from your view');
         
     } catch (error) {
-        console.error('Error hiding file:', error);
-        alert('Failed to remove file: ' + error.message);
+        console.error('Error:', error);
+        alert('Failed to delete/hide file: ' + error.message);
     }
 }
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async function() {
     if (window.currentUser) {
