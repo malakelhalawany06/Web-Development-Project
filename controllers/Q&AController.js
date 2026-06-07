@@ -1,40 +1,87 @@
 import Question from '../models/Q&AModel.js';
 
+// Helper function to safely extract user data matching your database schema requirements
+function getActiveUser(req, res) {
+  // If app.js middleware found a real logged-in user session, use it!
+  if (res.locals.user) {
+    return {
+      firstName: res.locals.user.firstName || res.locals.user.name || "Logged-in",
+      lastName: res.locals.user.lastName || "User",
+      major: res.locals.user.major || "General Studies",
+      academicYear: String(res.locals.user.year || res.locals.user.academic_year || "1")
+    };
+  }
+  
+  // Fallback fallback user for local developer testing when not logged in
+  return {
+    firstName: "Ahmed",
+    lastName: "Khalid",
+    major: "Computer Science",
+    academicYear: "3"
+  };
+}
+
 async function getQApage(req, res) {
   try {
     const currentFilter = req.query.tag || 'all';
-    let queryFilter = {};
+    
+    // 1. Grab the current user (either logged-in or our fallback testing user)
+    const currentUser = getActiveUser(req, res);
 
+    // 2. Build the filter: Lock it down to the user's exact Major and Academic Year
+    let queryFilter = {
+      'author.major': currentUser.major,
+      'author.academicYear': currentUser.academicYear
+    };
+
+    // 3. If they also clicked a tag sidebar/filter (like 'Calculus'), add it to the search
     if (currentFilter !== 'all') {
       queryFilter.tag = currentFilter;
     }
 
+    // 4. Fetch only the matching questions from MongoDB
     const questions = await Question.find(queryFilter).sort({ timestamp: -1 });
-    const currentUser = req.session.user || { firstName: "Ahmed", lastName: "Khalid", major: "Computer Science", academicYear: "3" };
 
+    // 5. Render the page with the filtered list
     res.render('Q&A', { 
       questions, 
       currentFilter, 
       currentUser 
     });
   } catch (err) {
+    console.error("❌ Error fetching filtered Q&A data:", err);
     res.status(500).send('Error loading Q&A Forum data.');
   }
 }
 
 async function addQuestion(req, res) {
   try {
-    const { title, description, tag } = req.body;
-    const currentUser = req.session.user || { firstName: "Ahmed", lastName: "Khalid", major: "Computer Science", academicYear: "3" };
+    console.log("📨 Form Data Received by Backend:", req.body);
 
+    // Explicitly grab the frontend input names ('title', 'body', and 'tag')
+    const title = req.body.title || req.body.questionTitle;
+    const description = req.body.body || req.body.description || req.body.content; 
+    const tag = req.body.tag || 'all';
+
+    const currentUser = getActiveUser(req, res);
+
+    // Validation check
+    if (!title || !description) {
+      return res.status(400).send('Title and description are required.');
+    }
+
+    // Save strictly to Mongoose
     await Question.create({
-      title,
-      description,
-      tag,
+      title: title.trim(),
+      description: description.trim(),
+      tag: tag || 'all',
       author: currentUser
     });
+    
+    // Redirect cleanly back to the forum dashboard
     res.redirect('/qa');
   } catch (err) {
+    console.error("❌ Mongoose Save Error Details:", err);
     res.status(400).send('Error posting question.');
   }
 }
@@ -55,7 +102,7 @@ async function upvoteQuestion(req, res) {
 async function addAnswer(req, res) {
   try {
     const { text } = req.body;
-    const currentUser = req.session.user || { firstName: "Ahmed", lastName: "Khalid", major: "Computer Science", academicYear: "3" };
+    const currentUser = getActiveUser(req, res);
     const authorName = `${currentUser.firstName} ${currentUser.lastName}`;
 
     const question = await Question.findById(req.params.id);
