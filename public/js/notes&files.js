@@ -100,9 +100,42 @@ async function loadSharedFiles() {
 }
 
 // Download file
-function downloadFile(button) {
-    const fileName = button.closest('.file-card')?.querySelector('.file-name')?.innerText || 'file';
-    alert(`Downloading "${fileName}"...`);
+// notes&files.js - Update downloadFile function
+
+async function downloadFile(button) {
+    const fileCard = button.closest('.file-card');
+    const fileId = fileCard.dataset.id;
+    const fileName = fileCard.querySelector('.file-name')?.innerText || 'file';
+    
+    console.log('Downloading file:', fileId, fileName);
+    
+    try {
+        const response = await fetch(`/api/files/${fileId}/download`);
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Download failed');
+        }
+        
+        // Get the file blob from response
+        const blob = await response.blob();
+        
+        // Create a download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+    } catch (error) {
+        console.error('Error downloading file:', error);
+        alert('Failed to download file: ' + error.message);
+    }
 }
 
 // Update notes badge

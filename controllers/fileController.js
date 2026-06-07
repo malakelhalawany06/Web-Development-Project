@@ -1,5 +1,5 @@
 // controllers/fileController.js
-import { getUserFiles, getFilesByMajorAndYear, getFileById, deleteFile, shareFile, createFile } from '../models/File.js';
+import { getUserFiles, getFilesByMajorAndYear, getFileById, deleteFile, shareFile, createFile, getFileData } from '../models/File.js';
 import { connectToDatabase } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 import multer from 'multer';
@@ -80,31 +80,55 @@ export const getFileByIdController = async (req, res) => {
     }
 };
 
-// Download file
+// controllers/fileController.js - FIXED downloadFileController
 export const downloadFileController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
     try {
-        const file = await getFileById(req.params.id);
-        if (!file) return res.status(404).json({ error: 'File not found' });
+        const file = await getFileData(req.params.id);
         
-        // Check if user has access to this file
+        if (!file) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+        
+        // Check access
         const isOwner = file.uploadedBy?.toString() === req.session.userId;
         const isSharedWith = file.sharedWith?.some(id => id.toString() === req.session.userId);
+        const isShared = file.isShared === true;
         
-        if (!isOwner && !isSharedWith) {
+        if (!isOwner && !isSharedWith && !isShared) {
             return res.status(403).json({ error: 'Access denied' });
         }
         
-        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.fileName)}"`);
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.send(file.fileData);
+        // Get the file data - handle MongoDB Binary correctly
+        let fileBuffer = file.fileData;
+        
+        // If it's a MongoDB Binary object, extract the buffer
+        if (fileBuffer && typeof fileBuffer === 'object' && fileBuffer.buffer) {
+            fileBuffer = fileBuffer.buffer;
+        }
+        
+        // If it's a Buffer, use it directly
+        if (!fileBuffer || fileBuffer.length === 0) {
+            return res.status(404).json({ error: 'File content not found' });
+        }
+        
+        // Convert to Buffer if needed
+        const buffer = Buffer.isBuffer(fileBuffer) ? fileBuffer : Buffer.from(fileBuffer);
+        
+        const fileName = encodeURIComponent(file.fileName);
+        
+        res.setHeader('Content-Type', file.fileType || 'application/octet-stream');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Length', buffer.length);
+        
+        return res.end(buffer);
+        
     } catch (error) {
         console.error('Error downloading file:', error);
         res.status(500).json({ error: error.message });
     }
 };
-
 // Create a new file
 export const createFileController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });

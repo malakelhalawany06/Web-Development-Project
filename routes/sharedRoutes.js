@@ -2,12 +2,13 @@
 import express from 'express';
 import { 
     getUserSharedMaterialsController,
-    createSharedMaterialController
+    createSharedMaterialController,
+    uploadMiddleware
 } from '../controllers/sharedController.js';
 
 const router = express.Router();
 
 router.get('/my-shared', getUserSharedMaterialsController);
-router.post('/', createSharedMaterialController);
+router.post('/', uploadMiddleware, createSharedMaterialController);  
 
 export default router;

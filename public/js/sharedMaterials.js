@@ -134,27 +134,24 @@ async function uploadMaterial(title, subject, academic_year, file) {
     }
     
     console.log('Uploading as user:', user);
+    console.log('File:', file ? file.name : 'No file');
     
-    // Send as JSON
-    const materialData = {
-        title: title,
-        description: subject,
-        course: subject,
-        fileName: file ? file.name : "",
-        fileSize: file ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : "",
-        fileIcon: file ? getFileIcon(file.name) : '📄'
-    };
-    
-    // Only add targetYear if provided (instructor only)
+    // Use FormData to send the actual file
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', subject);
+    formData.append('course', subject);
+    if (file) {
+        formData.append('file', file);
+    }
     if (academic_year) {
-        materialData.targetYear = academic_year;
+        formData.append('targetYear', academic_year);
     }
     
     try {
         const response = await fetch('/api/shared', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(materialData)
+            body: formData  // Don't set Content-Type, browser will set it with boundary
         });
         
         console.log('Response status:', response.status);
@@ -173,7 +170,6 @@ async function uploadMaterial(title, subject, academic_year, file) {
         return false;
     }
 }
-
 function downloadFile(fileName) {
     alert(`Downloading "${fileName}"...`);
 }

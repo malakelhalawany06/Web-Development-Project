@@ -7,6 +7,7 @@ const COLLECTION = 'notes_files';
 /**
  * Create a new file/note
  */
+// models/File.js - UPDATE the createFile function
 export async function createFile(fileData) {
     const db = await connectToDatabase();
     
@@ -16,6 +17,8 @@ export async function createFile(fileData) {
         fileName: fileData.fileName,
         fileSize: fileData.fileSize,
         fileIcon: fileData.fileIcon || '📄',
+        fileType: fileData.fileType || '',        // ADD THIS
+        fileData: fileData.fileData || null,      // ADD THIS - CRITICAL!
         course: fileData.course,
         uploadedBy: new ObjectId(fileData.uploadedBy),
         sharedWith: [],
@@ -123,6 +126,8 @@ export async function addSharedFile(fileData) {
         fileName: fileData.fileName,
         fileSize: fileData.fileSize,
         fileIcon: fileData.fileIcon || '📄',
+         fileType: fileData.fileType || '',        // ADD THIS
+        fileData: fileData.fileData || null,   
         course: fileData.course,
         sharedBy: fileData.sharedBy,
         sharedById: new ObjectId(fileData.sharedById),
@@ -166,4 +171,14 @@ export async function getUserUploadedFiles(userId) {
     }).sort({ createdAt: -1 }).toArray();
     
     return files;
+}
+
+export async function getFileData(fileId) {
+    const db = await connectToDatabase();
+    
+    const file = await db.collection('notes_files').findOne({
+        _id: new ObjectId(fileId)
+    });
+    
+    return file;
 }
