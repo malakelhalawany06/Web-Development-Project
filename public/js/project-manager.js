@@ -26,7 +26,6 @@
 
             const data = await response.json();
             if (data.success) {
-                // Instantly refresh the window layout view to query the freshly injected document
                 window.location.reload();
             } else {
                 alert("Failed to insert target project task: " + data.message);
@@ -59,11 +58,8 @@
 
             const data = await response.json();
             if (data.success) {
-                // Update local elements immediately without hard window reload loops
                 document.getElementById(`text-${taskId}`).innerText = completionPercentage + "%";
                 document.getElementById(`bar-${taskId}`).style.width = completionPercentage + "%";
-                
-                // Recalculate global container circular averages asynchronously
                 recalculateGlobalProgressRing();
             } else {
                 alert("Server rejected processing your progress modifications.");
@@ -77,7 +73,7 @@
     // DELETE TASK FROM DATABASE
     // =====================
     window.deleteTask = async function (projectId, taskId) {
-        if (!confirm("Are you sure you want to drop this project milestone task?")) return;
+        if (!confirm("Are you sure you want to move this project task to hidden archives?")) return;
 
         try {
             const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}/delete`, {
@@ -86,14 +82,11 @@
 
             const data = await response.json();
             if (data.success) {
-                // Remove task wrapper from frontend cleanly
                 const targetCard = document.getElementById(`card-box-${taskId}`);
                 if (targetCard) targetCard.remove();
                 
-                // Recalculate container progress details or check if section is empty
                 recalculateGlobalProgressRing();
                 
-                // If no task cards are left, show placeholder statement
                 const container = document.getElementById("taskTable");
                 if (container && container.querySelectorAll('.task-card').length === 0) {
                     container.innerHTML = '<p style="color: #94a3b8; padding: 20px;">No tasks assigned to you at the moment.</p>';

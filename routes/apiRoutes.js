@@ -87,7 +87,7 @@ router.post('/user/archive-deleted-course', async (req, res) => {
             deletedAt: new Date()
         });
 
-        console.log(`[ARCHIVE SUCCESS] Course "${courseName}" for User ${userId} sent to hidden_files.`);
+        console.log(`[ARCHIVE SUCCESS] Course "${courseName}" sent to hidden_files.`);
         res.json({ success: true, message: "Course backed up to hidden_files archive." });
     } catch (err) {
         console.error("[GPA ARCHIVE ERROR]:", err);
