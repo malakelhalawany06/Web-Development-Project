@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { connectToDatabase } from './config/db.js';
 import { findById } from './models/userModel.js';
-import mongoose from 'mongoose'; // ✅ ADDED: Global Mongoose import
+import mongoose from 'mongoose'; // ✅ Global Mongoose import
 
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
@@ -20,13 +20,16 @@ import qaRoutes from './routes/Q&ARoutes.js';
 import remindersRoutes from './routes/remindersRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
+// New Modular Route Files 
+import gpaRoutes from './routes/gpaRoutes.js';
+import projectManagerRoutes from './routes/projectManagerRoutes.js';
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express(); 
 const PORT = process.env.PORT || 3000;
-
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -76,9 +79,13 @@ app.use(async (req, res, next) => {
 // ------------------------------------------------------------------
 // MOUNTING ROUTERS (Keeps things organized!)
 // ------------------------------------------------------------------
-app.use('/', authRoutes);        // Authenticate requests before page routing triggers
-app.use('/', pageRoutes);        // Mounts front page layout views
+app.use('/', authRoutes);           // Authenticate requests before page routing triggers
+app.use('/', pageRoutes);           // Mounts front page layout views
 app.use('/personal-info', profileRoutes); // Base URL path is now /profile
+
+// 🎓 MOUNTED: GPA & Project Manager Controllers (View pages + Engine APIs)
+app.use('/', gpaRoutes);
+app.use('/', projectManagerRoutes);
 
 // APPLIES ROUTING PATH FOR BUTTON ACTIONS TO TALK TO MONGO INTERFACES
 app.use('/api', apiRoutes); 
@@ -94,7 +101,7 @@ app.use('/reminders', remindersRoutes);
 // DATABASE CONNECTION INITIALIZATION BLOCK (Safely adapted)
 // ------------------------------------------------------------------
 connectToDatabase().then(async () => {
-    // ✅ ADDED: Sync global mongoose connection string using existing environment keys
+    // Sync global mongoose connection string using existing environment keys
     if (mongoose.connection.readyState === 0) {
         await mongoose.connect(process.env.DB_URI, {
             dbName: process.env.DB_NAME

@@ -1,12 +1,9 @@
 import express from 'express';
-import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../config/db.js';
 
 const router = express.Router();
 
-// Middleware checking loop verifying active secure login states
 const requireLogin = (req, res, next) => {
-    // Check both session and res.locals to be absolutely sure the user object loaded cleanly
     if (!req.session.userId || !res.locals.user) {
         return res.redirect('/');
     }
@@ -33,20 +30,18 @@ router.get('/dashboard', requireLogin, async (req, res) => {
         return res.redirect('/');
     }
 
-    // Set 'dashboard' context state flag active
     if (req.session.userRole === 'students') {
         return res.render('student-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
     } else if (req.session.userRole === 'instructors') {
         return res.render('instructor-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
     } else if (req.session.userRole === 'admins') {
-    return res.redirect('/admin/dashboard');
-}
+        return res.redirect('/admin/dashboard');
+    }
     res.redirect('/');
 });
 
 // GET Route: Profile Rendering View Connection Endpoint
 router.get('/profile', requireLogin, async (req, res) => {
-    // Passes user details down alongside profile tab highlight tracking flags
     res.render('profile', { user: res.locals.user, userRole: req.session.userRole, activePage: 'profile' });
 });
 
@@ -80,78 +75,5 @@ router.get('/group-details', requireLogin, (req, res) => {
 router.get('/shared-materials', requireLogin, (req, res) => {
     res.render('sharedMaterials', { user: res.locals.user, userRole: req.session.userRole, activePage: 'shared-materials' });
 });
-
-// ===================================================
-// 🎓 FIXED ROUTE: GPA CALCULATOR WITH LOGIN FIX
-// ===================================================
-router.get('/gpa-calculator', requireLogin, (req, res) => {
-    res.render('gpa-calculator', { 
-        user: res.locals.user, 
-        userRole: req.session.userRole || 'students', // Ensure role state doesn't drop
-        activePage: 'gpa-calculator' 
-    });
-});
-
-// GET Route: Project Manager Core Data Pipeline View Loader
-router.get('/project-manager', requireLogin, async (req, res) => {
-    try {
-        // Strict safe authorization gate: non-students get redirected to dashboard instantly
-        if (req.session.userRole !== 'students') {
-            return res.redirect('/dashboard');
-        }
-
-        const studentId = req.session.userId;
-        const db = await connectToDatabase();
-
-        // Pipeline aggregation: isolate user project contexts cleanly from MongoDB
-        const studentProjects = await db.collection('projects').aggregate([
-            {
-                $match: { "tasks.assignedStudent": new ObjectId(studentId) }
-            },
-            {
-                $project: {
-                    projectName: 1,
-                    description: 1,
-                    tasks: {
-                        $filter: {
-                            input: "$tasks",
-                            as: "task",
-                            cond: { $eq: ["$$task.assignedStudent", new ObjectId(studentId)] }
-                        }
-                    }
-                }
-            }
-        ]).toArray();
-
-        // Cumulative analytics tracking initialization 
-        let totalProgress = 0;
-        let totalTasksCount = 0;
-
-        studentProjects.forEach(p => {
-            if (p.tasks) {
-                p.tasks.forEach(t => {
-                    totalProgress += (t.completionPercentage || 0);
-                    totalTasksCount++;
-                });
-            }
-        });
-
-        const overallProgress = totalTasksCount > 0 ? Math.round(totalProgress / totalTasksCount) : 0;
-
-        res.render('project-manager', { 
-            user: res.locals.user, 
-            userRole: req.session.userRole,
-            projects: studentProjects,
-            overallProgress: overallProgress,
-            activePage: 'project-manager'
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Server Error loading Project Manager layout views.");
-    }
-});
-
-//export default router;
-
 
 export default router; // <-- This MUST stay at the very, very bottom
