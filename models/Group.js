@@ -3,11 +3,11 @@ import { connectToDatabase } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 
 const COLLECTION = 'study_groups';
-
+// models/Group.js - Update createGroup to include academic_year
 export async function createGroup(groupData) {
     const db = await connectToDatabase();
     
-    // Get the creator's details
+    // Get the creator's details from students collection
     const creator = await db.collection('students').findOne({ 
         _id: new ObjectId(groupData.createdBy) 
     });
@@ -20,6 +20,7 @@ export async function createGroup(groupData) {
         createdBy: new ObjectId(groupData.createdBy),
         createdByName: creator?.name || 'Unknown',
         major: creator?.major || 'Computer Science',
+        academic_year: creator?.academic_year || null,  // ← ADD THIS FIELD
         members: [new ObjectId(groupData.createdBy)],
         memberNames: [creator?.name || 'Unknown'],
         status: 'active',
@@ -35,25 +36,30 @@ export async function createGroup(groupData) {
     const result = await db.collection('study_groups').insertOne(newGroup);
     return { _id: result.insertedId, ...newGroup };
 }
+// models/Group.js - Update getUserGroups to filter by major AND academic_year
 export async function getUserGroups(userId) {
     const db = await connectToDatabase();
     
-    // Get the user's major
+    // Get the user's details
     const user = await db.collection('students').findOne({ 
         _id: new ObjectId(userId) 
     });
     
-    const userMajor = user?.major || 'Computer Science';
+    if (!user) return [];
     
-    // Get groups the user is a member of
+    const userMajor = user.major || 'Computer Science';
+    const userYear = user.academic_year;
+    
+    // Get groups the user is a member of (always show regardless of year)
     const myGroups = await db.collection('study_groups').find({
         members: new ObjectId(userId)
     }).toArray();
     
-    // Get available groups (same major, same or similar course, not a member)
+    // Get available groups: same major AND same academic_year, and not a member
     const availableGroups = await db.collection('study_groups').find({
-        major: userMajor,  // Same major only
-        members: { $ne: new ObjectId(userId) }  // Not a member
+        major: userMajor,
+        academic_year: userYear,  // ← ADD YEAR FILTER
+        members: { $ne: new ObjectId(userId) }
     }).toArray();
     
     // Combine both, marking status
@@ -64,15 +70,35 @@ export async function getUserGroups(userId) {
     
     return allGroups;
 }
+// models/Group.js - Update joinGroup function
 export async function joinGroup(groupId, userId) {
     const db = await connectToDatabase();
     
-    const result = await db.collection(COLLECTION).updateOne(
+    // Get user's name
+    const user = await db.collection('students').findOne({ 
+        _id: new ObjectId(userId) 
+    });
+    
+    // First, ensure messages and resources arrays exist
+    await db.collection('study_groups').updateOne(
         { _id: new ObjectId(groupId) },
         { 
-            $addToSet: { members: new ObjectId(userId) },
-            $inc: { memberCount: 1 },
-            $set: { status: 'joined' }
+            $setOnInsert: { 
+                messages: [], 
+                resources: [] 
+            }
+        }
+    );
+    
+    // Then add the member
+    const result = await db.collection('study_groups').updateOne(
+        { _id: new ObjectId(groupId) },
+        { 
+            $addToSet: { 
+                members: new ObjectId(userId),
+                memberNames: user?.name || 'Unknown'
+            },
+            $inc: { memberCount: 1 }
         }
     );
     

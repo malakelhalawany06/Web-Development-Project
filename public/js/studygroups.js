@@ -212,7 +212,7 @@ if (form) {
         
         const currentUser = UserManager.getCurrentUser();
         const major = currentUser?.major || 'Computer Science';
-        
+        const academicYear = currentUser?.academic_year || 1; 
         // Map major to category for filtering
         const category = categoryMap[major] || 'cs';
         
@@ -225,6 +225,7 @@ if (form) {
                     course: groupCourse,
                     category: category,
                     major: major,
+                    academic_year: academicYear,
                     description: groupDescription
                 })
             });

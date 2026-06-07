@@ -48,18 +48,26 @@ function updateCounters() {
     document.getElementById('memberCount').innerText = currentGroup.members?.length || 0;
 }
 
+// group-details.js - Check this function
 async function loadMembers() {
     try {
         const response = await fetch(`/api/groups/${groupId}/members`);
         const members = await response.json();
         const memberList = document.getElementById('memberList');
+        
         if (members.length === 0) {
-            memberList.innerHTML = '<div>No members</div>';
+            memberList.innerHTML = '<div style="color: var(--text3);">No members found</div>';
             return;
         }
-        memberList.innerHTML = members.map(m => `<span class="member-badge">👤 ${escapeHtml(m.name)}</span>`).join('');
+        
+        memberList.innerHTML = members.map(m => `
+            <div class="member-badge">
+                👤 ${escapeHtml(m.name)}
+            </div>
+        `).join('');
     } catch (error) {
-        console.error(error);
+        console.error('Error loading members:', error);
+        document.getElementById('memberList').innerHTML = '<div style="color: var(--danger);">Failed to load members</div>';
     }
 }
 
