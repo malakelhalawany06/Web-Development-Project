@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { connectToDatabase } from './config/db.js';
 import { findById } from './models/userModel.js';
+import mongoose from 'mongoose'; // ✅ ADDED: Global Mongoose import
 
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
@@ -13,7 +14,7 @@ import apiRoutes from './routes/apiRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
 import fileRoutes from './routes/fileRoutes.js';
 import sharedRoutes from './routes/sharedRoutes.js';
-import profileRoutes from './routes/profileRoutes.js'; // 💡 1. IMPORT PROFILE ROUTES
+import profileRoutes from './routes/profileRoutes.js'; 
 import subjectRoutes from './routes/subjectRoutes.js';
 import qaRoutes from './routes/Q&ARoutes.js';
 import remindersRoutes from './routes/remindersRoutes.js';
@@ -77,7 +78,7 @@ app.use(async (req, res, next) => {
 // ------------------------------------------------------------------
 app.use('/', authRoutes);        // Authenticate requests before page routing triggers
 app.use('/', pageRoutes);        // Mounts front page layout views
-app.use('/personal-info', profileRoutes); // 💡 2. MOUNT PROFILE ROUTER (Base URL path is now /profile)
+app.use('/personal-info', profileRoutes); // Base URL path is now /profile
 
 // APPLIES ROUTING PATH FOR BUTTON ACTIONS TO TALK TO MONGO INTERFACES
 app.use('/api', apiRoutes); 
@@ -89,7 +90,18 @@ app.use('/api/subjects', subjectRoutes);
 app.use('/qa', qaRoutes);
 app.use('/reminders', remindersRoutes);
 
-connectToDatabase().then(() => {
+// ------------------------------------------------------------------
+// DATABASE CONNECTION INITIALIZATION BLOCK (Safely adapted)
+// ------------------------------------------------------------------
+connectToDatabase().then(async () => {
+    // ✅ ADDED: Sync global mongoose connection string using existing environment keys
+    if (mongoose.connection.readyState === 0) {
+        await mongoose.connect(process.env.DB_URI, {
+            dbName: process.env.DB_NAME
+        });
+        console.log('✅ Mongoose Sync Complete');
+    }
+
     app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
 }).catch(err => {
     console.error('Failed to connect to database:', err);
