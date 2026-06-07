@@ -1,102 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LoomHub — Admin Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/project web.css">
-  <script src="/js/users.js"></script>
-  <%#<script src="/js/personalInfo.js"></script>%>
-  <script src="project web.js"></script>
-  <script src="/js/project web trial 1.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LoomHub — Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/project web.css">
+    <link rel="stylesheet" href="/css/admin-dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="layout">
+<body>
+    <div class="layout">
+        <%- include('partials/sidebar-admin', { activePage: 'dashboard' }) %>
 
-  <%- include('partials/sidebar-admin', { activePage: 'dashboard' }) %>
+        <div class="main">
+            <%- include('partials/topbar', { user: locals.user, userRole: userRole }) %>
 
-  <div class="main">
-    <%- include('partials/topbar', { user: locals.user, userRole: userRole }) %>
+            <main class="main-content">
 
-    <div class="content">
-      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
-        
-        <div class="stat-card">
-          <div class="stat-icon">👥</div>
-          <div class="stat-val" id="totalStudents"><%= stats.totalStudents %></div>
-          <div class="stat-label">Total Students</div>
-          <div class="stat-change">↑ +42 this month</div>
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h1>Welcome back, <%= user.firstName || 'Admin' %> 👋</h1>
+                        <p>Here's what's happening across LoomHub today.</p>
+                    </div>
+                    <div class="welcome-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="currentDate"></span>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Students</span>
+                            <span class="stat-value"><%= stats.totalStudents || 0 %></span>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> +42 this month
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-chalkboard-user"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Instructors</span>
+                            <span class="stat-value"><%= stats.totalInstructors || 0 %></span>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> +5 this month
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Courses</span>
+                            <span class="stat-value"><%= stats.totalCourses || 0 %></span>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> Active
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-circle-dot"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Active Today</span>
+                            <span class="stat-value"><%= stats.activeToday || 0 %></span>
+                        </div>
+                        <div class="stat-change">
+                            <i class="fas fa-clock"></i> Last 24h
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon teal">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Assignments Today</span>
+                            <span class="stat-value"><%= stats.assignmentsToday || 0 %></span>
+                        </div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> Submitted
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Pending Grading</span>
+                            <span class="stat-value"><%= stats.pendingGrading || 0 %></span>
+                        </div>
+                        <div class="stat-change negative">
+                            <i class="fas fa-exclamation-circle"></i> Needs attention
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="section-title">Quick Actions</div>
+                <div class="quick-actions">
+                    <a href="/admin/analytics" class="action-card">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </a>
+                    <a href="/admin/users" class="action-card">
+                        <i class="fas fa-users-cog"></i>
+                        <span>User Management</span>
+                    </a>
+                    <a href="/admin/analytics" class="action-card">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Reports</span>
+                    </a>
+                    <a href="/admin/users" class="action-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Permissions</span>
+                    </a>
+                </div>
+
+            </main>
         </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">🟢</div>
-          <div class="stat-val" id="activeToday"><%= stats.activeToday %></div>
-          <div class="stat-label">Active Students Today</div>
-          <div class="stat-change">↑ 15% higher than average</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">📚</div>
-          <div class="stat-val" id="totalCourses"><%= stats.totalCourses %></div>
-          <div class="stat-label">Total Courses</div>
-          <div class="stat-change">↑ +3 new this semester</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">📈</div>
-          <div class="stat-val" id="completionRate"><%= stats.completionRate %>%</div>
-          <div class="stat-label">Course Completion Rate</div>
-          <div class="stat-change">↑ +2.4% vs last year</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">📝</div>
-          <div class="stat-val" id="assignmentsToday"><%= stats.assignmentsToday %></div>
-          <div class="stat-label">Assignments Submitted Today</div>
-          <div class="stat-change warn" id="pendingGrading"><%= stats.pendingGrading %> pending grading</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">🎯</div>
-          <div class="stat-val" id="avgScore"><%= stats.avgScore %></div>
-          <div class="stat-label">Average Student Score</div>
-          <div class="stat-change">↑ +1.2 points overall</div>
-        </div>
-
-      </div>
-
-      <div class="main-grid" style="grid-template-columns: 1fr;">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">⚡ Quick Actions</span>
-          </div>
-          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="window.location.href='/admin/courses/new'">➕ Create Course</button>
-            <button class="btn btn-ghost" onclick="window.location.href='/admin/instructors/add'">👨‍🏫 Add Instructor</button>
-            <button class="btn btn-ghost" onclick="window.location.href='/admin/announcements/new'">📢 Send Announcement</button>
-            <button class="btn btn-ghost" onclick="window.location.href='/admin/reports'">📊 Export Reports</button>
-            <button class="btn btn-ghost" onclick="window.location.href='/admin/users'">👥 Manage Users</button>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top: 1.25rem;">
-          <div class="card-header">
-            <span class="card-title">📋 System Activity Logging</span>
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;" onclick="window.location.href='/admin/activity-logs'">View All</button>
-          </div>
-          <table class="admin-table">
-            <thead>
-              <tr><th>Event</th><th>User</th><th>Time</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>New Course Created: Network Security</td><td>Dr. Sarah Connor</td><td>10 mins ago</td><td><span class="status-pill pill-green">Success</span></td></tr>
-              <tr><td>Bulk User Import</td><td>System Admin</td><td>1 hour ago</td><td><span class="status-pill pill-green">Completed</span></td></tr>
-              <tr><td>Failed Login Attempt</td><td>Unknown (IP: 192.168.1.1)</td><td>2 hours ago</td><td><span class="status-pill pill-warn">Flagged</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
-  </div>
+
+    <script src="/js/admin-dashboard.js"></script>
 </body>
 </html>

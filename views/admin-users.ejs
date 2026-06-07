@@ -1,143 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LoomHub — User Management</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/project web.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    .users-table { width: 100%; border-collapse: collapse; }
-    .users-table th, .users-table td { padding: 12px; text-align: left; border-bottom: 1px solid #2a313e; }
-    .users-table th { color: #94a3b8; font-weight: 500; }
-    .user-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .action-btn { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; }
-    .action-btn:hover { background: #2a313e; }
-    .status-badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
-    .status-active { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-    .status-suspended { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-    .status-banned { background: rgba(100, 100, 100, 0.2); color: #aaa; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: #161b22; border-radius: 12px; padding: 24px; width: 400px; max-width: 90%; }
-    .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; }
-    .close-modal { cursor: pointer; font-size: 1.5rem; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 6px; color: #94a3b8; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; background: #0d1117; border: 1px solid #2a313e; border-radius: 6px; color: white; }
-    .btn-primary { background: #3b82f6; border: none; padding: 8px 16px; border-radius: 6px; color: white; cursor: pointer; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LoomHub — User Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/project web.css">
+    <link rel="stylesheet" href="/css/admin-users.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="layout">
-  <%- include('partials/sidebar-admin', { activePage: 'users' }) %>
-  <div class="main">
-    <%- include('partials/topbar', { user: locals.user, userRole: userRole }) %>
-    <div class="content">
-      <h1 style="margin-bottom: 24px;">User Management</h1>
-      <div style="overflow-x: auto;">
-        <table class="users-table">
-          <thead>
-            <tr><th>Name</th><th>Username/Email</th><th>Role</th><th>Status</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            <% users.forEach(u => { %>
-              <tr data-id="<%= u._id %>" data-collection="<%= u.collection %>">
-                <td><%= u.name || 'N/A' %></td>
-                <td><%= u.email || u.username || 'N/A' %></td>
-                <td><%= u.role %></td>
-                <td><span class="status-badge status-<%= u.status || 'active' %>"><%= u.status || 'active' %></span></td>
-                <td class="user-actions">
-                  <button class="action-btn" onclick="changeStatus(this, 'active')" title="Activate"><i class="fas fa-check-circle" style="color:#22c55e;"></i></button>
-                  <button class="action-btn" onclick="changeStatus(this, 'suspended')" title="Suspend"><i class="fas fa-pause-circle" style="color:#f59e0b;"></i></button>
-                  <button class="action-btn" onclick="changeStatus(this, 'banned')" title="Ban"><i class="fas fa-ban" style="color:#ef4444;"></i></button>
-                  <button class="action-btn" onclick="deleteUser(this)" title="Delete"><i class="fas fa-trash-alt" style="color:#ef4444;"></i></button>
-                  <button class="action-btn" onclick="resetPassword(this)" title="Reset Password"><i class="fas fa-key"></i></button>
-                  <button class="action-btn" onclick="forceReset(this)" title="Force password reset on next login"><i class="fas fa-sync-alt"></i></button>
-                  <button class="action-btn" onclick="logoutAll(this)" title="Logout from all devices"><i class="fas fa-sign-out-alt"></i></button>
-                  <button class="action-btn" onclick="showWarningModal(this)" title="Send warning"><i class="fas fa-exclamation-triangle"></i></button>
-                  <button class="action-btn" onclick="toggleRestrict(this)" title="Restrict posting/commenting"><i class="fas fa-lock"></i></button>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
+<body>
+    <div class="layout">
+        <%- include('partials/sidebar-admin', { activePage: 'users' }) %>
+
+        <div class="main">
+            <%- include('partials/topbar', { user: locals.user, userRole: userRole }) %>
+
+            <main class="main-content">
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1>User Management</h1>
+                        <p>Manage all students, instructors, and admins</p>
+                    </div>
+                    <div class="header-stats">
+                        <span class="badge blue"><i class="fas fa-users"></i> <%= locals.users ? locals.users.length : 0 %> Total</span>
+                    </div>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="tab-btn active" data-filter="all">All Users</button>
+                    <button class="tab-btn" data-filter="student">Students</button>
+                    <button class="tab-btn" data-filter="instructor">Instructors</button>
+                    <button class="tab-btn" data-filter="admin">Admins</button>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="userSearch" placeholder="Search by name, email, or role..." />
+                </div>
+
+                <!-- Users Table -->
+                <div class="table-wrapper">
+                    <table class="users-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email / Username</th>
+                                <th>Role</th>
+                                <th>Uni Year / Major</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (locals.users && locals.users.length > 0) { %>
+                                <% users.forEach(u => { %>
+                                    <tr data-id="<%= u._id %>" data-collection="<%= u.collection %>" data-role="<%= u.role %>">
+                                        <td class="user-cell">
+                                            <div class="user-avatar">
+                                                <% if (u.profile_picture) { %>
+                                                    <img src="<%= u.profile_picture %>" alt="avatar" />
+                                                <% } else { %>
+                                                    <div class="avatar-placeholder">
+                                                        <%= (u.firstName || u.name || '?')[0].toUpperCase() %>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                            <div class="user-name">
+                                                <%= u.firstName ? `${u.firstName} ${u.lastName || ''}` : (u.name || 'N/A') %>
+                                            </div>
+                                        </td>
+                                        <td><%= u.email || u.username || 'N/A' %></td>
+                                        <td>
+                                            <span class="role-badge role-<%= u.role %>">
+                                                <i class="fas <%= u.role === 'student' ? 'fa-graduation-cap' : u.role === 'instructor' ? 'fa-chalkboard-user' : 'fa-shield-alt' %>"></i>
+                                                <%= u.role %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <% if (u.role === 'student') { %>
+                                                Year <%= u.year || u.academic_year || 'N/A' %> · <%= u.major || 'N/A' %>
+                                            <% } else { %>
+                                                —
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-<%= u.status || 'active' %>">
+                                                <i class="fas fa-circle"></i>
+                                                <%= u.status || 'active' %>
+                                            </span>
+                                        </td>
+                                        <td class="actions-cell">
+                                            <button class="action-btn green" onclick="changeStatus(this, 'active')" title="Activate">
+                                                <i class="fas fa-check-circle"></i>
+                                            </button>
+                                            <button class="action-btn yellow" onclick="changeStatus(this, 'suspended')" title="Suspend">
+                                                <i class="fas fa-pause-circle"></i>
+                                            </button>
+                                            <button class="action-btn red" onclick="changeStatus(this, 'banned')" title="Ban">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                            <button class="action-btn red" onclick="deleteUser(this)" title="Delete">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <button class="action-btn blue" onclick="resetPassword(this)" title="Reset Password">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                            <button class="action-btn blue" onclick="forceReset(this)" title="Force reset on next login">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </button>
+                                            <button class="action-btn gray" onclick="logoutAll(this)" title="Logout all devices">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                            </button>
+                                            <button class="action-btn yellow" onclick="showWarningModal(this)" title="Send warning">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            </button>
+                                            <button class="action-btn gray" onclick="toggleRestrict(this)" title="Restrict posting">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="empty-state">
+                                        <i class="fas fa-users-slash"></i>
+                                        <p>No users found.</p>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+
+            </main>
+        </div>
     </div>
-  </div>
 
-  <!-- Warning Modal -->
-  <div id="warningModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header"><h3>Send Warning</h3><span class="close-modal" onclick="closeModal()">&times;</span></div>
-      <div class="form-group"><label>Warning message</label><textarea id="warningMsg" rows="3" placeholder="Enter warning..."></textarea></div>
-      <button class="btn-primary" onclick="sendWarning()">Send</button>
+    <!-- Warning Modal -->
+    <div id="warningModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Send Warning</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="form-group">
+                <label>Warning Message</label>
+                <textarea id="warningMsg" rows="4" placeholder="Enter your warning message..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="sendWarning()">
+                <i class="fas fa-paper-plane"></i> Send Warning
+            </button>
+        </div>
     </div>
-  </div>
 
-  <script>
-    let currentUserRow = null;
-    let currentCollection = null;
-    let currentUserId = null;
-
-    function getRowData(btn) {
-      const row = btn.closest('tr');
-      return { row, id: row.dataset.id, collection: row.dataset.collection };
-    }
-
-    async function apiCall(endpoint, body) {
-      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const data = await res.json();
-      if (data.success) alert('Success');
-      else alert('Error: ' + (data.error || 'Unknown'));
-      return data;
-    }
-
-    function changeStatus(btn, status) {
-      const { id, collection } = getRowData(btn);
-      apiCall('/admin/users/status', { id, collection, status }).then(() => location.reload());
-    }
-    function deleteUser(btn) {
-      if (!confirm('Permanently delete this user?')) return;
-      const { id, collection } = getRowData(btn);
-      apiCall('/admin/users/delete', { id, collection }).then(() => location.reload());
-    }
-    async function resetPassword(btn) {
-      const { id, collection } = getRowData(btn);
-      const res = await apiCall('/admin/users/reset-password', { id, collection });
-      if (res.tempPassword) alert(`Temporary password: ${res.tempPassword}`);
-    }
-    function forceReset(btn) {
-      const { id, collection } = getRowData(btn);
-      apiCall('/admin/users/force-reset', { id, collection });
-    }
-    function logoutAll(btn) {
-      const { id } = getRowData(btn);
-      apiCall('/admin/users/logout-all', { userId: id });
-    }
-    function showWarningModal(btn) {
-      const { id, collection } = getRowData(btn);
-      currentUserId = id;
-      currentCollection = collection;
-      document.getElementById('warningModal').style.display = 'flex';
-    }
-    function sendWarning() {
-      const message = document.getElementById('warningMsg').value;
-      if (!message) return alert('Enter a message');
-      apiCall('/admin/users/send-warning', { id: currentUserId, collection: currentCollection, message }).then(() => {
-        closeModal();
-        alert('Warning sent');
-      });
-    }
-    function toggleRestrict(btn) {
-      const { id, collection } = getRowData(btn);
-      const restrict = confirm('Restrict this user from posting/commenting?') ? true : false;
-      apiCall('/admin/users/restrict', { id, collection, restrict });
-    }
-    function closeModal() {
-      document.getElementById('warningModal').style.display = 'none';
-      document.getElementById('warningMsg').value = '';
-    }
-    window.onclick = function(e) { if (e.target === document.getElementById('warningModal')) closeModal(); }
-  </script>
+    <script src="/js/admin-users.js"></script>
 </body>
 </html>
