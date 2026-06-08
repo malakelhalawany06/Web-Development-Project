@@ -26,7 +26,7 @@ export const getSharedFilesController = async (req, res) => {
         const db = await connectToDatabase();
         const userId = req.session.userId;
         
-        // Get user to check major and year
+        // Get user info
         let user = await db.collection('students').findOne({ 
             _id: new ObjectId(userId) 
         });
@@ -41,24 +41,41 @@ export const getSharedFilesController = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        // Get hidden file IDs from hidden_files collection
-        const hiddenEntries = await db.collection('hidden_files')
+        // Get files this user has hidden (from hidden_files collection)
+        const hiddenFiles = await db.collection('hidden_files')
             .find({ userId: new ObjectId(userId) })
             .toArray();
         
-        const hiddenFileIds = hiddenEntries.map(entry => entry.fileId);
+        const hiddenFileIds = hiddenFiles.map(h => h.fileId);
         
-        // Get files, excluding hidden ones
+        // Get all permanently deleted files (from deleted_files collection)
+        const deletedFiles = await db.collection('deleted_files')
+            .find({})
+            .toArray();
+        
+        const deletedFileIds = deletedFiles.map(d => d.fileId);
+        
+        // Combine both: don't show hidden files OR permanently deleted files
+        const excludeFileIds = [...hiddenFileIds, ...deletedFileIds];
+        
+        // Get files filtered by major, year, and excluding hidden/deleted
         const files = await db.collection('notes_files')
             .find({ 
                 sharedByMajor: user.major,
                 sharedByYear: user.academic_year,
-                _id: { $nin: hiddenFileIds }
+                _id: { $nin: excludeFileIds }
             })
             .sort({ createdAt: -1 })
             .toArray();
         
-        res.json(files);
+        // Add ownership info for frontend
+        const filesWithOwnership = files.map(file => ({
+            ...file,
+            isOwner: file.sharedById?.toString() === userId
+        }));
+        
+        res.json(filesWithOwnership);
+        
     } catch (error) {
         console.error('Error getting shared files:', error);
         res.status(500).json({ error: error.message });
@@ -211,9 +228,82 @@ export const deleteFileController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
     try {
-        await deleteFile(req.params.id, req.session.userId);
-        res.json({ success: true });
+        const db = await connectToDatabase();
+        const fileId = req.params.id;
+        const userId = req.session.userId;
+        
+        // Get the file
+        const file = await db.collection('notes_files').findOne({ 
+            _id: new ObjectId(fileId) 
+        });
+        
+        if (!file) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+        
+        // Check if user is the owner
+        const isOwner = file.sharedById?.toString() === userId;
+        
+        if (isOwner) {
+            // OWNER: Permanently delete for everyone
+            
+            // 1. Add to deleted_files collection
+            await db.collection('deleted_files').insertOne({
+                fileId: new ObjectId(fileId),
+                deletedBy: new ObjectId(userId),
+                fileName: file.fileName,
+                fileSize: file.fileSize,
+                sharedBy: file.sharedBy,
+                sharedByMajor: file.sharedByMajor,
+                sharedByYear: file.sharedByYear,
+                deletedAt: new Date()
+            });
+            
+            // 2. Remove any hidden entries for this file (cleanup)
+            await db.collection('hidden_files').deleteMany({
+                fileId: new ObjectId(fileId)
+            });
+            
+            // 3. Delete the actual file from notes_files
+            await db.collection('notes_files').deleteOne({ 
+                _id: new ObjectId(fileId) 
+            });
+            
+            res.json({ 
+                success: true, 
+                message: 'File permanently deleted for everyone',
+                deletedForEveryone: true
+            });
+            
+        } else {
+            // NON-OWNER: Just hide it from their view
+            
+            // Check if already hidden
+            const existing = await db.collection('hidden_files').findOne({
+                fileId: new ObjectId(fileId),
+                userId: new ObjectId(userId)
+            });
+            
+            if (existing) {
+                return res.status(400).json({ error: 'File already hidden from your view' });
+            }
+            
+            // Add to hidden_files collection
+            await db.collection('hidden_files').insertOne({
+                fileId: new ObjectId(fileId),
+                userId: new ObjectId(userId),
+                hiddenAt: new Date()
+            });
+            
+            res.json({ 
+                success: true, 
+                message: 'File hidden from your view',
+                hiddenForUser: true
+            });
+        }
+        
     } catch (error) {
+        console.error('Error in delete/hide operation:', error);
         res.status(500).json({ error: error.message });
     }
 };
