@@ -46,7 +46,8 @@ async function getQApage(req, res) {
     res.render('Q&A', { 
       questions, 
       currentFilter, 
-      currentUser 
+      currentUser,
+      activePage: 'Q&A'
     });
   } catch (err) {
     console.error("❌ Error fetching filtered Q&A data:", err);

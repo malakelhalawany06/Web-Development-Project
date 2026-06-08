@@ -5,7 +5,7 @@ export const getGpaPage = (req, res) => {
     res.render('gpa-calculator', { 
         user: res.locals.user, 
         userRole: req.session.userRole || 'students', 
-        activePage: 'gpa-calculator' 
+        activePage: 'gpaCalculator' 
     });
 };
 
