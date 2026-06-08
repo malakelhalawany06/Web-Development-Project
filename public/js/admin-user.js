@@ -152,3 +152,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
+// Replace your existing showWarningModal / closeModal functions with these
+
+let warningTargetRow = null;
+
+function showWarningModal(btn) {
+    warningTargetRow = btn.closest('tr');
+    document.getElementById('warningMsg').value = '';
+    document.getElementById('warningModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('warningModal').classList.remove('active');
+    warningTargetRow = null;
+}
+
+// Close when clicking the backdrop
+document.getElementById('warningModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});

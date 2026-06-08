@@ -16,7 +16,7 @@
         <div class="main">
             <%- include('partials/topbar', { user: locals.user, userRole: userRole }) %>
 
-            <main class="main-content">
+            <div class="content">
 
                 <!-- Page Header -->
                 <div class="page-header">
@@ -25,7 +25,7 @@
                         <p>Manage all students, instructors, and admins</p>
                     </div>
                     <div class="header-stats">
-                        <span class="badge blue"><i class="fas fa-users"></i> <%= locals.users ? locals.users.length : 0 %> Total</span>
+                        <span class="um-badge"><i class="fas fa-users"></i> <%= locals.users ? locals.users.length : 0 %> Total</span>
                     </div>
                 </div>
 
@@ -38,7 +38,7 @@
                 </div>
 
                 <!-- Search Bar -->
-                <div class="search-bar">
+                <div class="um-search-bar">
                     <i class="fas fa-search"></i>
                     <input type="text" id="userSearch" placeholder="Search by name, email, or role..." />
                 </div>
@@ -95,33 +95,15 @@
                                             </span>
                                         </td>
                                         <td class="actions-cell">
-                                            <button class="action-btn green" onclick="changeStatus(this, 'active')" title="Activate">
-                                                <i class="fas fa-check-circle"></i>
-                                            </button>
-                                            <button class="action-btn yellow" onclick="changeStatus(this, 'suspended')" title="Suspend">
-                                                <i class="fas fa-pause-circle"></i>
-                                            </button>
-                                            <button class="action-btn red" onclick="changeStatus(this, 'banned')" title="Ban">
-                                                <i class="fas fa-ban"></i>
-                                            </button>
-                                            <button class="action-btn red" onclick="deleteUser(this)" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                            <button class="action-btn blue" onclick="resetPassword(this)" title="Reset Password">
-                                                <i class="fas fa-key"></i>
-                                            </button>
-                                            <button class="action-btn blue" onclick="forceReset(this)" title="Force reset on next login">
-                                                <i class="fas fa-sync-alt"></i>
-                                            </button>
-                                            <button class="action-btn gray" onclick="logoutAll(this)" title="Logout all devices">
-                                                <i class="fas fa-sign-out-alt"></i>
-                                            </button>
-                                            <button class="action-btn yellow" onclick="showWarningModal(this)" title="Send warning">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                            </button>
-                                            <button class="action-btn gray" onclick="toggleRestrict(this)" title="Restrict posting">
-                                                <i class="fas fa-lock"></i>
-                                            </button>
+                                            <button class="action-btn green"   onclick="changeStatus(this,'active')"    title="Activate"><i class="fas fa-check-circle"></i></button>
+                                            <button class="action-btn yellow"  onclick="changeStatus(this,'suspended')" title="Suspend"><i class="fas fa-pause-circle"></i></button>
+                                            <button class="action-btn red"     onclick="changeStatus(this,'banned')"    title="Ban"><i class="fas fa-ban"></i></button>
+                                            <button class="action-btn red"     onclick="deleteUser(this)"               title="Delete"><i class="fas fa-trash-alt"></i></button>
+                                            <button class="action-btn blue"    onclick="resetPassword(this)"            title="Reset Password"><i class="fas fa-key"></i></button>
+                                            <button class="action-btn blue"    onclick="forceReset(this)"               title="Force reset on next login"><i class="fas fa-sync-alt"></i></button>
+                                            <button class="action-btn gray"    onclick="logoutAll(this)"                title="Logout all devices"><i class="fas fa-sign-out-alt"></i></button>
+                                            <button class="action-btn yellow"  onclick="showWarningModal(this)"         title="Send warning"><i class="fas fa-exclamation-triangle"></i></button>
+                                            <button class="action-btn gray"    onclick="toggleRestrict(this)"           title="Restrict posting"><i class="fas fa-lock"></i></button>
                                         </td>
                                     </tr>
                                 <% }) %>
@@ -137,24 +119,27 @@
                     </table>
                 </div>
 
-            </main>
-        </div>
-    </div>
+            </div><!-- end .content -->
+        </div><!-- end .main -->
+    </div><!-- end .layout -->
 
-    <!-- Warning Modal -->
-    <div id="warningModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <!-- Warning Modal — outside .layout so it overlays everything -->
+    <div id="warningModal" class="um-modal">
+        <div class="um-modal-box">
+            <div class="um-modal-header">
                 <h3><i class="fas fa-exclamation-triangle"></i> Send Warning</h3>
-                <span class="close-modal" onclick="closeModal()">&times;</span>
+                <button class="um-modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
-            <div class="form-group">
+            <div class="um-modal-body">
                 <label>Warning Message</label>
                 <textarea id="warningMsg" rows="4" placeholder="Enter your warning message..."></textarea>
             </div>
-            <button class="btn-primary" onclick="sendWarning()">
-                <i class="fas fa-paper-plane"></i> Send Warning
-            </button>
+            <div class="um-modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="sendWarning()">
+                    <i class="fas fa-paper-plane"></i> Send Warning
+                </button>
+            </div>
         </div>
     </div>
 

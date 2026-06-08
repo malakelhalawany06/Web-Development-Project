@@ -17,7 +17,7 @@
         <div class="main">
             <%- include('partials/topbar', { user: locals.user, userRole: userRole }) %>
 
-            <main class="main-content">
+            <div class="content">
 
                 <!-- Stats Cards -->
                 <div class="analytics-grid">
@@ -69,19 +69,6 @@
                             <div class="stat-number"><%= locals.activeUsers || 0 %></div>
                             <div class="stat-trend">
                                 <i class="fas fa-clock"></i> Last 5 minutes
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(234,179,8,0.1); color:#eab308;">
-                            <i class="fas fa-user-clock"></i>
-                        </div>
-                        <div class="stat-details">
-                            <h3>Pending Accounts</h3>
-                            <div class="stat-number"><%= locals.pendingAccounts || 0 %></div>
-                            <div class="stat-trend negative">
-                                <i class="fas fa-exclamation-circle"></i> Awaiting approval
                             </div>
                         </div>
                     </div>
@@ -149,9 +136,9 @@
                     </div>
                 </div>
 
-            </main>
-        </div>
-    </div>
+            </div><!-- end .content -->
+        </div><!-- end .main -->
+    </div><!-- end .layout -->
 
     <script>
         window.initialStats = {
