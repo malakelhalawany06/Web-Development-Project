@@ -1,30 +1,25 @@
-// routes/adminRoutes.js
 import express from 'express';
-import { ObjectId } from 'mongodb';
-import bcrypt from 'bcrypt';
-import { connectToDatabase } from '../config/db.js';
 import {
-  getAdminDashboard,
-  getAnalytics,
-  getUserManagement,
-  updateUserStatus,
-  deleteUser,
-  resetPassword,
-  forceReset,
-  logoutAllDevices,
-  sendWarning,
-  restrictUser,
-  getGrowthDataAPI
+    getAdminDashboard,
+    getAnalytics,
+    getUserManagement,
+    updateUserStatus,
+    deleteUser,
+    resetPassword,
+    forceReset,
+    logoutAllDevices,
+    sendWarning,
+    restrictUser,
+    getGrowthDataAPI
 } from '../controllers/adminController.js';
 
 const router = express.Router();
 
-// Middleware to ensure admin role
 const requireAdmin = (req, res, next) => {
-  if (req.session.userRole !== 'admins') {
-    return res.status(403).send('Access denied. Admins only.');
-  }
-  next();
+    if (req.session.userRole !== 'admins') {
+        return res.status(403).send('Access denied. Admins only.');
+    }
+    next();
 };
 
 // ==================== PAGE ROUTES ====================
