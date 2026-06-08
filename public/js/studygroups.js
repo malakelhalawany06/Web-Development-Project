@@ -128,7 +128,7 @@ async function loadUserStudyGroups() {
             const joinedHeader = document.createElement('div');
             joinedHeader.className = 'section-header';
             joinedHeader.innerHTML = '<h3>📘 My Study Groups</h3>';
-            joinedHeader.style.gridColumn = '1/-1';
+            joinedHeader.style.gridColumn = '1/-1'; //stretch elements horizontally across the entire width of its CSS Grid container 
             groupsGrid.appendChild(joinedHeader);
             
             joinedGroups.forEach(group => {
