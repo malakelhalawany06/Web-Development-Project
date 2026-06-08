@@ -269,21 +269,12 @@ async function deleteFile(button) {
         fileCard.style.opacity = '0';
         
         setTimeout(() => {
-            fileCard.remove();
-            
-            // Update badge count
-            const remainingCards = document.querySelectorAll('.file-card:not([style*="opacity: 0"])').length;
-            
+            fileCard.remove();            
             // Show appropriate success message
             if (result.deletedForEveryone) {
                 alert(`✅ "${fileName}" has been permanently deleted for all users.`);
             } else if (result.hiddenForUser) {
                 alert(`✅ "${fileName}" has been hidden from your view.`);
-            }
-            
-            // Check if no files left
-            if (remainingCards === 0) {
-                showEmptyState();
             }
             
             // Update list view if active
