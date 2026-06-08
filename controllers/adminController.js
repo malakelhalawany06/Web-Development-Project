@@ -138,9 +138,27 @@ export const getUserManagement = async (req, res) => {
         const admins = await db.collection('admins').find({}).toArray();
 
         const users = [
-            ...students.map(u => ({ ...u, role: 'student', collection: 'students' })),
-            ...instructors.map(u => ({ ...u, role: 'instructor', collection: 'instructors' })),
-            ...admins.map(u => ({ ...u, role: 'admin', collection: 'admins' }))
+            ...students.map(u => ({ 
+                ...u, 
+                email: u.mail || u.email || 'N/A',
+                firstName: u.name || u.firstName || 'User',
+                role: 'student', 
+                collection: 'students' 
+            })),
+            ...instructors.map(u => ({ 
+                ...u, 
+                email: u.mail || u.email || 'N/A',
+                firstName: u.name || u.firstName || 'User',
+                role: 'instructor', 
+                collection: 'instructors' 
+            })),
+            ...admins.map(u => ({ 
+                ...u, 
+                email: u.mail || u.email || 'N/A',
+                firstName: u.name || u.firstName || 'User',
+                role: 'admin', 
+                collection: 'admins' 
+            }))
         ];
 
         res.render('admin-users', {
@@ -156,6 +174,32 @@ export const getUserManagement = async (req, res) => {
 };
 
 // ==================== API CONTROLLERS ====================
+
+// NEW: Edit function that saves data directly to the database
+export const editUser = async (req, res) => {
+    try {
+        const { id, collection, firstName, lastName, email } = req.body;
+        
+        if (!collection) return res.status(400).json({ success: false, error: 'Collection required' });
+
+        const db = await connectToDatabase();
+        const fullName = `${firstName} ${lastName}`.trim();
+
+        const result = await db.collection(collection).updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { name: fullName, mail: email } } 
+        );
+
+        if (result.matchedCount === 0) {
+            return res.json({ success: false, error: 'User not found in database' });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Edit error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
 
 export const updateUserStatus = async (req, res) => {
     try {
@@ -174,6 +218,7 @@ export const updateUserStatus = async (req, res) => {
     }
 };
 
+// FIXED: Deletes the user correctly
 export const deleteUser = async (req, res) => {
     try {
         const { id, collection } = req.body;
