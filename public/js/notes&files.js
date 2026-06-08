@@ -1,6 +1,5 @@
-// notes&files.js
-let API_ENDPOINT = window.notesApiEndpoint || '/api/files/shared';
 
+let API_ENDPOINT = window.notesApiEndpoint || '/api/files/shared';
 let currentFileCards = [];
 
 // Load subjects from database for filter chips (based on major AND academic_year)
@@ -9,12 +8,11 @@ async function loadSubjectsFromDB() {
     if (!user) return [];
     
     const major = user.major;
-    const academic_year = user.academic_year;  // Use academic_year
+    const academic_year = user.academic_year;
     
     console.log('Loading subjects for major:', major, 'year:', academic_year);
     
     try {
-        // Get subjects for this specific major AND academic_year
         const response = await fetch(`/api/subjects?major=${encodeURIComponent(major)}&year=${academic_year}`);
         if (!response.ok) throw new Error('Failed to load subjects');
         const subjects = await response.json();
@@ -43,10 +41,7 @@ function populateListView() {
         if (card.style.display !== 'none') {
             const fileName = card.querySelector('.file-name')?.innerText || '';
             const fileMeta = card.querySelector('.file-meta')?.innerText || '';
-            
-            // Expected format: "Data Structures • 2.4 MB • Shared by Ahmed K. • 6/1/2026"
             const parts = fileMeta.split(' • ');
-            
             const course = parts[0] || '';
             const sizeOnly = parts[1] || '';
             const sharedBy = parts[2] ? parts[2].replace('Shared by ', '') : '';
@@ -67,9 +62,7 @@ function populateListView() {
     });
 }
 
-// ===== API FUNCTIONS =====
-
-// Load shared files from API (filtered by major + academic_year)
+// Load shared files from API
 async function loadSharedFiles() {
     try {
         const response = await fetch(API_ENDPOINT);
@@ -81,15 +74,25 @@ async function loadSharedFiles() {
         
         filesGrid.innerHTML = '';
         
+        if (!files || files.length === 0) {
+            filesGrid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 2rem;">No shared materials available. Share your first material!</div>';
+            updateNotesFilesBadge(0);
+            return;
+        }
+        
         files.forEach(file => {
             const fileCard = createFileCard(file);
             filesGrid.appendChild(fileCard);
         });
         
         updateNotesFilesBadge(files.length);
-        
-        // Update filter chips after loading files
         await updateSubjectFilterChips();
+        
+        // Update list view if active
+        if (document.getElementById('listView')?.style.display === 'block') {
+            populateListView();
+        }
+        
     } catch (error) {
         console.error('Error loading files:', error);
         const filesGrid = document.getElementById('gridView');
@@ -100,8 +103,6 @@ async function loadSharedFiles() {
 }
 
 // Download file
-// notes&files.js - Update downloadFile function
-
 async function downloadFile(button) {
     const fileCard = button.closest('.file-card');
     const fileId = fileCard.dataset.id;
@@ -117,10 +118,7 @@ async function downloadFile(button) {
             throw new Error(error.error || 'Download failed');
         }
         
-        // Get the file blob from response
         const blob = await response.blob();
-        
-        // Create a download link
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -128,7 +126,6 @@ async function downloadFile(button) {
         document.body.appendChild(a);
         a.click();
         
-        // Clean up
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
         
@@ -144,12 +141,11 @@ function updateNotesFilesBadge(count) {
     if (badge) badge.textContent = count || 0;
 }
 
-// Update subject filter chips from database (based on major AND academic_year)
+// Update subject filter chips
 async function updateSubjectFilterChips() {
     const user = window.currentUser;
     if (!user) return;
     
-    // Load subjects for this specific major AND academic_year
     const subjects = await loadSubjectsFromDB();
     const filterSection = document.querySelector('.filter-section');
     
@@ -185,25 +181,27 @@ async function updateSubjectFilterChips() {
                 } else {
                     const fileSubject = card.querySelector('.file-meta')?.innerText.split('•')[0]?.trim().toLowerCase() || '';
                     const filterName = filterValue.replace(/_/g, ' ').toLowerCase();
-                    if (fileSubject.includes(filterName)) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                    card.style.display = fileSubject.includes(filterName) ? 'flex' : 'none';
                 }
             });
+            
+            // Update list view if active
+            if (document.getElementById('listView')?.style.display === 'block') {
+                populateListView();
+            }
         });
         
         filterSection.appendChild(chipDiv);
     });
 }
+
+// Create file card - ADDED data-is-owner attribute
 function createFileCard(file) {
     const fileCard = document.createElement('div');
     fileCard.className = 'file-card';
     fileCard.setAttribute('data-course', file.course);
     fileCard.setAttribute('data-id', file._id || file.id);
     
-    // Convert both to strings for comparison
     const uploaderId = file.uploadedBy?.toString() || file.sharedById?.toString() || '';
     fileCard.setAttribute('data-uploaded-by', uploaderId);
     
@@ -212,11 +210,10 @@ function createFileCard(file) {
     const fileSizeValue = file.fileSize || '0 MB';
     const date = file.createdAt ? new Date(file.createdAt).toLocaleDateString() : 'Unknown';
     
-    // Get current user ID as string
     const currentUserId = window.currentUser?.id?.toString() || '';
     const isOwner = uploaderId === currentUserId;
     
-    // ✅ ADD THIS LINE - Set the data-is-owner attribute
+    // ✅ IMPORTANT: Set the data-is-owner attribute
     fileCard.setAttribute('data-is-owner', isOwner);
     
     fileCard.innerHTML = `
@@ -235,44 +232,15 @@ function createFileCard(file) {
     `;
     return fileCard;
 }
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
 
-// View toggle
-function setView(view) {
-    const gridView = document.getElementById('gridView');
-    const listView = document.getElementById('listView');
-    const viewBtns = document.querySelectorAll('.view-btn');
-    
-    viewBtns.forEach(btn => btn.classList.remove('active'));
-    
-    if (view === 'grid') {
-        gridView.style.display = 'grid';
-        listView.style.display = 'none';
-        viewBtns[0].classList.add('active');
-    } else {
-        gridView.style.display = 'none';
-        listView.style.display = 'block';
-        viewBtns[1].classList.add('active');
-        populateListView();
-    }
-}
-// Smart delete: deletes for everyone if you're the owner, otherwise hides for you only
+// Delete/Hide file function - Updated with cleaner logic
 async function deleteFile(button) {
     const fileCard = button.closest('.file-card');
     if (!fileCard) return;
     
     const fileId = fileCard.dataset.id;
     const fileName = fileCard.querySelector('.file-name')?.innerText || 'file';
-    
-    // ✅ FIX: Get isOwner from dataset (as string, compare to 'true')
     const isOwner = fileCard.dataset.isOwner === 'true';
-    
-    console.log('Delete file - isOwner:', isOwner); // Add this for debugging
     
     // Different confirmation messages based on ownership
     const message = isOwner 
@@ -323,6 +291,11 @@ async function deleteFile(button) {
             if (remainingCards === 0) {
                 showEmptyState();
             }
+            
+            // Update list view if active
+            if (document.getElementById('listView')?.style.display === 'block') {
+                populateListView();
+            }
         }, 300);
         
     } catch (error) {
@@ -335,6 +308,55 @@ async function deleteFile(button) {
         deleteBtn.disabled = false;
     }
 }
+
+// Show empty state
+function showEmptyState() {
+    const filesGrid = document.getElementById('gridView');
+    if (filesGrid && filesGrid.children.length === 0) {
+        filesGrid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                <div class="empty-icon">📭</div>
+                <div style="color: var(--text3);">No shared materials available.</div>
+                <div style="font-size: 12px; color: var(--text3); margin-top: 8px;">
+                    <a href="/shared-materials" style="color: var(--accent);">Share your first material!</a>
+                </div>
+            </div>
+        `;
+    }
+    
+    const listView = document.getElementById('listView');
+    if (listView) {
+        listView.innerHTML = '';
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// View toggle
+function setView(view) {
+    const gridView = document.getElementById('gridView');
+    const listView = document.getElementById('listView');
+    const viewBtns = document.querySelectorAll('.view-btn');
+    
+    viewBtns.forEach(btn => btn.classList.remove('active'));
+    
+    if (view === 'grid') {
+        gridView.style.display = 'grid';
+        listView.style.display = 'none';
+        viewBtns[0].classList.add('active');
+    } else {
+        gridView.style.display = 'none';
+        listView.style.display = 'block';
+        viewBtns[1].classList.add('active');
+        populateListView();
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async function() {
     if (window.currentUser) {

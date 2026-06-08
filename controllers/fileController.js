@@ -18,6 +18,7 @@ export const getUserFilesController = async (req, res) => {
     }
 };
 
+// controllers/fileController.js - Update getSharedFilesController
 
 export const getSharedFilesController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
@@ -48,22 +49,16 @@ export const getSharedFilesController = async (req, res) => {
         
         const hiddenFileIds = hiddenFiles.map(h => h.fileId);
         
-        // Get all permanently deleted files (from deleted_files collection)
-        const deletedFiles = await db.collection('deleted_files')
-            .find({})
-            .toArray();
+        // NO deleted_files collection needed anymore!
+        // Owner-deleted files are completely removed from notes_files,
+        // so they won't appear in queries anyway.
         
-        const deletedFileIds = deletedFiles.map(d => d.fileId);
-        
-        // Combine both: don't show hidden files OR permanently deleted files
-        const excludeFileIds = [...hiddenFileIds, ...deletedFileIds];
-        
-        // Get files filtered by major, year, and excluding hidden/deleted
+        // Get files filtered by major, year, and excluding hidden files
         const files = await db.collection('notes_files')
             .find({ 
                 sharedByMajor: user.major,
                 sharedByYear: user.academic_year,
-                _id: { $nin: excludeFileIds }
+                _id: { $nin: hiddenFileIds }
             })
             .sort({ createdAt: -1 })
             .toArray();
@@ -82,6 +77,8 @@ export const getSharedFilesController = async (req, res) => {
     }
 };
 // Get instructor files (all files for instructor's major)
+// controllers/fileController.js - Update getInstructorFilesController
+
 export const getInstructorFilesController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
@@ -95,15 +92,17 @@ export const getInstructorFilesController = async (req, res) => {
             return res.status(404).json({ error: 'Instructor not found' });
         }
         
-        // Get hidden file IDs
-        const hiddenEntries = await db.collection('hidden_files')
+        // Get hidden file IDs for this instructor
+        const hiddenFiles = await db.collection('hidden_files')
             .find({ userId: new ObjectId(req.session.userId) })
             .toArray();
         
-        const hiddenFileIds = hiddenEntries.map(entry => entry.fileId);
+        const hiddenFileIds = hiddenFiles.map(entry => entry.fileId);
         
-        const instructorMajor = instructor?.major || instructor?.department || 'Computer Science';
+        const instructorMajor = instructor?.major || 'Computer Science';
         
+        // Get all files for instructor's major (excluding hidden ones)
+        // Owner-deleted files are gone from DB, so no need to filter them
         const files = await db.collection('notes_files')
             .find({ 
                 sharedByMajor: instructorMajor,
@@ -118,7 +117,6 @@ export const getInstructorFilesController = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 // Get file by ID
 export const getFileByIdController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
@@ -245,33 +243,25 @@ export const deleteFileController = async (req, res) => {
         const isOwner = file.sharedById?.toString() === userId;
         
         if (isOwner) {
-            // OWNER: Permanently delete for everyone
+            // OWNER: Permanently delete from database entirely
             
-            // 1. Add to deleted_files collection
-            await db.collection('deleted_files').insertOne({
-                fileId: new ObjectId(fileId),
-                deletedBy: new ObjectId(userId),
-                fileName: file.fileName,
-                fileSize: file.fileSize,
-                sharedBy: file.sharedBy,
-                sharedByMajor: file.sharedByMajor,
-                sharedByYear: file.sharedByYear,
-                deletedAt: new Date()
-            });
-            
-            // 2. Remove any hidden entries for this file (cleanup)
+            // 1. Remove any hidden entries for this file (cleanup)
             await db.collection('hidden_files').deleteMany({
                 fileId: new ObjectId(fileId)
             });
             
-            // 3. Delete the actual file from notes_files
-            await db.collection('notes_files').deleteOne({ 
+            // 2. Delete the actual file from notes_files (PERMANENT)
+            const result = await db.collection('notes_files').deleteOne({ 
                 _id: new ObjectId(fileId) 
             });
             
+            if (result.deletedCount === 0) {
+                return res.status(404).json({ error: 'File not found' });
+            }
+            
             res.json({ 
                 success: true, 
-                message: 'File permanently deleted for everyone',
+                message: 'File permanently deleted from database',
                 deletedForEveryone: true
             });
             
