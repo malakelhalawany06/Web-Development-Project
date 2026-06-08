@@ -201,7 +201,7 @@ function createFileCard(file) {
     fileCard.setAttribute('data-uploaded-by', uploaderId);
     
     const sharedByName = file.sharedBy || 'Unknown';
-    const subject = file.course || file.description || 'General';
+    const subject = file.course;
     const fileSizeValue = file.fileSize || '0 MB';
     const date = file.createdAt ? new Date(file.createdAt).toLocaleDateString() : 'Unknown';
     
