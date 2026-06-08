@@ -59,7 +59,11 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ currentPassword, newPassword })
-                    });
+                    });const response = await fetch('/personal-info/change-password', { // <-- FIXED endpoint
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword, newPassword })
+});
 
                     const result = await response.json();
                     if (response.ok) {
@@ -145,11 +149,11 @@ if (yearInput && yearInput.offsetParent !== null) {
             if (!valid) return;
 
             try {
-                const response = await fetch('/personal-info/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fname: firstName, lname: lastName, username, email, major, year, uni })
-                });
+               const response = await fetch('/personal-info/update', { // <-- FIXED endpoint
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fname: firstName, lname: lastName, username, email, major, year, uni })
+});
 
                 const result = await response.json();
                 if (response.ok) {

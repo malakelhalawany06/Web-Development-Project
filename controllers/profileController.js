@@ -2,6 +2,9 @@ import bcrypt from 'bcrypt';
 import { findById, updateUser } from '../models/userModel.js';
 
 // --- Load/Render Profile Page ---
+// --- Load/Render Profile Page ---
+// controllers/profileController.js
+
 export const getProfile = async (req, res) => {
     try {
         const user = await findById(req.session.userId);
@@ -9,16 +12,21 @@ export const getProfile = async (req, res) => {
             return res.redirect('/login');
         }
 
-        // Securely pass role indicators down to EJS layout templates
+        // 1. Normalize session roles and strings
         user.role = req.session.userRole || user.role;
         user.year = user.academic_year || user.year || '';
         user.email = user.email || user.mail || '';
+
+        // 2. CRITICAL FIX: Normalize Major & University properties
+        user.major = user.major || '';
+        user.university = user.university || user.uni || '';
+        user.uni = user.university; // Force mirroring across both keys so select comparisons pass
 
         if (!user.profile_picture || user.profile_picture.trim() === "") {
             user.profile_picture = '/images/default-avatar.png';
         }
 
-        // Split database 'name' string back into localized first/last inputs
+        // 3. Deconstruct combined database 'name' back to EJS template fields
         let fname = "";
         let lname = "";
         if (user.name) {
