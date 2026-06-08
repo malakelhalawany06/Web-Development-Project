@@ -5,6 +5,7 @@ import {
     getUserManagement,
     updateUserStatus,
     deleteUser,
+    editUser,          // <-- Added editUser here
     resetPassword,
     forceReset,
     logoutAllDevices,
@@ -30,6 +31,7 @@ router.get('/users', requireAdmin, getUserManagement);
 // ==================== API ROUTES ====================
 router.post('/users/status', requireAdmin, updateUserStatus);
 router.post('/users/delete', requireAdmin, deleteUser);
+router.post('/users/edit', requireAdmin, editUser);     // <-- Added edit route here
 router.post('/users/reset-password', requireAdmin, resetPassword);
 router.post('/users/force-reset', requireAdmin, forceReset);
 router.post('/users/logout-all', requireAdmin, logoutAllDevices);

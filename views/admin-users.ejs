@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LoomHub — User Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-   <link rel="stylesheet" href="/css/admin-users.css">
+    <link rel="stylesheet" href="/css/admin-users.css">
     <link rel="stylesheet" href="/css/project web.css">
-
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -50,29 +48,29 @@
                         <% users.forEach(u => { %>
                             <div class="user-card"
                                  data-id="<%= u._id %>"
-                                 data-collection="<%= u.collection %>"
-                                 data-role="<%= u.role %>">
+                                 data-collection="<%= u.collection || 'students' %>"
+                                 data-role="<%= u.role || 'student' %>">
 
                                 <div class="card-header">
                                     <div class="user-avatar">
                                         <% if (u.profile_picture) { %>
                                             <img src="<%= u.profile_picture %>" alt="avatar" />
                                         <% } else { %>
-                                            <div class="avatar-placeholder bg-<%= u.role %>">
+                                            <div class="avatar-placeholder bg-<%= u.role || 'student' %>">
                                                 <%= (u.firstName || u.name || '?')[0].toUpperCase() %>
                                             </div>
                                         <% } %>
                                     </div>
                                     <div class="user-info">
-                                        <h3><%= u.firstName ? `${u.firstName} ${u.lastName || ''}` : (u.name || 'N/A') %></h3>
-                                        <span class="username">@<%= u.username || u.email.split('@')[0] %></span>
+                                        <h3><%= u.firstName %></h3>
+                                        <span class="username">@<%= u.username || (u.email ? u.email.split('@')[0] : 'user') %></span>
                                     </div>
                                 </div>
 
                                 <div class="card-body">
                                     <div class="role-line">
                                         <i class="fas <%= u.role === 'student' ? 'fa-graduation-cap' : u.role === 'instructor' ? 'fa-chalkboard-user' : 'fa-user-shield' %> role-icon"></i>
-                                        <span class="role-text"><%= u.role.charAt(0).toUpperCase() + u.role.slice(1) %></span>
+                                        <span class="role-text"><%= u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Student' %></span>
                                         <i class="fas fa-shield-halved shield-icon"></i>
                                     </div>
                                     <div class="email-line">
@@ -89,21 +87,14 @@
                                         </span>
                                     </div>
 
-                                    <%# ── Action buttons: Edit | Warn | Delete ── %>
                                     <div class="actions-wrapper">
-                                        <button class="action-btn edit-btn"
-                                                onclick="showEditModal(this)"
-                                                title="Edit User">
+                                        <button class="action-btn edit-btn" onclick="showEditModal(this)" title="Edit User">
                                             <i class="fas fa-pen"></i>
                                         </button>
-                                        <button class="action-btn warning-btn"
-                                                onclick="showWarningModal(this)"
-                                                title="Send Warning">
+                                        <button class="action-btn warning-btn" onclick="showWarningModal(this)" title="Send Warning">
                                             <i class="fas fa-exclamation-triangle"></i>
                                         </button>
-                                        <button class="action-btn delete-btn"
-                                                onclick="deleteUser(this)"
-                                                title="Delete User">
+                                        <button class="action-btn delete-btn" onclick="deleteUser(this)" title="Delete User">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </div>
@@ -123,9 +114,6 @@
         </div>
     </div>
 
-    <%# ══════════════════════════════════════════ %>
-    <%# WARNING MODAL                             %>
-    <%# ══════════════════════════════════════════ %>
     <div id="warningModal" class="um-modal">
         <div class="um-modal-box">
             <div class="um-modal-header">
@@ -147,9 +135,6 @@
         </div>
     </div>
 
-    <%# ══════════════════════════════════════════ %>
-    <%# EDIT MODAL                                %>
-    <%# ══════════════════════════════════════════ %>
     <div id="editModal" class="um-modal">
         <div class="um-modal-box">
             <div class="um-modal-header">
@@ -159,7 +144,6 @@
                 </button>
             </div>
             <div class="um-modal-body">
-                <%# Hidden fields carry the target user's id & collection %>
                 <input type="hidden" id="editUserId" />
                 <input type="hidden" id="editUserCollection" />
 
@@ -175,14 +159,6 @@
                     <div class="edit-field-group">
                         <label for="editEmail">Email</label>
                         <input type="email" id="editEmail" placeholder="email@example.com" />
-                    </div>
-                    <div class="edit-field-group">
-                        <label for="editRole">Role</label>
-                        <select id="editRole">
-                            <option value="student">Student</option>
-                            <option value="instructor">Instructor</option>
-                            <option value="admin">Admin</option>
-                        </select>
                     </div>
                 </div>
             </div>
