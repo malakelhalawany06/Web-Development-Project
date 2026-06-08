@@ -201,7 +201,7 @@ function createFileCard(file) {
     fileCard.setAttribute('data-uploaded-by', uploaderId);
     
     const sharedByName = file.sharedBy || 'Unknown';
-    const subject = file.course || file.description || 'General';
+    const subject = file.course;
     const fileSizeValue = file.fileSize || '0 MB';
     const date = file.createdAt ? new Date(file.createdAt).toLocaleDateString() : 'Unknown';
     
@@ -302,28 +302,6 @@ async function deleteFile(button) {
         deleteBtn.disabled = false;
     }
 }
-
-// Show empty state
-function showEmptyState() {
-    const filesGrid = document.getElementById('gridView');
-    if (filesGrid && filesGrid.children.length === 0) {
-        filesGrid.innerHTML = `
-            <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                <div class="empty-icon">📭</div>
-                <div style="color: var(--text3);">No shared materials available.</div>
-                <div style="font-size: 12px; color: var(--text3); margin-top: 8px;">
-                    <a href="/shared-materials" style="color: var(--accent);">Share your first material!</a>
-                </div>
-            </div>
-        `;
-    }
-    
-    const listView = document.getElementById('listView');
-    if (listView) {
-        listView.innerHTML = '';
-    }
-}
-
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
