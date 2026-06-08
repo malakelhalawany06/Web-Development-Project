@@ -8,16 +8,16 @@
     <div class="sidebar-label">Platform</div>
     
     <a class="nav-item <%= locals.activePage === 'dashboard' ? 'active' : '' %>" href="/admin/dashboard">
-      <span class="nav-icon">📊</span> Dashboard
-    </a>
-    
-    <a class="nav-item <%= locals.activePage === 'users' ? 'active' : '' %>" href="/admin/users">
-      <span class="nav-icon">👥</span> Manage Users
-    </a>
+    <span class="nav-icon">📊</span> Dashboard
+</a>
 
-    <a class="nav-item <%= locals.activePage === 'analytics' ? 'active' : '' %>" href="/admin/analytics">
-      <span class="nav-icon">📈</span> Analytics
-    </a>
+<a class="nav-item <%= locals.activePage === 'users' ? 'active' : '' %>" href="/admin/users">
+    <span class="nav-icon">👥</span> Manage Users
+</a>
+
+<a class="nav-item <%= locals.activePage === 'analytics' ? 'active' : '' %>" href="/admin/analytics">
+    <span class="nav-icon">📈</span> Analytics
+</a>
   </div>
 
   <div class="sidebar-profile" style="cursor: pointer;" onclick="window.location.href='/profile'">

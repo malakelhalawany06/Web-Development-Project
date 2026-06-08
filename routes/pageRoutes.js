@@ -32,16 +32,10 @@ router.get('/dashboard', requireLogin, async (req, res) => {
 
     if (req.session.userRole === 'students') {
         return res.render('student-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
-    } else if (req.session.userRole === 'instructors') {
-        return res.render('instructor-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
-    } else if (req.session.userRole === 'admins') {
-    return res.render('admin-dashboard', { 
-        user, 
-        userRole: req.session.userRole, 
-        activePage: 'dashboard',
-        stats: {} // <-- JUST ADDING THIS ONE LINE FIXES EVERYTHING
-    });
-}
+   } else if (req.session.userRole === 'admins') {
+        // Pass them directly to your dedicated admin router!
+        return res.redirect('/admin/dashboard');
+    }
     res.redirect('/');
 });
 
