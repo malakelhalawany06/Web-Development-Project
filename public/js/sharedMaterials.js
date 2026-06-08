@@ -137,7 +137,7 @@ function displayMyMaterials(materials) {
             </div>
 
             <div class="post-title">${escapeHtml(post.title)}</div>
-            <div class="post-text">${escapeHtml(post.description || post.course || '')}</div>
+            <div class="post-text">${escapeHtml(post.course || '')}</div>
 
             ${post.fileName ? `
             <div class="file-attachment">
@@ -146,7 +146,6 @@ function displayMyMaterials(materials) {
                     <div style="font-size: 13px; font-weight: 500;">${escapeHtml(post.fileName)}</div>
                     <div style="font-size: 11px; color: var(--text3);">Document • ${post.fileSize}</div>
                 </div>
-                <button class="btn btn-ghost" onclick="downloadFile('${post.fileName}')">Download</button>
             </div>
             ` : ''}
         `;
@@ -193,9 +192,7 @@ async function uploadMaterial(title, subject, academicYear, file) {
     }
 }
 
-function downloadFile(fileName) {
-    alert(`Downloading "${fileName}"...`);
-}
+
 
 // Search functionality
 const searchInput = document.getElementById('global-search');
