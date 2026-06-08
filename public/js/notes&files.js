@@ -76,7 +76,7 @@ async function loadSharedFiles() {
         
         if (!files || files.length === 0) {
             filesGrid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 2rem;">No shared materials available. Share your first material!</div>';
-            updateNotesFilesBadge(0);
+           
             return;
         }
         
@@ -85,7 +85,7 @@ async function loadSharedFiles() {
             filesGrid.appendChild(fileCard);
         });
         
-        updateNotesFilesBadge(files.length);
+        
         await updateSubjectFilterChips();
         
         // Update list view if active
@@ -135,11 +135,6 @@ async function downloadFile(button) {
     }
 }
 
-// Update notes badge
-function updateNotesFilesBadge(count) {
-    const badge = document.getElementById('notesFilesBadge');
-    if (badge) badge.textContent = count || 0;
-}
 
 // Update subject filter chips
 async function updateSubjectFilterChips() {
@@ -278,7 +273,6 @@ async function deleteFile(button) {
             
             // Update badge count
             const remainingCards = document.querySelectorAll('.file-card:not([style*="opacity: 0"])').length;
-            updateNotesFilesBadge(remainingCards);
             
             // Show appropriate success message
             if (result.deletedForEveryone) {
