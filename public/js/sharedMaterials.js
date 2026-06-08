@@ -137,7 +137,7 @@ function displayMyMaterials(materials) {
             </div>
 
             <div class="post-title">${escapeHtml(post.title)}</div>
-            <div class="post-text">${escapeHtml(post.description || post.course || '')}</div>
+            <div class="post-text">${escapeHtml(post.course || '')}</div>
 
             ${post.fileName ? `
             <div class="file-attachment">
@@ -146,7 +146,6 @@ function displayMyMaterials(materials) {
                     <div style="font-size: 13px; font-weight: 500;">${escapeHtml(post.fileName)}</div>
                     <div style="font-size: 11px; color: var(--text3);">Document • ${post.fileSize}</div>
                 </div>
-                <button class="btn btn-ghost" onclick="downloadFile('${post.fileName}')">Download</button>
             </div>
             ` : ''}
         `;
@@ -164,7 +163,6 @@ async function uploadMaterial(title, subject, academicYear, file) {
     
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('description', subject);
     formData.append('course', subject);
     if (file) {
         formData.append('file', file);
@@ -191,24 +189,6 @@ async function uploadMaterial(title, subject, academicYear, file) {
         alert('Failed to share. Please try again.');
         return false;
     }
-}
-
-function downloadFile(fileName) {
-    alert(`Downloading "${fileName}"...`);
-}
-
-// Search functionality
-const searchInput = document.getElementById('global-search');
-if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const posts = document.querySelectorAll('.post-card');
-        posts.forEach(post => {
-            const title = post.querySelector('.post-title')?.textContent.toLowerCase() || '';
-            const text = post.querySelector('.post-text')?.textContent.toLowerCase() || '';
-            post.style.display = title.includes(searchTerm) || text.includes(searchTerm) ? '' : 'none';
-        });
-    });
 }
 
 // Modal functions
@@ -252,7 +232,7 @@ if (uploadAcademicYearSelect) {
 
 if (fileInput) {
     fileInput.addEventListener('change', function() {
-        fileNameDisplay.textContent = this.files.length > 0 ? this.files[0].name : "No file chosen";
+        fileNameDisplay.textContent = this.files.length > 0 ? this.files[0].name : "No file chosen"; //file array comes from the html file input
     });
 }
 
@@ -269,7 +249,7 @@ if (uploadBtn) {
             showModal("Please enter a Material Title.");
             return;
         }
-        
+
         if (!subject || subject === "") {
             showModal("Please select a subject.");
             return;

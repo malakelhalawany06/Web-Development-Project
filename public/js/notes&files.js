@@ -23,10 +23,12 @@ async function loadSubjectsFromDB() {
         return [];
     }
 }
-
 function populateListView() {
     const listView = document.getElementById('listView');
     const fileCards = document.querySelectorAll('.file-card');
+    
+    if (!listView) return;
+    
     listView.innerHTML = `
         <div class="list-header">
             <span>File Name</span>
@@ -41,6 +43,8 @@ function populateListView() {
         if (card.style.display !== 'none') {
             const fileName = card.querySelector('.file-name')?.innerText || '';
             const fileMeta = card.querySelector('.file-meta')?.innerText || '';
+            const fileId = card.dataset.id;  // ← Get file ID from grid card
+            
             const parts = fileMeta.split(' • ');
             const course = parts[0] || '';
             const sizeOnly = parts[1] || '';
@@ -48,18 +52,54 @@ function populateListView() {
             
             const listItem = document.createElement('div');
             listItem.className = 'list-item';
+            listItem.dataset.id = fileId;  // ← Store file ID on list item
+            
             listItem.innerHTML = `
                 <span>${escapeHtml(fileName)}</span>
                 <span>${escapeHtml(course)}</span>
                 <span>${escapeHtml(sizeOnly)}</span>
                 <span>${escapeHtml(sharedBy)}</span>
                 <span>
-                    <button class="btn-icon" onclick="downloadFile(this)">⬇️</button>
+                    <button class="btn-icon" onclick="downloadFromList('${fileId}', '${escapeHtml(fileName)}')">⬇️</button>
                 </span>
             `;
             listView.appendChild(listItem);
         }
     });
+}
+
+// New function for list view download
+async function downloadFromList(fileId, fileName) {
+    console.log('Downloading from list:', fileId, fileName);
+    
+    if (!fileId) {
+        alert('Error: File ID not found');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/files/${fileId}/download`);
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Download failed');
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+    } catch (error) {
+        console.error('Error downloading file:', error);
+        alert('Failed to download file: ' + error.message);
+    }
 }
 
 // Load shared files from API
