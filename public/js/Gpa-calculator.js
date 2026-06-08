@@ -27,7 +27,14 @@ function addCourse() {
     const gradeValue = parseFloat(gradeSelect.value);
     const gradeText = gradeSelect.options[gradeSelect.selectedIndex].text;
 
-    if (!name || isNaN(credits) || isNaN(gradeValue)) {
+    // ✅ VALIDATION: Block negative numbers or zero for credit hours
+    if (isNaN(credits) || credits <= 0) {
+        alert("Invalid Input: Credit hours must be a positive number greater than 0!");
+        creditsInput.value = ""; // Clear the input field
+        return;
+    }
+
+    if (!name || isNaN(gradeValue)) {
         alert("Please fill out all course details correctly.");
         return;
     }
