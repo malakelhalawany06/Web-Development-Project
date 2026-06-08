@@ -1,173 +1,111 @@
-// admin-users.js
+// analytics.js
+let growthChart;
 
-let currentUserId = null;
-let currentCollection = null;
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function getRowData(btn) {
-    const row = btn.closest('tr');
-    return {
-        row,
-        id: row.dataset.id,
-        collection: row.dataset.collection,
-        role: row.dataset.role
-    };
-}
-
-async function apiCall(endpoint, body) {
+async function loadChartData(period) {
     try {
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        if (!data.success) {
-            alert('Error: ' + (data.error || 'Something went wrong.'));
+        const res = await fetch(`/admin/analytics/growth?period=${period}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { labels, data } = await res.json();
+
+        if (growthChart) {
+            growthChart.data.labels = labels;
+            growthChart.data.datasets[0].data = data;
+            growthChart.update();
+        } else {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            growthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'New Users',
+                        data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.08)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#3b82f6',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#888' }
+                        }
+                    }
+                }
+            });
         }
-        return data;
     } catch (err) {
-        alert('Network error: ' + err.message);
-        return { success: false };
+        console.error('Chart load error:', err);
+        const canvas = document.getElementById('growthChart');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#888';
+            ctx.font = '14px Sora, sans-serif';
+            ctx.fillText('Failed to load chart data.', 20, 50);
+        }
     }
 }
 
-// ── Actions ───────────────────────────────────────────────────────────────────
-
-function changeStatus(btn, status) {
-    const { id, collection, row } = getRowData(btn);
-    apiCall('/admin/users/status', { id, collection, status }).then(data => {
-        if (data.success) {
-            const badge = row.querySelector('.status-badge');
-            if (badge) {
-                badge.className = `status-badge status-${status}`;
-                badge.innerHTML = `<i class="fas fa-circle"></i> ${status}`;
-            }
-        }
-    });
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
 }
-
-function deleteUser(btn) {
-    if (!confirm('Permanently delete this user? This cannot be undone.')) return;
-    const { id, collection, row } = getRowData(btn);
-    apiCall('/admin/users/delete', { id, collection }).then(data => {
-        if (data.success) row.remove();
-    });
-}
-
-async function resetPassword(btn) {
-    const { id, collection } = getRowData(btn);
-    const data = await apiCall('/admin/users/reset-password', { id, collection });
-    if (data.success && data.tempPassword) {
-        alert(`Temporary password: ${data.tempPassword}\n\nShare this with the user securely.`);
-    }
-}
-
-function forceReset(btn) {
-    const { id, collection } = getRowData(btn);
-    apiCall('/admin/users/force-reset', { id, collection }).then(data => {
-        if (data.success) alert('User will be forced to reset password on next login.');
-    });
-}
-
-function logoutAll(btn) {
-    const { id } = getRowData(btn);
-    apiCall('/admin/users/logout-all', { userId: id }).then(data => {
-        if (data.success) alert('User has been logged out from all devices.');
-    });
-}
-
-function showWarningModal(btn) {
-    const { id, collection } = getRowData(btn);
-    currentUserId = id;
-    currentCollection = collection;
-    document.getElementById('warningModal').style.display = 'flex';
-}
-
-function sendWarning() {
-    const message = document.getElementById('warningMsg').value.trim();
-    if (!message) return alert('Please enter a warning message.');
-    apiCall('/admin/users/send-warning', {
-        id: currentUserId,
-        collection: currentCollection,
-        message
-    }).then(data => {
-        if (data.success) {
-            closeModal();
-            alert('Warning sent successfully.');
-        }
-    });
-}
-
-function toggleRestrict(btn) {
-    const { id, collection } = getRowData(btn);
-    const restrict = confirm('Restrict this user from posting and commenting?');
-    apiCall('/admin/users/restrict', { id, collection, restrict }).then(data => {
-        if (data.success) alert(restrict ? 'User restricted.' : 'User unrestricted.');
-    });
-}
-
-function closeModal() {
-    document.getElementById('warningModal').style.display = 'none';
-    document.getElementById('warningMsg').value = '';
-    currentUserId = null;
-    currentCollection = null;
-}
-
-// Close modal on outside click
-window.addEventListener('click', e => {
-    const modal = document.getElementById('warningModal');
-    if (e.target === modal) closeModal();
-});
-
-// ── Filter Tabs ───────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    // Tab filtering
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    // Distribution bars
+    const stats = window.initialStats || {};
+    if (stats.totalUsers > 0) {
+        const sPct = Math.round((stats.totalStudents / stats.totalUsers) * 100);
+        const iPct = Math.round((stats.totalInstructors / stats.totalUsers) * 100);
+        document.getElementById('studentPercent').textContent = `${sPct}%`;
+        document.getElementById('studentBar').style.width = `${sPct}%`;
+        document.getElementById('instructorPercent').textContent = `${iPct}%`;
+        document.getElementById('instructorBar').style.width = `${iPct}%`;
+    }
+
+    // Recent activities
+    const activityContainer = document.getElementById('activityList');
+    const logs = window.recentActivities || [];
+    if (activityContainer) {
+        if (logs.length === 0) {
+            activityContainer.innerHTML = '<div class="loading">No recent activity recorded.</div>';
+        } else {
+            activityContainer.innerHTML = logs.map(item => `
+                <div class="activity-item">
+                    <div class="activity-info">
+                        <div class="activity-icon" style="background:${item.type === 'student' ? 'rgba(34,197,94,0.1)' : 'rgba(168,85,247,0.1)'}; color:${item.type === 'student' ? '#22c55e' : '#a855f7'};">
+                            <i class="fas ${item.type === 'student' ? 'fa-graduation-cap' : 'fa-chalkboard-user'}"></i>
+                        </div>
+                        <div class="activity-text">${escapeHtml(item.text)}</div>
+                    </div>
+                    <div class="activity-time">${escapeHtml(item.time)}</div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Chart toggle buttons
+    loadChartData(7);
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
-            const filter = btn.dataset.filter;
-            document.querySelectorAll('#usersTable tbody tr').forEach(row => {
-                if (filter === 'all' || row.dataset.role === filter) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            loadChartData(btn.dataset.period);
         });
     });
 
-    // Search
-    document.getElementById('userSearch').addEventListener('input', function () {
-        const query = this.value.toLowerCase();
-        document.querySelectorAll('#usersTable tbody tr').forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(query) ? '' : 'none';
-        });
-    });
-
-});
-// Replace your existing showWarningModal / closeModal functions with these
-
-let warningTargetRow = null;
-
-function showWarningModal(btn) {
-    warningTargetRow = btn.closest('tr');
-    document.getElementById('warningMsg').value = '';
-    document.getElementById('warningModal').classList.add('active');
-}
-
-function closeModal() {
-    document.getElementById('warningModal').classList.remove('active');
-    warningTargetRow = null;
-}
-
-// Close when clicking the backdrop
-document.getElementById('warningModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
 });

@@ -18,18 +18,19 @@
 
             <div class="content">
 
-                <!-- Page Header -->
                 <div class="page-header">
                     <div>
                         <h1>User Management</h1>
                         <p>Manage all students, instructors, and admins</p>
                     </div>
                     <div class="header-stats">
-                        <span class="um-badge"><i class="fas fa-users"></i> <%= locals.users ? locals.users.length : 0 %> Total</span>
+                        <span class="um-badge">
+                            <i class="fas fa-users"></i>
+                            <%= locals.users ? locals.users.length : 0 %> Total
+                        </span>
                     </div>
                 </div>
 
-                <!-- Filter Tabs -->
                 <div class="filter-tabs">
                     <button class="tab-btn active" data-filter="all">All Users</button>
                     <button class="tab-btn" data-filter="student">Students</button>
@@ -37,107 +38,156 @@
                     <button class="tab-btn" data-filter="admin">Admins</button>
                 </div>
 
-                <!-- Search Bar -->
                 <div class="um-search-bar">
                     <i class="fas fa-search"></i>
                     <input type="text" id="userSearch" placeholder="Search by name, email, or role..." />
                 </div>
 
-                <!-- Users Table -->
-                <div class="table-wrapper">
-                    <table class="users-table" id="usersTable">
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Email / Username</th>
-                                <th>Role</th>
-                                <th>Uni Year / Major</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (locals.users && locals.users.length > 0) { %>
-                                <% users.forEach(u => { %>
-                                    <tr data-id="<%= u._id %>" data-collection="<%= u.collection %>" data-role="<%= u.role %>">
-                                        <td class="user-cell">
-                                            <div class="user-avatar">
-                                                <% if (u.profile_picture) { %>
-                                                    <img src="<%= u.profile_picture %>" alt="avatar" />
-                                                <% } else { %>
-                                                    <div class="avatar-placeholder">
-                                                        <%= (u.firstName || u.name || '?')[0].toUpperCase() %>
-                                                    </div>
-                                                <% } %>
+                <div class="users-grid" id="usersGrid">
+                    <% if (locals.users && locals.users.length > 0) { %>
+                        <% users.forEach(u => { %>
+                            <div class="user-card"
+                                 data-id="<%= u._id %>"
+                                 data-collection="<%= u.collection %>"
+                                 data-role="<%= u.role %>">
+
+                                <div class="card-header">
+                                    <div class="user-avatar">
+                                        <% if (u.profile_picture) { %>
+                                            <img src="<%= u.profile_picture %>" alt="avatar" />
+                                        <% } else { %>
+                                            <div class="avatar-placeholder bg-<%= u.role %>">
+                                                <%= (u.firstName || u.name || '?')[0].toUpperCase() %>
                                             </div>
-                                            <div class="user-name">
-                                                <%= u.firstName ? `${u.firstName} ${u.lastName || ''}` : (u.name || 'N/A') %>
-                                            </div>
-                                        </td>
-                                        <td><%= u.email || u.username || 'N/A' %></td>
-                                        <td>
-                                            <span class="role-badge role-<%= u.role %>">
-                                                <i class="fas <%= u.role === 'student' ? 'fa-graduation-cap' : u.role === 'instructor' ? 'fa-chalkboard-user' : 'fa-shield-alt' %>"></i>
-                                                <%= u.role %>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <% if (u.role === 'student') { %>
-                                                Year <%= u.year || u.academic_year || 'N/A' %> · <%= u.major || 'N/A' %>
-                                            <% } else { %>
-                                                —
-                                            <% } %>
-                                        </td>
-                                        <td>
-                                            <span class="status-badge status-<%= u.status || 'active' %>">
-                                                <i class="fas fa-circle"></i>
-                                                <%= u.status || 'active' %>
-                                            </span>
-                                        </td>
-                                        <td class="actions-cell">
-                                            <button class="action-btn green"   onclick="changeStatus(this,'active')"    title="Activate"><i class="fas fa-check-circle"></i></button>
-                                            <button class="action-btn yellow"  onclick="changeStatus(this,'suspended')" title="Suspend"><i class="fas fa-pause-circle"></i></button>
-                                            <button class="action-btn red"     onclick="changeStatus(this,'banned')"    title="Ban"><i class="fas fa-ban"></i></button>
-                                            <button class="action-btn red"     onclick="deleteUser(this)"               title="Delete"><i class="fas fa-trash-alt"></i></button>
-                                            <button class="action-btn blue"    onclick="resetPassword(this)"            title="Reset Password"><i class="fas fa-key"></i></button>
-                                            <button class="action-btn blue"    onclick="forceReset(this)"               title="Force reset on next login"><i class="fas fa-sync-alt"></i></button>
-                                            <button class="action-btn gray"    onclick="logoutAll(this)"                title="Logout all devices"><i class="fas fa-sign-out-alt"></i></button>
-                                            <button class="action-btn yellow"  onclick="showWarningModal(this)"         title="Send warning"><i class="fas fa-exclamation-triangle"></i></button>
-                                            <button class="action-btn gray"    onclick="toggleRestrict(this)"           title="Restrict posting"><i class="fas fa-lock"></i></button>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            <% } else { %>
-                                <tr>
-                                    <td colspan="6" class="empty-state">
-                                        <i class="fas fa-users-slash"></i>
-                                        <p>No users found.</p>
-                                    </td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
+                                        <% } %>
+                                    </div>
+                                    <div class="user-info">
+                                        <h3><%= u.firstName ? `${u.firstName} ${u.lastName || ''}` : (u.name || 'N/A') %></h3>
+                                        <span class="username">@<%= u.username || u.email.split('@')[0] %></span>
+                                    </div>
+                                </div>
+
+                                <div class="card-body">
+                                    <div class="role-line">
+                                        <i class="fas <%= u.role === 'student' ? 'fa-graduation-cap' : u.role === 'instructor' ? 'fa-chalkboard-user' : 'fa-user-shield' %> role-icon"></i>
+                                        <span class="role-text"><%= u.role.charAt(0).toUpperCase() + u.role.slice(1) %></span>
+                                        <i class="fas fa-shield-halved shield-icon"></i>
+                                    </div>
+                                    <div class="email-line">
+                                        <span class="email-label">Email:</span> <%= u.email || 'N/A' %>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer">
+                                    <div class="status-wrapper">
+                                        <span class="status-label">Status</span>
+                                        <span class="status-badge status-<%= (u.status || 'active').toLowerCase() %>">
+                                            <i class="fas fa-circle"></i>
+                                            <%= u.status ? u.status.charAt(0).toUpperCase() + u.status.slice(1) : 'Active' %>
+                                        </span>
+                                    </div>
+
+                                    <%# ── Action buttons: Edit | Warn | Delete ── %>
+                                    <div class="actions-wrapper">
+                                        <button class="action-btn edit-btn"
+                                                onclick="showEditModal(this)"
+                                                title="Edit User">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                        <button class="action-btn warning-btn"
+                                                onclick="showWarningModal(this)"
+                                                title="Send Warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </button>
+                                        <button class="action-btn delete-btn"
+                                                onclick="deleteUser(this)"
+                                                title="Delete User">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <i class="fas fa-users-slash"></i>
+                            <p>No users found.</p>
+                        </div>
+                    <% } %>
                 </div>
 
-            </div><!-- end .content -->
-        </div><!-- end .main -->
-    </div><!-- end .layout -->
+            </div>
+        </div>
+    </div>
 
-    <!-- Warning Modal — outside .layout so it overlays everything -->
+    <%# ══════════════════════════════════════════ %>
+    <%# WARNING MODAL                             %>
+    <%# ══════════════════════════════════════════ %>
     <div id="warningModal" class="um-modal">
         <div class="um-modal-box">
             <div class="um-modal-header">
                 <h3><i class="fas fa-exclamation-triangle"></i> Send Warning</h3>
-                <button class="um-modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+                <button class="um-modal-close" onclick="closeWarningModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="um-modal-body">
                 <label>Warning Message</label>
                 <textarea id="warningMsg" rows="4" placeholder="Enter your warning message..."></textarea>
             </div>
             <div class="um-modal-footer">
-                <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-ghost" onclick="closeWarningModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="sendWarning()">
                     <i class="fas fa-paper-plane"></i> Send Warning
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <%# ══════════════════════════════════════════ %>
+    <%# EDIT MODAL                                %>
+    <%# ══════════════════════════════════════════ %>
+    <div id="editModal" class="um-modal">
+        <div class="um-modal-box">
+            <div class="um-modal-header">
+                <h3><i class="fas fa-user-pen"></i> Edit User</h3>
+                <button class="um-modal-close" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="um-modal-body">
+                <%# Hidden fields carry the target user's id & collection %>
+                <input type="hidden" id="editUserId" />
+                <input type="hidden" id="editUserCollection" />
+
+                <div class="edit-fields">
+                    <div class="edit-field-group">
+                        <label for="editFirstName">First Name</label>
+                        <input type="text" id="editFirstName" placeholder="First name" />
+                    </div>
+                    <div class="edit-field-group">
+                        <label for="editLastName">Last Name</label>
+                        <input type="text" id="editLastName" placeholder="Last name" />
+                    </div>
+                    <div class="edit-field-group">
+                        <label for="editEmail">Email</label>
+                        <input type="email" id="editEmail" placeholder="email@example.com" />
+                    </div>
+                    <div class="edit-field-group">
+                        <label for="editRole">Role</label>
+                        <select id="editRole">
+                            <option value="student">Student</option>
+                            <option value="instructor">Instructor</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="um-modal-footer">
+                <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+                <button class="btn btn-edit" onclick="saveEdit()">
+                    <i class="fas fa-floppy-disk"></i> Save Changes
                 </button>
             </div>
         </div>
