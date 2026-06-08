@@ -1,4 +1,5 @@
 import express from 'express';
+import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../config/db.js';
 
 const router = express.Router();

@@ -89,7 +89,7 @@ app.use('/', projectManagerRoutes);
 
 // APPLIES ROUTING PATH FOR BUTTON ACTIONS TO TALK TO MONGO INTERFACES
 app.use('/api', apiRoutes); 
-
+app.use('/api/groups', groupRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/shared', sharedRoutes);
