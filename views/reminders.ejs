@@ -83,7 +83,7 @@
         </div>
 
         <div id="remindersContainer" class="reminders-list">
-          <% if (reminders.length === 0) { %>
+          <% if (!reminders || reminders.length === 0) { %>
             <div class="empty-message">✨ No reminders yet. Add one below ✨</div>
           <% } else { %>
             <% reminders.forEach(function(rem) { %>
@@ -92,7 +92,7 @@
                   <input type="checkbox" class="reminder-check" <%= rem.completed ? "checked" : "" %> onclick="this.form.submit();" />
                 </form>
                 
-                <div class="reminder-text <%= rem.completed ? 'completed' : '' %>" style="flex-direction:column; align-items:flex-start;">
+                <div class="reminder-text <%= rem.completed ? 'completed' : '' %>" style="display: flex; flex-direction: column; align-items: flex-start;">
                   <div>
                     <%= rem.text %>
                     
@@ -155,7 +155,6 @@
 </div>
 
 <script>
-  // High speed instant live text element search matching original architecture actions
   document.getElementById('backendSearchInput').addEventListener('input', function(e) {
     const query = e.target.value.toLowerCase();
     document.querySelectorAll('.reminder-item').forEach(function(item) {
