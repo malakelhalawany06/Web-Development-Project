@@ -210,7 +210,7 @@ if (form) {
             return;
         }
         
-        const currentUser = UserManager.getCurrentUser();
+        const currentUser = window.currentUser;
         const major = currentUser?.major || 'Computer Science';
         const academicYear = currentUser?.academic_year || 1; 
         // Map major to category for filtering
