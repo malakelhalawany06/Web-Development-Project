@@ -22,6 +22,7 @@ export const getProfile = async (req, res) => {
         user.university = user.university || user.uni || '';
         user.uni = user.university; // Force mirroring across both keys so select comparisons pass
 
+
         if (!user.profile_picture || user.profile_picture.trim() === "") {
             user.profile_picture = '/images/default-avatar.png';
         }

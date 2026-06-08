@@ -10,6 +10,7 @@
 </head>
 <body>
     <div class="layout">
+        
         <% 
             let isInstructor = false;
             if (user && user.role) {
@@ -22,10 +23,12 @@
 
         <% if (isInstructor) { %>
             <%- include('partials/sidebar-instructor', { user: user, activePage: activePage }) %>
-        <% } else { %>
+        <% } else if (user.role === 'students') { %>
             <%- include('partials/sidebar-student', { user: user, activePage: activePage }) %>
+        <% } else { %>
+            <%- include('partials/sidebar-admin', { user: user, activePage: activePage }) %>
         <% } %>
-
+        
         <div class="main">
             <%- include('partials/topbar') %>
 
@@ -58,26 +61,32 @@
                         <label for="email">Email:</label><br>
                         <span id="emailError" class="error-msg"></span>
                         <input type="email" id="email" name="email" value="<%= user.email %>"><br>
-<label for="major">Major:</label><br>
-    <select id="major" name="major">
-        <% const majors = ['Computer Science', 'Engineering', 'Business', 'Dentistry', 'Pharmacy', 'Business Informatics', 'Law', 'Mechanical Engineering','Electrical Engineering']; %>
-        <% majors.forEach(m => { %>
-            <option value="<%= m %>" <%= (user.major === m) ? 'selected' : '' %>><%= m %></option>
-        <% }); %>
-    </select><br>
 
-                        <div style="<%= (user.role && user.role.toLowerCase().includes('instructor')) ? 'display: none;' : '' %>">
+                        <% if (user.role !== 'admins') { %>
+                            <label for="major">Major:</label><br>
+                            <select id="major" name="major">
+                                <% const majors = ['Computer Science', 'Engineering', 'Business', 'Dentistry', 'Pharmacy', 'Business Informatics', 'Law', 'Mechanical Engineering','Electrical Engineering']; %>
+                                <% majors.forEach(m => { %>
+                                    <option value="<%= m %>" <%= (user.major === m) ? 'selected' : '' %>><%= m %></option>
+                                <% }); %>
+                            </select><br>
+                        <% } %>
+
+                        <% if (user.role !== 'admins' && !isInstructor) { %>
                             <label for="year">Year:</label><br>
                             <span id="yearError" class="error-msg"></span>
                             <input id="year" name="year" type="text" value="<%= user.year || '' %>"><br>
-                        </div>
-<label for="uni">University:</label><br>
-    <select id="uni" name="uni">
-        <% const unis = ['MIU', 'BUE', 'AUC', 'MSA','GUC']; %>
-        <% unis.forEach(u => { %>
-            <option value="<%= u %>" <%= (user.university === u || user.uni === u) ? 'selected' : '' %>><%= u %></option>
-        <% }); %>
-    </select><br>
+                        <% } %>
+
+                        <% if (user.role !== 'admins') { %>
+                            <label for="uni">University:</label><br>
+                            <select id="uni" name="uni">
+                                <% const unis = ['MIU', 'BUE', 'AUC', 'MSA','GUC']; %>
+                                <% unis.forEach(u => { %>
+                                    <option value="<%= u %>" <%= (user.university === u || user.uni === u) ? 'selected' : '' %>><%= u %></option>
+                                <% }); %>
+                            </select><br>
+                        <% } %>
 
                         <div class="form-actions">
                             <button type="submit" id="saveChangesBtn">💾 Save Changes</button>
