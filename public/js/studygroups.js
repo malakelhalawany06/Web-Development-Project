@@ -329,11 +329,26 @@ async function leaveGroup(button) {
 
 // View details - open modal or redirect
 function viewDetails(groupId) {
-    if (groupId) {
-        window.location.href = `/group-details?id=${groupId}`;
-    } else {
+    if (!groupId) {
         alert('Group ID not found');
+        return;
     }
+    
+    // Find the group card to check if user is a member
+    const groupCard = document.querySelector(`.group-card[data-id="${groupId}"]`);
+    
+    if (groupCard) {
+        const status = groupCard.getAttribute('data-status');
+        
+        // Check if user is a member of this group
+        if (status !== 'joined') {
+            alert('⚠️ You must join this group first to view its details and participate in discussions!');
+            return;
+        }
+    }
+    
+    // Only navigate if user is a member
+    window.location.href = `/group-details?id=${groupId}`;
 }
 
 // Update badge count

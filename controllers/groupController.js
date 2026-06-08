@@ -66,6 +66,7 @@ export const leaveGroupController = async (req, res) => {
 };
 
 // Get group details
+// controllers/groupController.js - Update this function
 export const getGroupDetailsController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
@@ -73,8 +74,16 @@ export const getGroupDetailsController = async (req, res) => {
         const group = await getGroupById(req.params.id);
         if (!group) return res.status(404).json({ error: 'Group not found' });
         
+        // Check if user is a member
         const isMember = group.members.some(m => m.toString() === req.session.userId);
-        if (!isMember) return res.status(403).json({ error: 'You are not a member of this group' });
+        
+        if (!isMember) {
+            // Return a 403 with a specific message that frontend can detect
+            return res.status(403).json({ 
+                error: 'You must join this group to view its details',
+                requiresJoin: true 
+            });
+        }
         
         res.json(group);
     } catch (error) {
