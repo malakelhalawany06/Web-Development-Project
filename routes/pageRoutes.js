@@ -38,7 +38,7 @@ router.get('/dashboard', requireLogin, async (req, res) => {
         return res.render('instructor-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
     }else if (req.session.userRole === 'admins') {
         // Pass them directly to your dedicated admin router!
-        return res.redirect('/admin/dashboard');
+        return res.render('admin-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
     }
     res.redirect('/');
 });
