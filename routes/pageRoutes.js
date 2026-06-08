@@ -35,8 +35,13 @@ router.get('/dashboard', requireLogin, async (req, res) => {
     } else if (req.session.userRole === 'instructors') {
         return res.render('instructor-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
     } else if (req.session.userRole === 'admins') {
-        return res.redirect('/admin/dashboard');
-    }
+    return res.render('admin-dashboard', { 
+        user, 
+        userRole: req.session.userRole, 
+        activePage: 'dashboard',
+        stats: {} // <-- JUST ADDING THIS ONE LINE FIXES EVERYTHING
+    });
+}
     res.redirect('/');
 });
 

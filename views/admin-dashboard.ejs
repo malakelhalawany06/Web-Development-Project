@@ -18,7 +18,6 @@
 
             <main class="main-content">
 
-                <!-- Welcome Banner -->
                 <div class="welcome-banner">
                     <div class="welcome-text">
                         <h1>Welcome back, <%= user.firstName || 'Admin' %> 👋</h1>
@@ -30,7 +29,6 @@
                     </div>
                 </div>
 
-                <!-- Stats Cards -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon blue">
@@ -38,7 +36,7 @@
                         </div>
                         <div class="stat-info">
                             <span class="stat-label">Total Students</span>
-                            <span class="stat-value"><%= stats.totalStudents || 0 %></span>
+                            <span class="stat-value"><%= locals.stats ? stats.totalStudents : 0 %></span>
                         </div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i> +42 this month
@@ -51,7 +49,7 @@
                         </div>
                         <div class="stat-info">
                             <span class="stat-label">Total Instructors</span>
-                            <span class="stat-value"><%= stats.totalInstructors || 0 %></span>
+                            <span class="stat-value"><%= locals.stats ? stats.totalInstructors : 0 %></span>
                         </div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i> +5 this month
@@ -64,7 +62,7 @@
                         </div>
                         <div class="stat-info">
                             <span class="stat-label">Total Courses</span>
-                            <span class="stat-value"><%= stats.totalCourses || 0 %></span>
+                            <span class="stat-value"><%= locals.stats ? stats.totalCourses : 0 %></span>
                         </div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i> Active
@@ -77,7 +75,7 @@
                         </div>
                         <div class="stat-info">
                             <span class="stat-label">Active Today</span>
-                            <span class="stat-value"><%= stats.activeToday || 0 %></span>
+                            <span class="stat-value"><%= locals.stats ? stats.activeToday : 0 %></span>
                         </div>
                         <div class="stat-change">
                             <i class="fas fa-clock"></i> Last 24h
@@ -90,7 +88,7 @@
                         </div>
                         <div class="stat-info">
                             <span class="stat-label">Assignments Today</span>
-                            <span class="stat-value"><%= stats.assignmentsToday || 0 %></span>
+                            <span class="stat-value"><%= locals.stats ? stats.assignmentsToday : 0 %></span>
                         </div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i> Submitted
@@ -103,7 +101,7 @@
                         </div>
                         <div class="stat-info">
                             <span class="stat-label">Pending Grading</span>
-                            <span class="stat-value"><%= stats.pendingGrading || 0 %></span>
+                            <span class="stat-value"><%= locals.stats ? stats.pendingGrading : 0 %></span>
                         </div>
                         <div class="stat-change negative">
                             <i class="fas fa-exclamation-circle"></i> Needs attention
@@ -111,7 +109,6 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
                 <div class="section-title">Quick Actions</div>
                 <div class="quick-actions">
                     <a href="/admin/analytics" class="action-card">
