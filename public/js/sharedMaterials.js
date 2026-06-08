@@ -163,7 +163,6 @@ async function uploadMaterial(title, subject, academicYear, file) {
     
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('description', subject);
     formData.append('course', subject);
     if (file) {
         formData.append('file', file);
