@@ -94,7 +94,7 @@ app.use('/admin', adminRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/shared', sharedRoutes);
 app.use('/api/subjects', subjectRoutes);
-app.use('/qa', qaRoutes);
+app.use('/Q&A', qaRoutes);
 app.use('/reminders', remindersRoutes);
 
 // ------------------------------------------------------------------

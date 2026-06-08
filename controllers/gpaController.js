@@ -63,13 +63,23 @@ export const archiveDeletedCourse = async (req, res) => {
         }
 
         const { courseName, credits, gradeText, points } = req.body;
+        const parsedCredits = parseInt(credits);
+
+        // ✅ BACKEND VALIDATION: Drop incoming request payloads containing bad numbers
+        if (isNaN(parsedCredits) || parsedCredits <= 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Validation Error: Credit hours must be a positive integer greater than zero." 
+            });
+        }
+
         const db = await connectToDatabase();
 
         await db.collection('hidden_files').insertOne({
             type: "deleted_gpa_course",
             userId: new ObjectId(userId),
             courseName,
-            credits,
+            credits: parsedCredits,
             gradeText,
             points,
             deletedAt: new Date()

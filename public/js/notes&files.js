@@ -201,7 +201,7 @@ function createFileCard(file) {
     fileCard.setAttribute('data-uploaded-by', uploaderId);
     
     const sharedByName = file.sharedBy || 'Unknown';
-    const subject = file.course || file.description || 'General';
+    const subject = file.course;
     const fileSizeValue = file.fileSize || '0 MB';
     const date = file.createdAt ? new Date(file.createdAt).toLocaleDateString() : 'Unknown';
     
@@ -269,21 +269,12 @@ async function deleteFile(button) {
         fileCard.style.opacity = '0';
         
         setTimeout(() => {
-            fileCard.remove();
-            
-            // Update badge count
-            const remainingCards = document.querySelectorAll('.file-card:not([style*="opacity: 0"])').length;
-            
+            fileCard.remove();            
             // Show appropriate success message
             if (result.deletedForEveryone) {
                 alert(`✅ "${fileName}" has been permanently deleted for all users.`);
             } else if (result.hiddenForUser) {
                 alert(`✅ "${fileName}" has been hidden from your view.`);
-            }
-            
-            // Check if no files left
-            if (remainingCards === 0) {
-                showEmptyState();
             }
             
             // Update list view if active
@@ -302,28 +293,6 @@ async function deleteFile(button) {
         deleteBtn.disabled = false;
     }
 }
-
-// Show empty state
-function showEmptyState() {
-    const filesGrid = document.getElementById('gridView');
-    if (filesGrid && filesGrid.children.length === 0) {
-        filesGrid.innerHTML = `
-            <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                <div class="empty-icon">📭</div>
-                <div style="color: var(--text3);">No shared materials available.</div>
-                <div style="font-size: 12px; color: var(--text3); margin-top: 8px;">
-                    <a href="/shared-materials" style="color: var(--accent);">Share your first material!</a>
-                </div>
-            </div>
-        `;
-    }
-    
-    const listView = document.getElementById('listView');
-    if (listView) {
-        listView.innerHTML = '';
-    }
-}
-
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -332,7 +301,7 @@ function escapeHtml(text) {
 }
 
 // View toggle
-function setView(view) {
+function setView(view) { //list or grid
     const gridView = document.getElementById('gridView');
     const listView = document.getElementById('listView');
     const viewBtns = document.querySelectorAll('.view-btn');
@@ -353,10 +322,5 @@ function setView(view) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async function() {
-    if (window.currentUser) {
-        console.log('User loaded:', window.currentUser.name);
-        console.log('User academic_year:', window.currentUser.academic_year);
-        console.log('User major:', window.currentUser.major);
-    }
     await loadSharedFiles();
 });

@@ -37,7 +37,7 @@
     };
 
     // =====================
-    // UPDATE TASK PROGRESS IN DATABASE LIVE
+    // UPDATE TASK PROGRESS IN DATABASE LIVE (With Strict Positive Validation)
     // =====================
     window.updateTaskProgress = async function (projectId, taskId) {
         const input = document.getElementById(`prog-${taskId}`);
@@ -45,9 +45,18 @@
 
         let completionPercentage = parseInt(input.value);
 
-        if (isNaN(completionPercentage)) completionPercentage = 0;
-        if (completionPercentage < 0) completionPercentage = 0;
-        if (completionPercentage > 100) completionPercentage = 100;
+        // ✅ VALIDATION: Explicitly detect negative numbers or empty values
+        if (isNaN(completionPercentage) || completionPercentage < 0) {
+            alert("Invalid Input: Please enter positive numbers only!");
+            input.value = 0; // Reset input field visually to 0
+            return; // Hard stop code execution
+        }
+
+        // Upper bounds safety check
+        if (completionPercentage > 100) {
+            completionPercentage = 100;
+            input.value = 100;
+        }
 
         try {
             const response = await fetch(`/api/projects/${projectId}/tasks/${taskId}/progress`, {
@@ -62,7 +71,7 @@
                 document.getElementById(`bar-${taskId}`).style.width = completionPercentage + "%";
                 recalculateGlobalProgressRing();
             } else {
-                alert("Server rejected processing your progress modifications.");
+                alert(data.message || "Server rejected processing your progress modifications.");
             }
         } catch (err) {
             console.error("Failed executing asynchronous progressive patch workflow:", err);
