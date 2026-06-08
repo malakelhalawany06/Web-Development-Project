@@ -156,7 +156,6 @@ async function loadUserStudyGroups() {
         }
         
         groupCards = document.querySelectorAll('.group-card');
-        updateStudyGroupsBadge();
     } catch (error) {
         console.error('Error loading groups:', error);
     }
@@ -246,7 +245,6 @@ if (form) {
             groupCards = document.querySelectorAll('.group-card');
             closeCreateGroupModal();
             alert('Group "' + groupName + '" created successfully!');
-            updateStudyGroupsBadge();
             
         } catch (error) {
             console.error('Error creating group:', error);
@@ -283,8 +281,7 @@ async function joinGroup(button) {
         
         button.onclick = function() { leaveGroup(this); };
         alert(`You joined "${groupName}".`);
-        updateStudyGroupsBadge();
-        
+    
     } catch (error) {
         console.error('Error joining group:', error);
         alert('Failed to join group. Please try again.');
@@ -319,7 +316,6 @@ async function leaveGroup(button) {
         
         button.onclick = function() { joinGroup(this); };
         alert(`You left "${groupName}".`);
-        updateStudyGroupsBadge();
         
     } catch (error) {
         console.error('Error leaving group:', error);
@@ -350,29 +346,12 @@ function viewDetails(groupId) {
     // Only navigate if user is a member
     window.location.href = `/group-details?id=${groupId}`;
 }
-
-// Update badge count
-async function updateStudyGroupsBadge() {
-    const badge = document.getElementById('studyGroupsBadge');
-    if (!badge) return;
-    
-    try {
-        const response = await fetch('/api/groups');
-        const groups = await response.json();
-        const joinedCount = groups.filter(group => group.status === 'joined').length;
-        badge.textContent = joinedCount;
-    } catch (error) {
-        console.error('Error updating badge:', error);
-        badge.textContent = '0';
-    }
-}
-
 // Update filter chips based on user's major AND academic_year
 async function updateFilterChips() {
     const filterSection = document.querySelector('.filter-section');
     if (!filterSection) return;
     
-    let currentUser = window.currentUser || (typeof UserManager !== 'undefined' ? UserManager.getCurrentUser() : null);
+    let currentUser = window.currentUser;
     if (!currentUser) return;
     
     // Load subjects for this specific major AND academic_year
@@ -429,7 +408,7 @@ function escapeHtml(text) {
 
 // Populate subjects dropdown based on user's major AND academic_year
 async function populateSubjectsAndMajor() {
-    let currentUser = window.currentUser || (typeof UserManager !== 'undefined' ? UserManager.getCurrentUser() : null);
+    let currentUser = window.currentUser;
     if (!currentUser) return;
     
     const major = currentUser.major;
