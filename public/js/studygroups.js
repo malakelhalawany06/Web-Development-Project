@@ -429,34 +429,11 @@ async function populateSubjectsAndMajor() {
         subjectsSelect.appendChild(option);
     });
 }
-
-// Initialize buttons (for join/leave/view details)
-function initializeButtons() {
-    const joinButtons = document.querySelectorAll('.group-actions .btn-primary.btn-sm, .group-actions .btn-success.btn-sm');
-    joinButtons.forEach(button => {
-        const newButton = button.cloneNode(true);
-        button.parentNode.replaceChild(newButton, button);
-        if (newButton.innerText === 'Join Group') {
-            newButton.onclick = function() { joinGroup(this); };
-        } else if (newButton.innerText === '✓ Joined') {
-            newButton.onclick = function() { leaveGroup(this); };
-        }
-    });
-    
-    const viewButtons = document.querySelectorAll('.group-actions .btn-outline.btn-sm');
-    viewButtons.forEach(button => {
-        const newButton = button.cloneNode(true);
-        button.parentNode.replaceChild(newButton, button);
-        newButton.onclick = function() { viewDetails(this.dataset.id || this.closest('.group-card')?.dataset.id); };
-    });
-}
-
 // Update DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('DOM loaded, initializing...');
     console.log('window.currentUser:', window.currentUser);
     await populateSubjectsAndMajor();
     await updateFilterChips();
-    initializeButtons();
     loadUserStudyGroups();
 });
