@@ -84,7 +84,8 @@ async function getRemindersPage(req, res) {
     res.render('reminders', {
       reminders,
       currentUser,
-      stats
+      stats,
+      activePage: 'tasksReminders'
     });
   } catch (err) {
     console.error("❌ Error loading reminders dashboard:", err);
