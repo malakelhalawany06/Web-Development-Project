@@ -301,7 +301,7 @@ function escapeHtml(text) {
 }
 
 // View toggle
-function setView(view) {
+function setView(view) { //list or grid
     const gridView = document.getElementById('gridView');
     const listView = document.getElementById('listView');
     const viewBtns = document.querySelectorAll('.view-btn');
@@ -322,10 +322,5 @@ function setView(view) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async function() {
-    if (window.currentUser) {
-        console.log('User loaded:', window.currentUser.name);
-        console.log('User academic_year:', window.currentUser.academic_year);
-        console.log('User major:', window.currentUser.major);
-    }
     await loadSharedFiles();
 });
