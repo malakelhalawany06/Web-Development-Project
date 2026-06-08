@@ -108,56 +108,31 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">🗂 Projects</span>
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;" onclick="window.location.href='/project-manager'">+ New Project</button>
+            <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;" onclick="window.location.href='/project-manager'">+ Manage</button>
           </div>
 
-          <div class="project-item" style="cursor: pointer;" onclick="window.location.href='/project-manager'">
-            <div class="project-top">
-              <span class="project-name">Library Management System</span>
-              <span class="project-pct">72%</span>
-            </div>
-            <div class="prog-bar"><div class="prog-fill fill-accent" style="width:72%"></div></div>
-            <div class="project-meta">
-              <div class="member-stack">
-                <div class="avatar sm">AK</div>
-                <div class="avatar sm green">NM</div>
-                <div class="avatar sm warn">SO</div>
+          <% if (typeof projects !== 'undefined' && projects.length > 0) { %>
+            <% projects.forEach(function(project) { %>
+              <div class="project-item" style="cursor: pointer; margin-bottom: 0.75rem;" onclick="window.location.href='/project-manager'">
+                <div class="project-top">
+                  <span class="project-name"><%= project.projectName %></span>
+                  <span class="project-pct"><%= project.progress %>%</span>
+                </div>
+                <div class="prog-bar">
+                  <div class="prog-fill <%= project.progress >= 80 ? 'fill-green' : (project.progress >= 40 ? 'fill-accent' : 'fill-warn') %>" style="width: <%= project.progress %>%"></div>
+                </div>
+                <div class="project-meta">
+                  <span style="font-size:11px; color:var(--text3);"><%= project.taskCount %> active tasks assigned to you</span>
+                </div>
               </div>
-              <span style="font-size:11px;color:var(--text3);">Due Apr 18</span>
+            <% }); %>
+          <% } else { %>
+            <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text3);">
+              <div style="font-size: 24px; margin-bottom: 0.5rem;">📁</div>
+              <p style="font-size: 13px; margin-bottom: 1rem;">No projects assigned to you yet.</p>
+              <button class="btn btn-primary" style="font-size: 11px; padding: 6px 12px;" onclick="window.location.href='/project-manager'">Go to Project Manager</button>
             </div>
-          </div>
-
-          <div class="project-item" style="cursor: pointer;" onclick="window.location.href='/project-manager'">
-            <div class="project-top">
-              <span class="project-name">E-Commerce App (Networks)</span>
-              <span class="project-pct">40%</span>
-            </div>
-            <div class="prog-bar"><div class="prog-fill fill-warn" style="width:40%"></div></div>
-            <div class="project-meta">
-              <div class="member-stack">
-                <div class="avatar sm">AK</div>
-                <div class="avatar sm purple">YR</div>
-              </div>
-              <span style="font-size:11px;color:var(--danger);">Due Apr 22</span>
-            </div>
-          </div>
-
-          <div class="project-item" style="cursor: pointer;" onclick="window.location.href='/project-manager'">
-            <div class="project-top">
-              <span class="project-name">Research Paper — AI Ethics</span>
-              <span class="project-pct">91%</span>
-            </div>
-            <div class="prog-bar"><div class="prog-fill fill-green" style="width:91%"></div></div>
-            <div class="project-meta">
-              <div class="member-stack">
-                <div class="avatar sm">AK</div>
-                <div class="avatar sm green">NM</div>
-                <div class="avatar sm warn">SO</div>
-                <div class="avatar sm purple">YR</div>
-              </div>
-              <span style="font-size:11px;color:var(--accent3);">Due Apr 30</span>
-            </div>
-          </div>
+          <% } %>
         </div>
 
         <div class="card">

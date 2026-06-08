@@ -32,11 +32,69 @@ router.get('/dashboard', requireLogin, async (req, res) => {
     }
 
     if (req.session.userRole === 'students') {
-        return res.render('student-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
-   } 
+        try {
+            const studentId = req.session.userId;
+            const db = await connectToDatabase();
+
+            // 🗂 FETCH REAL PROJECTS ASSIGNED TO THIS STUDENT
+            const studentProjects = await db.collection('projects').aggregate([
+                { $match: { "tasks.assignedStudent": new ObjectId(studentId) } },
+                {
+                    $project: {
+                        projectName: 1,
+                        description: 1,
+                        tasks: {
+                            $filter: {
+                                input: "$tasks",
+                                as: "task",
+                                cond: { $eq: ["$$task.assignedStudent", new ObjectId(studentId)] }
+                            }
+                        }
+                    }
+                }
+            ]).toArray();
+
+            // Calculate aggregated progress percentage matrices for the dashboard view template
+            const dynamicProjects = studentProjects.map(p => {
+                let totalProgress = 0;
+                let tasksCount = p.tasks ? p.tasks.length : 0;
+                
+                if (tasksCount > 0) {
+                    p.tasks.forEach(t => {
+                        totalProgress += (t.completionPercentage || 0);
+                    });
+                }
+                
+                return {
+                    _id: p._id,
+                    projectName: p.projectName,
+                    progress: tasksCount > 0 ? Math.round(totalProgress / tasksCount) : 0,
+                    taskCount: tasksCount
+                };
+            });
+
+            // Render dashboard passing downstream dynamic real project items
+            return res.render('student-dashboard', { 
+                user, 
+                userRole: req.session.userRole, 
+                activePage: 'dashboard',
+                projects: dynamicProjects // ✅ Injected live projects data block
+            });
+
+        } catch (err) {
+            console.error("Dashboard Dynamic Project Population Error:", err);
+            // Fallback render to prevent dashboard page from crashing if DB drops
+            return res.render('student-dashboard', { 
+                user, 
+                userRole: req.session.userRole, 
+                activePage: 'dashboard', 
+                projects: [] 
+            });
+        }
+    } 
     else if (req.session.userRole === 'instructors') {
         return res.render('instructor-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
-    }else if (req.session.userRole === 'admins') {
+    } else if (req.session.userRole === 'admins') {
         // Pass them directly to your dedicated admin router!
         return res.render('admin-dashboard', { user, userRole: req.session.userRole, activePage: 'dashboard' });
     }
