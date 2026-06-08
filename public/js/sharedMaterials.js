@@ -232,7 +232,7 @@ if (uploadAcademicYearSelect) {
 
 if (fileInput) {
     fileInput.addEventListener('change', function() {
-        fileNameDisplay.textContent = this.files.length > 0 ? this.files[0].name : "No file chosen";
+        fileNameDisplay.textContent = this.files.length > 0 ? this.files[0].name : "No file chosen"; //file array comes from the html file input
     });
 }
 
@@ -249,7 +249,7 @@ if (uploadBtn) {
             showModal("Please enter a Material Title.");
             return;
         }
-        
+
         if (!subject || subject === "") {
             showModal("Please select a subject.");
             return;
