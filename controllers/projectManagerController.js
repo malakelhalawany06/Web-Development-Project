@@ -91,8 +91,13 @@ export const updateTaskProgress = async (req, res) => {
     try {
         const { projectId, taskId } = req.params;
         let completionPercentage = parseInt(req.body.completionPercentage);
+        
+        // ✅ STRICT VALIDATION: Rejects negative numbers or numbers greater than 100
         if (isNaN(completionPercentage) || completionPercentage < 0 || completionPercentage > 100) {
-            return res.status(400).json({ success: false, message: "Invalid percentage value." });
+            return res.status(400).json({ 
+                success: false, 
+                message: "Validation Failed: Progress must be a positive number between 0 and 100." 
+            });
         }
 
         const db = await connectToDatabase();

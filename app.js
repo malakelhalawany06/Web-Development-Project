@@ -91,6 +91,8 @@ app.use('/', projectManagerRoutes);
 app.use('/api', apiRoutes); 
 app.use('/api/groups', groupRoutes);
 app.use('/admin', adminRoutes);
+app.use('/notes-files', fileRoutes);
+app.use('/notes&files', fileRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/shared', sharedRoutes);
 app.use('/api/subjects', subjectRoutes);
