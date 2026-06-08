@@ -191,22 +191,6 @@ async function uploadMaterial(title, subject, academicYear, file) {
     }
 }
 
-
-
-// Search functionality
-const searchInput = document.getElementById('global-search');
-if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const posts = document.querySelectorAll('.post-card');
-        posts.forEach(post => {
-            const title = post.querySelector('.post-title')?.textContent.toLowerCase() || '';
-            const text = post.querySelector('.post-text')?.textContent.toLowerCase() || '';
-            post.style.display = title.includes(searchTerm) || text.includes(searchTerm) ? '' : 'none';
-        });
-    });
-}
-
 // Modal functions
 const modal = document.getElementById('custom-modal');
 const modalMessage = document.getElementById('modal-message');
