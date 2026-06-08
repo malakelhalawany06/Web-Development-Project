@@ -216,12 +216,16 @@ function createFileCard(file) {
     const currentUserId = window.currentUser?.id?.toString() || '';
     const isOwner = uploaderId === currentUserId;
     
+    // ✅ ADD THIS LINE - Set the data-is-owner attribute
+    fileCard.setAttribute('data-is-owner', isOwner);
+    
     fileCard.innerHTML = `
         <div class="file-icon">${file.fileIcon || '📄'}</div>
         <div class="file-info">
             <div class="file-name">${escapeHtml(file.title || file.fileName)}</div>
             <div class="file-meta" style="font-size: 10px; color: var(--text3);">
                 ${escapeHtml(subject)} • ${escapeHtml(fileSizeValue)} • Shared by ${escapeHtml(sharedByName)} • ${date}
+                ${isOwner ? '<span style="color: var(--accent); margin-left: 8px;">(Your file)</span>' : ''}
             </div>
         </div>
         <div class="file-actions">
@@ -260,52 +264,75 @@ function setView(view) {
 // Smart delete: deletes for everyone if you're the owner, otherwise hides for you only
 async function deleteFile(button) {
     const fileCard = button.closest('.file-card');
+    if (!fileCard) return;
+    
     const fileId = fileCard.dataset.id;
     const fileName = fileCard.querySelector('.file-name')?.innerText || 'file';
-    const uploadedBy = fileCard.dataset.uploadedBy;
     
-    const currentUser = window.currentUser;
-    const isOwner = uploadedBy === currentUser?.id?.toString();
+    // ✅ FIX: Get isOwner from dataset (as string, compare to 'true')
+    const isOwner = fileCard.dataset.isOwner === 'true';
     
+    console.log('Delete file - isOwner:', isOwner); // Add this for debugging
+    
+    // Different confirmation messages based on ownership
     const message = isOwner 
-        ? `Are you sure you want to permanently delete "${fileName}"? This will remove it for ALL users.`
-        : `Hide "${fileName}" from your view? (Other users will still see it)`;
+        ? `⚠️ PERMANENT DELETE: You are the owner of "${fileName}".\n\nThis will delete the file for EVERYONE (all users).\n\nThis action CANNOT be undone!\n\nAre you sure?`
+        : `❌ Hide "${fileName}" from your view?\n\nOther users will still be able to see this file.\n\nAre you sure?`;
     
     if (!confirm(message)) {
         return;
     }
     
     try {
-        let url = `/api/files/${fileId}`;
-        let options = { method: 'DELETE' };
+        // Show loading state
+        const deleteBtn = button;
+        deleteBtn.innerHTML = '⏳';
+        deleteBtn.disabled = true;
         
-        // If not owner, use hide endpoint
-        if (!isOwner) {
-            url = `/api/files/${fileId}/hide`;
-            options = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
-        }
-        
-        const response = await fetch(url, options);
+        const response = await fetch(`/api/files/${fileId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
         
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error || 'Failed');
+            throw new Error(error.error || 'Operation failed');
         }
         
-        // Remove the card from UI
-        fileCard.remove();
+        const result = await response.json();
         
-        // Update badge count
-        const fileCards = document.querySelectorAll('.file-card');
-        if (typeof updateNotesFilesBadge === 'function') {
-            updateNotesFilesBadge(fileCards.length);
-        }
+        // Remove the card with animation
+        fileCard.style.transition = 'opacity 0.3s';
+        fileCard.style.opacity = '0';
         
-        alert(isOwner ? 'File permanently deleted' : 'File hidden from your view');
+        setTimeout(() => {
+            fileCard.remove();
+            
+            // Update badge count
+            const remainingCards = document.querySelectorAll('.file-card:not([style*="opacity: 0"])').length;
+            updateNotesFilesBadge(remainingCards);
+            
+            // Show appropriate success message
+            if (result.deletedForEveryone) {
+                alert(`✅ "${fileName}" has been permanently deleted for all users.`);
+            } else if (result.hiddenForUser) {
+                alert(`✅ "${fileName}" has been hidden from your view.`);
+            }
+            
+            // Check if no files left
+            if (remainingCards === 0) {
+                showEmptyState();
+            }
+        }, 300);
         
     } catch (error) {
         console.error('Error:', error);
         alert('Failed to delete/hide file: ' + error.message);
+        
+        // Reset button
+        const deleteBtn = button;
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.disabled = false;
     }
 }
 // Initialize on page load
