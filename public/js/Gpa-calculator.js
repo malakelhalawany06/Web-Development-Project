@@ -1,21 +1,36 @@
 let courses = [];
 
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("LoomHub External JS Database-driven GPA Calculator Active.");
+// ===== 1. INITIALIZE PAGE & FETCH DATA FROM MONGO DB =====
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("LoomHub Cloud Database-driven GPA Calculator Active (No Local Storage).");
     
-    // Read the user ID metadata embedded safely in our HTML node structure
-    const currentUserId = document.getElementById("gpaCalculatorApp")?.dataset?.userId || "guest";
-    const storedCourses = localStorage.getItem(`loomhub_courses_${currentUserId}`);
-    
-    if (storedCourses) {
-        courses = JSON.parse(storedCourses);
-        renderTable();
+    try {
+        // Fetch the active user session directly from our server endpoint
+        const response = await fetch('/api/user/session');
+        const data = await response.json();
+
+        if (data.success && data.user && data.user.courses) {
+            // Load the courses array straight out of MongoDB into memory
+            courses = data.user.courses;
+            
+            // Render the rows inside your HTML table structure
+            renderTable();
+            
+            // Recalculate values and push them to the UI text display on load
+            const initialGPA = calculateLiveGPAScore();
+            const gpaValBox = document.getElementById("gpaValue");
+            if (gpaValBox) gpaValBox.innerText = initialGPA;
+        }
+    } catch (err) {
+        console.error("Failed to load user course history from cloud:", err);
     }
+    
+    // Ensure the visual meter bar stretches to match the true loaded database GPA score
     updateGPABarDisplay();
 });
 
-// ===== ADD COURSE =====
-function addCourse() {
+// ===== 2. ADD COURSE & SYNC TO CLOUD =====
+async function addCourse() {
     const nameInput = document.getElementById("courseName");
     const creditsInput = document.getElementById("credits");
     const gradeSelect = document.getElementById("grade");
@@ -27,10 +42,10 @@ function addCourse() {
     const gradeValue = parseFloat(gradeSelect.value);
     const gradeText = gradeSelect.options[gradeSelect.selectedIndex].text;
 
-    // ✅ VALIDATION: Block negative numbers or zero for credit hours
+    // Validation: Block negative numbers or zero for credit hours
     if (isNaN(credits) || credits <= 0) {
         alert("Invalid Input: Credit hours must be a positive number greater than 0!");
-        creditsInput.value = ""; // Clear the input field
+        creditsInput.value = "";
         return;
     }
 
@@ -40,28 +55,32 @@ function addCourse() {
     }
 
     const points = (credits * gradeValue).toFixed(2);
-    const course = { id: Date.now(), name, credits, gradeValue, gradeText, points };
+    // Generate an ID for rendering and deletion tracking
+    const newCourse = { id: Date.now(), name, credits, gradeValue, gradeText, points };
     
-    courses.push(course);
+    // Add to our running local array state
+    courses.push(newCourse);
 
-    const currentUserId = document.getElementById("gpaCalculatorApp")?.dataset?.userId || "guest";
-    localStorage.setItem(`loomhub_courses_${currentUserId}`, JSON.stringify(courses));
+    // Sync full courses array to database alongside recalculated GPA
+    const liveGPA = calculateLiveGPAScore();
+    await syncAllDataToDatabase(liveGPA, courses);
 
+    // Reset layout input forms safely
     nameInput.value = "";
     creditsInput.value = "";
     gradeSelect.value = "";
 
     renderTable();
-    calculateLiveGPA();
+    updateGPABarDisplay();
 }
 
-// ===== DELETE COURSE (TRIGGERS MONGODB ARCHIVAL AUTOMATICALLY) =====
+// ===== 3. REMOVE COURSE & ARCHIVE TO HIDDEN FILES =====
 async function removeCourse(id) {
     const targetCourse = courses.find(c => c.id === id);
     
     if (targetCourse) {
         try {
-            // Send the data block over to the archive endpoint
+            // First step: Log to the archive backup collection
             await fetch('/api/user/archive-deleted-course', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -72,21 +91,60 @@ async function removeCourse(id) {
                     points: targetCourse.points
                 })
             });
-            console.log("[SOFT-DELETE SUCCESS] Course tracking cataloged securely in hidden_files collection.");
+            console.log("[ARCHIVE SUCCESS] Course cataloged securely in hidden_files collection.");
         } catch (err) {
-            console.error("Soft-deletion archive sync pipeline encountered an error:", err);
+            console.error("Archive syncing encountered an error:", err);
         }
     }
 
+    // Filter out the course from local list array
     courses = courses.filter(c => c.id !== id);
-    const currentUserId = document.getElementById("gpaCalculatorApp")?.dataset?.userId || "guest";
-    localStorage.setItem(`loomhub_courses_${currentUserId}`, JSON.stringify(courses));
+    
+    // Recalculate and push updated arrays to MongoDB
+    const liveGPA = calculateLiveGPAScore();
+    await syncAllDataToDatabase(liveGPA, courses);
     
     renderTable();
-    calculateLiveGPA();
+    updateGPABarDisplay();
 }
 
-// ===== RENDER TABLE VIEW =====
+// ===== 4. HELPER: MATHEMATICAL CALCULATIONS EXTRACTOR =====
+function calculateLiveGPAScore() {
+    if (courses.length === 0) return "0.00";
+
+    let totalCredits = 0;
+    let totalPoints = 0;
+
+    courses.forEach(c => {
+        totalCredits += c.credits;
+        totalPoints += parseFloat(c.points);
+    });
+
+    return (totalPoints / totalCredits).toFixed(2);
+}
+
+// ===== 5. SINGLE SOURCE OF TRUTH CLOUD COMMUNICATOR =====
+async function syncAllDataToDatabase(gpaValue, completeCoursesArray) {
+    try {
+        const response = await fetch('/api/user/update-gpa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                gpa: gpaValue,
+                courses: completeCoursesArray
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            console.log("Database synchronized permanently. GPA:", gpaValue);
+        }
+    } catch (err) {
+        console.error("Critical communication error syncing data to MongoDB:", err);
+    }
+}
+
+// ===== 6. RENDER TABLE VIEW MODIFIER =====
 function renderTable() {
     const tbody = document.getElementById("courseTable");
     if (!tbody) return;
@@ -108,57 +166,15 @@ function renderTable() {
     });
 }
 
-// ===== CALCULATE LIVE GPA & SEND TO SERVER =====
-function calculateLiveGPA() {
-    let liveGPA = "0.00";
-
-    if (courses.length > 0) {
-        let totalCredits = 0;
-        let totalPoints = 0;
-
-        courses.forEach(c => {
-            totalCredits += c.credits;
-            totalPoints += parseFloat(c.points);
-        });
-
-        liveGPA = (totalPoints / totalCredits).toFixed(2);
-    }
-
-    const gpaValBox = document.getElementById("gpaValue");
-    if (gpaValBox) gpaValBox.innerText = liveGPA;
-    
-    const percentage = (parseFloat(liveGPA) / 4.0) * 100;
-    const gpaBarFill = document.getElementById("gpaBar");
-    if (gpaBarFill) gpaBarFill.style.width = `${Math.min(percentage, 100)}%`;
-
-    saveGpaToDatabase(liveGPA);
-}
-
-// ===== STABILIZE PROGRESS BAR SCALER ON PAGE LOAD =====
+// ===== 7. UI VISUAL METER FILLER EXTRACTOR =====
 function updateGPABarDisplay() {
     const gpaValBox = document.getElementById("gpaValue");
     if (!gpaValBox) return;
     
-    const currentVal = parseFloat(gpaValBox.innerText) || 0.00;
-    const percentage = (currentVal / 4.0) * 100;
+    const liveGPA = calculateLiveGPAScore();
+    gpaValBox.innerText = liveGPA;
     
+    const percentage = (parseFloat(liveGPA) / 4.0) * 100;
     const gpaBarFill = document.getElementById("gpaBar");
     if (gpaBarFill) gpaBarFill.style.width = `${Math.min(percentage, 100)}%`;
-}
-
-// ===== ASYNC MONGODB COMMUNICATOR BACKBONE =====
-async function saveGpaToDatabase(gpaValue) {
-    try {
-        const response = await fetch('/api/user/update-gpa', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gpa: gpaValue })
-        });
-        const data = await response.json();
-        if (data.success) {
-            console.log("Successfully synchronized real-time GPA inside Mongo collection:", gpaValue);
-        }
-    } catch (err) {
-        console.error("Critical communications error processing database sync request:", err);
-    }
 }

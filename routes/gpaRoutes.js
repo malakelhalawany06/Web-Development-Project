@@ -1,22 +1,23 @@
 import express from 'express';
-import { getGpaPage, getUserSession, updateGpa, archiveDeletedCourse } from '../controllers/gpaController.js';
+import { 
+    getGpaPage, 
+    getUserSession, 
+    updateGpa, 
+    archiveDeletedCourse 
+} from '../controllers/gpaController.js';
 
 const router = express.Router();
 
-router.use(express.json());
-router.use(express.urlencoded({ extended: true }));
+// Webpage render interface endpoint
+router.get('/gpa-calculator', getGpaPage);
 
-const requireLogin = (req, res, next) => {
-    if (!req.session.userId || !res.locals.user) {
-        return res.redirect('/');
-    }
-    next();
-};
+// API active verification endpoint
+router.get('/api/user/session', getUserSession);
 
-// Application Connected Mappings
-router.get('/gpa-calculator', requireLogin, getGpaPage);
-router.get('/api/user', getUserSession);
+// Core state update data synchronizer channel 
 router.post('/api/user/update-gpa', updateGpa);
+
+// Event archiver recycling log interface
 router.post('/api/user/archive-deleted-course', archiveDeletedCourse);
 
 export default router;
