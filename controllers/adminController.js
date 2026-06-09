@@ -67,11 +67,35 @@ export const getAdminDashboard = async (req, res) => {
     try {
         const db = await connectToDatabase();
 
-        const totalStudents = await db.collection('students').countDocuments();
-        const totalInstructors = await db.collection('instructors').countDocuments();
-        const activeToday = await db.collection('students').countDocuments({
-            lastActive: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
-        });
+        // Start of current month
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const [
+            totalStudents,
+            totalInstructors,
+            newStudentsThisMonth,
+            newInstructorsThisMonth,
+            activeToday
+        ] = await Promise.all([
+            db.collection('students').countDocuments(),
+            db.collection('instructors').countDocuments(),
+            db.collection('students').countDocuments({
+                $or: [
+                    { createdAt: { $gte: startOfMonth } },
+                    { _id: { $gte: ObjectId.createFromTime(startOfMonth.getTime() / 1000) } }
+                ]
+            }),
+            db.collection('instructors').countDocuments({
+                $or: [
+                    { createdAt: { $gte: startOfMonth } },
+                    { _id: { $gte: ObjectId.createFromTime(startOfMonth.getTime() / 1000) } }
+                ]
+            }),
+            db.collection('students').countDocuments({
+                lastActive: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+            })
+        ]);
 
         res.render('admin-dashboard', {
             user: res.locals.user,
@@ -81,6 +105,8 @@ export const getAdminDashboard = async (req, res) => {
                 totalStudents,
                 totalInstructors,
                 activeToday,
+                newStudentsThisMonth,
+                newInstructorsThisMonth,
                 totalCourses: 0,
                 assignmentsToday: 0,
                 avgScore: 0,

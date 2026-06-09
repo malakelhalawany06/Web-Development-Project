@@ -36,9 +36,9 @@
                             <span class="stat-label">Total Students</span>
                             <span class="stat-value"><%= locals.stats ? stats.totalStudents : 6 %></span>
                         </div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> +42 this month
-                        </div>
+                       <div class="stat-change positive">
+    <i class="fas fa-arrow-up"></i> +<%= locals.stats ? stats.newStudentsThisMonth : 0 %> this month
+</div>
                     </div>
 
                     <div class="stat-card">
@@ -49,9 +49,9 @@
                             <span class="stat-label">Total Instructors</span>
                             <span class="stat-value"><%= locals.stats ? stats.totalInstructors : 4 %></span>
                         </div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> +5 this month
-                        </div>
+                       <div class="stat-change positive">
+    <i class="fas fa-arrow-up"></i> +<%= locals.stats ? stats.newInstructorsThisMonth : 0 %> this month
+</div>
                     </div>
 
                     <div class="stat-card">
@@ -71,15 +71,7 @@
 
                 <div class="quick-actions-title">Quick Actions</div>
                 
-                <div class="quick-actions-grid">
-                    <a href="/admin/analytics" class="custom-action-btn">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Analytics</span>
-                    </a>
-                    <a href="/admin/users" class="custom-action-btn">
-                        <i class="fas fa-users-cog"></i>
-                        <span>User Management</span>
-                    </a>
+               
                     <a href="/admin/analytics" class="custom-action-btn">
                         <i class="fas fa-chart-pie"></i>
                         <span>Reports</span>
