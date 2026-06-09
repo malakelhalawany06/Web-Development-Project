@@ -30,7 +30,7 @@
     <img id="main-avatar" src="<%= user.profile_picture %>?t=<%= Date.now() %>" alt="Profile" style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
     
     <label for="profile-upload" class="btn btn-secondary" style="cursor:pointer; width: auto; padding: 0.6rem 1.2rem;">📸 Upload Profile Picture</label>
-    <input type="file" id="profile-upload" accept="image/jpeg, image/png, image/jpg" style="display:none;" onchange="uploadProfilePic(this)">
+    <input type="file" id="profile-upload" accept="image/jpeg, image/png, image/jpg" style="display:none;">
     
     <div class="profile-info">
         <div class="name"><%= user.name %></div>
