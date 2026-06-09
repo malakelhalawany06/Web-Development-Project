@@ -83,7 +83,7 @@ export const updateProfile = async (req, res) => {
         await updateUser(userRole, userId, updates);
         
         console.log(`✅ Profile updated in DB collection [${userRole}] for ID: ${userId}`);
-        res.json({ success: true, message: 'Profile updated successfully!' });
+       return res.redirect('/profile');
     } catch (err) {
         console.error("Database update execution error:", err);
         res.status(500).json({ error: 'Failed to save updated information to the database.' });
