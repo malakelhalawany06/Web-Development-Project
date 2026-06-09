@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                
-const response = await fetch('/api/upload-avatar', { 
+const response = await fetch('/api/user/upload-avatar', {
     method: 'POST',
     body: formData
 });
