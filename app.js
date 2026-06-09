@@ -80,7 +80,9 @@ app.use(async (req, res, next) => {
 // MOUNTING ROUTERS (Keeps things organized!)
 // ------------------------------------------------------------------
 app.use('/', authRoutes);           // Authenticate requests before page routing triggers
-app.use('/', pageRoutes);           // Mounts front page layout views
+app.use('/', pageRoutes);    
+//  FIX: Mount it explicitly with the /profile prefix
+app.use('/profile', profileRoutes);       // Mounts front page layout views
 app.use('/personal-info', profileRoutes); // Base URL path is now /profile
 
 // 🎓 MOUNTED: GPA & Project Manager Controllers (View pages + Engine APIs)
