@@ -1,28 +1,19 @@
-// controllers/sharedController.js
+// controllers/sharedController.js - FIXED to use the model
 import multer from 'multer';  
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../config/db.js';
 import { createMaterial, getUserSharedMaterials } from '../models/SharedMaterial.js';
-import { addSharedFile } from '../models/File.js';
 
 const upload = multer({ storage: multer.memoryStorage() });
 export const uploadMiddleware = upload.single('file');
 
-// Get user's own shared materials (history)
+// Get user's own shared materials (history) - NOW USING THE MODEL
 export const getUserSharedMaterialsController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
     try {
-        const db = await connectToDatabase();
-        const userId = req.session.userId;
-        
-        console.log('Looking for materials with uploadedBy:', userId);
-        
-        // Query with string (since it's stored as string in DB)
-        const materials = await db.collection('shared_materials')
-            .find({ uploadedBy: userId })  // NO ObjectId() wrapper
-            .sort({ createdAt: -1 })
-            .toArray();
+        // ✅ Use the model function instead of direct query
+        const materials = await getUserSharedMaterials(req.session.userId);
         
         console.log(`Found ${materials.length} shared materials`);
         res.json(materials);
@@ -40,19 +31,9 @@ export const createSharedMaterialController = async (req, res) => {
         const { title, description, course, targetYear } = req.body;
         const uploadedFile = req.file;
         
-        console.log('=== UPLOAD DEBUG ===');
-        console.log('Title:', title);
-        console.log('File received:', uploadedFile ? 'YES' : 'NO');
-        
         if (!uploadedFile) {
-            console.error('ERROR: No file uploaded!');
             return res.status(400).json({ error: 'No file uploaded' });
         }
-        
-        console.log('File name:', uploadedFile.originalname);
-        console.log('File size:', uploadedFile.size);
-        console.log('File type:', uploadedFile.mimetype);
-        console.log('File buffer length:', uploadedFile.buffer?.length);
         
         const db = await connectToDatabase();
         
@@ -82,7 +63,6 @@ export const createSharedMaterialController = async (req, res) => {
         
         const userMajor = user.major || 'Computer Science';
         
-        // For instructors, use targetYear; for students, use their own year
         const targetYearForFilter = userType === 'instructor' 
             ? (targetYear === 'all' ? null : parseInt(targetYear))
             : (academicYear || 0);
@@ -96,10 +76,7 @@ export const createSharedMaterialController = async (req, res) => {
             return '📄';
         }
         
-        // Get the file buffer correctly
-        const fileBuffer = uploadedFile.buffer;
-        
-        // Save to notes_files collection with actual file data
+        // 1. Save to notes_files (for file storage and display)
         const fileData = {
             title: title,
             description: description || '',
@@ -107,7 +84,7 @@ export const createSharedMaterialController = async (req, res) => {
             fileSize: (uploadedFile.size / 1024 / 1024).toFixed(1) + ' MB',
             fileIcon: getFileIconFromName(uploadedFile.originalname),
             fileType: uploadedFile.mimetype,
-            fileData: fileBuffer,  // Use the buffer variable
+            fileData: uploadedFile.buffer,
             course: course || 'General',
             sharedBy: user.name,
             sharedById: req.session.userId,
@@ -117,17 +94,10 @@ export const createSharedMaterialController = async (req, res) => {
             createdAt: new Date()
         };
         
-        console.log('Saving file with data:', {
-            fileName: fileData.fileName,
-            fileSize: fileData.fileSize,
-            fileType: fileData.fileType,
-            fileDataLength: fileData.fileData?.length
-        });
-        
         const result = await db.collection('notes_files').insertOne(fileData);
         
-        // Also save to shared_materials collection for history
-        await db.collection('shared_materials').insertOne({
+        // 2. Save to shared_materials (for history) - USING THE MODEL
+        await createMaterial({
             title: title,
             description: description || '',
             fileName: uploadedFile.originalname,
@@ -137,8 +107,7 @@ export const createSharedMaterialController = async (req, res) => {
             uploadedByName: user.name,
             uploadedByMajor: userMajor,
             uploadedByYear: targetYearForFilter,
-            course: course || 'General',
-            createdAt: new Date()
+            course: course || 'General'
         });
         
         console.log('File saved successfully with ID:', result.insertedId);
