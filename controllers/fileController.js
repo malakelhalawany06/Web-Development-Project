@@ -18,7 +18,7 @@ export const getUserFilesController = async (req, res) => {
     }
 };
 
-// controllers/fileController.js - Update getSharedFilesController
+
 
 export const getSharedFilesController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
@@ -77,7 +77,6 @@ export const getSharedFilesController = async (req, res) => {
     }
 };
 // Get instructor files (all files for instructor's major)
-// controllers/fileController.js - Update getInstructorFilesController
 
 export const getInstructorFilesController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
@@ -319,9 +318,7 @@ export const shareFileController = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-// controllers/fileController.js - Add hideFileController
 
-// controllers/fileController.js - Update hideFileController for hidden_files collection
 export const hideFileController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
