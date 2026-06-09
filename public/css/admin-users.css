@@ -844,3 +844,6 @@ body {
         max-width: 100% !important;
     }
 }
+.user-card.hidden {
+    display: none !important;
+}

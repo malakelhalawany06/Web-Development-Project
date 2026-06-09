@@ -2,8 +2,9 @@ import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../config/db.js';
 
 // ===== 1. RENDER THE CALCULATOR UI =====
+// Inside controllers/gpaController.js
 export const getGpaPage = (req, res) => {
-    res.render('gpa-calculator', { 
+    res.render('gpa', { // 💡 Changed from 'gpa-calculator' to 'gpa'
         user: res.locals.user, 
         userRole: req.session.userRole || 'students', 
         activePage: 'gpaCalculator' 

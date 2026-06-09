@@ -182,21 +182,21 @@ document.addEventListener('DOMContentLoaded', function () {
     let activeFilterTab = 'all';
     let activeSearchQuery = '';
 
-    function runInterfaceFilters() {
-        cards.forEach(card => {
-            const roleAttribute = (card.dataset.role || '').toLowerCase().trim();
-            const textContentDump = card.textContent.toLowerCase();
+ function runInterfaceFilters() {
+    cards.forEach(card => {
+        const roleAttribute = (card.dataset.role || '').toLowerCase().trim();
+        const textContentDump = card.textContent.toLowerCase();
 
-            const matchesTab = (activeFilterTab === 'all' || roleAttribute === activeFilterTab);
-            const matchesSearch = (activeSearchQuery === '' || textContentDump.includes(activeSearchQuery));
+        const matchesTab = (activeFilterTab === 'all' || roleAttribute === activeFilterTab);
+        const matchesSearch = (activeSearchQuery === '' || textContentDump.includes(activeSearchQuery));
 
-            if (matchesTab && matchesSearch) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
+        if (matchesTab && matchesSearch) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+}
 
     // Handles category changing across layout filtering tabs
     tabBtns.forEach(btn => {
