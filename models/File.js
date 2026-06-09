@@ -136,9 +136,6 @@ export async function shareFile(fileId, targetUserId) {
     return result;
 }
 
-/**
- * Get files shared with a user
- */
 export async function getSharedFiles(userId) {
     const db = await connectToDatabase();
     
@@ -149,11 +146,7 @@ export async function getSharedFiles(userId) {
     return files;
 }
 
-/**
- * Add a shared file (from Shared Materials page)
- */
-// models/File.js - Make sure addSharedFile saves year as number
-// models/File.js - Update addSharedFile
+
 export async function addSharedFile(fileData) {
     const db = await connectToDatabase();
     
@@ -165,7 +158,7 @@ export async function addSharedFile(fileData) {
         fileName: fileData.fileName,
         fileSize: fileData.fileSize,
         fileIcon: fileData.fileIcon || '📄',
-         fileType: fileData.fileType || '',        // ADD THIS
+         fileType: fileData.fileType || '',        
         fileData: fileData.fileData || null,   
         course: fileData.course,
         sharedBy: fileData.sharedBy,
