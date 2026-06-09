@@ -1,27 +1,20 @@
-// routes/fileRoutes.js
+// routes/fileRoutes.js - CLEANED VERSION
 import express from 'express';
 import { 
-    getUserFilesController,
     getSharedFilesController,
     getInstructorFilesController,
     getFileByIdController,
     downloadFileController,
-    createFileController,
-    deleteFileController,
-    shareFileController,
-    hideFileController
+    deleteFileController
 } from '../controllers/fileController.js';
 
 const router = express.Router();
 
-router.get('/', getUserFilesController);
+// Shared materials routes
 router.get('/shared', getSharedFilesController);
 router.get('/instructor', getInstructorFilesController);
 router.get('/:id', getFileByIdController);
 router.get('/:id/download', downloadFileController);
-router.post('/', createFileController);
 router.delete('/:id', deleteFileController);
-router.post('/:id/share', shareFileController);
-router.post('/:id/hide', hideFileController);
 
 export default router;

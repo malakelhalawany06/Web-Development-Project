@@ -1,57 +1,8 @@
-// models/File.js
+// models/File.js - CLEANED VERSION
 import { connectToDatabase } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 
 const COLLECTION = 'notes_files';
-
-
-export async function createFile(fileData) {
-    const db = await connectToDatabase();
-    
-    const newFile = {
-        title: fileData.title,
-        description: fileData.description || '',
-        fileName: fileData.fileName,
-        fileSize: fileData.fileSize,
-        fileIcon: fileData.fileIcon || '📄',
-        fileType: fileData.fileType || '',        
-        fileData: fileData.fileData || null,      
-        course: fileData.course,
-        uploadedBy: new ObjectId(fileData.uploadedBy),
-        sharedWith: [],
-        createdAt: new Date(),
-        updatedAt: new Date()
-    };
-    
-    const result = await db.collection(COLLECTION).insertOne(newFile);
-    return { id: result.insertedId, ...newFile };
-}
-
-/**
- * Get files for a specific user (files they uploaded)
- */
-export async function getUserFiles(userId) {
-    const db = await connectToDatabase();
-    
-    const files = await db.collection(COLLECTION).find({
-        uploadedBy: new ObjectId(userId)
-    }).sort({ createdAt: -1 }).toArray();
-    
-    return files;
-}
-
-/**
- * Get all files (for shared materials page)
- */
-export async function getAllFiles() {
-    const db = await connectToDatabase();
-    
-    const files = await db.collection(COLLECTION).find({})
-        .sort({ createdAt: -1 })
-        .toArray();
-    
-    return files;
-}
 
 /**
  * Get a single file by ID
@@ -67,7 +18,20 @@ export async function getFileById(fileId) {
 }
 
 /**
- * Delete a file
+ * Get file data for download
+ */
+export async function getFileData(fileId) {
+    const db = await connectToDatabase();
+    
+    const file = await db.collection(COLLECTION).findOne({
+        _id: new ObjectId(fileId)
+    });
+    
+    return file;
+}
+
+/**
+ * Delete or hide a file based on ownership
  */
 export async function deleteFile(fileId, userId) {
     const db = await connectToDatabase();
@@ -122,31 +86,10 @@ export async function deleteFile(fileId, userId) {
         return result;
     }
 }
+
 /**
- * Share a file with another user
+ * Add a shared file (from Shared Materials page)
  */
-export async function shareFile(fileId, targetUserId) {
-    const db = await connectToDatabase();
-    
-    const result = await db.collection(COLLECTION).updateOne(
-        { _id: new ObjectId(fileId) },
-        { $addToSet: { sharedWith: new ObjectId(targetUserId) } }
-    );
-    
-    return result;
-}
-
-export async function getSharedFiles(userId) {
-    const db = await connectToDatabase();
-    
-    const files = await db.collection(COLLECTION).find({
-        sharedWith: new ObjectId(userId)
-    }).sort({ createdAt: -1 }).toArray();
-    
-    return files;
-}
-
-
 export async function addSharedFile(fileData) {
     const db = await connectToDatabase();
     
@@ -158,7 +101,7 @@ export async function addSharedFile(fileData) {
         fileName: fileData.fileName,
         fileSize: fileData.fileSize,
         fileIcon: fileData.fileIcon || '📄',
-         fileType: fileData.fileType || '',        
+        fileType: fileData.fileType || '',        
         fileData: fileData.fileData || null,   
         course: fileData.course,
         sharedBy: fileData.sharedBy,
@@ -171,9 +114,14 @@ export async function addSharedFile(fileData) {
         updatedAt: new Date()
     };
     
-    const result = await db.collection('notes_files').insertOne(newFile);
+    const result = await db.collection(COLLECTION).insertOne(newFile);
     return { id: result.insertedId, ...newFile };
 }
+
+/**
+ * Get files filtered by major and academic year
+ * (Used for shared materials page)
+ */
 export async function getFilesByMajorAndYear(major, academicYear) {
     const db = await connectToDatabase();
     
@@ -195,22 +143,27 @@ export async function getFilesByMajorAndYear(major, academicYear) {
     
     return files;
 }
-export async function getUserUploadedFiles(userId) {
+
+/**
+ * Get files for instructor (by major, no year filter)
+ */
+export async function getInstructorFiles(major, userId) {
     const db = await connectToDatabase();
     
-    const files = await db.collection(COLLECTION).find({
-        uploadedBy: new ObjectId(userId)
-    }).sort({ createdAt: -1 }).toArray();
+    // Get hidden files for this instructor
+    const hiddenFiles = await db.collection('hidden_files')
+        .find({ userId: new ObjectId(userId) })
+        .toArray();
+    
+    const hiddenFileIds = hiddenFiles.map(h => h.fileId);
+    
+    const files = await db.collection('notes_files')
+        .find({ 
+            sharedByMajor: major,
+            _id: { $nin: hiddenFileIds }
+        })
+        .sort({ createdAt: -1 })
+        .toArray();
     
     return files;
-}
-
-export async function getFileData(fileId) {
-    const db = await connectToDatabase();
-    
-    const file = await db.collection('notes_files').findOne({
-        _id: new ObjectId(fileId)
-    });
-    
-    return file;
 }
