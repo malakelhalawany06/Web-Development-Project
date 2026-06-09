@@ -135,17 +135,26 @@ document.addEventListener('DOMContentLoaded', function () {
     // Master function to apply BOTH filters at once
     function applyFilters() {
         document.querySelectorAll('.user-card').forEach(card => {
-            const cardRole = (card.dataset.role || '').toLowerCase();
+            // FIX: If data-role is missing, grab data-collection instead (e.g., 'students')
+            let cardRole = (card.dataset.role || card.dataset.collection || '').toLowerCase();
+            
+            // Normalize both the card's role and the tab filter to singular words 
+            // (e.g., turning "students" into "student") to guarantee a match
+            if (cardRole.endsWith('s')) cardRole = cardRole.slice(0, -1);
+            
+            let filter = currentTabFilter;
+            if (filter.endsWith('s') && filter !== 'all') filter = filter.slice(0, -1);
+
             const cardText = card.textContent.toLowerCase();
             
-            const matchesTab = (currentTabFilter === 'all' || cardRole === currentTabFilter);
+            const matchesTab = (filter === 'all' || cardRole === filter);
             const matchesSearch = (currentSearchQuery === '' || cardText.includes(currentSearchQuery));
 
             // Only show the card if it matches BOTH the tab AND the search box
             if (matchesTab && matchesSearch) {
-                card.style.display = ''; // Shows the card using your CSS layout
+                card.style.display = ''; 
             } else {
-                card.style.display = 'none'; // Hides the card
+                card.style.display = 'none'; 
             }
         });
     }
