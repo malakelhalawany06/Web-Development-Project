@@ -1,205 +1,227 @@
-let currentUserId = null;
-let currentCollection = null;
+// Global tracking variables for the warning modal system
+let currentWarningUserId = null;
+let currentWarningCollection = null;
 
-// ── Helpers ──
-function getCardData(btn) {
+// ── 1. EDIT SYSTEM ACTIONS ──
+
+window.showEditModal = function(btn) {
     const card = btn.closest('.user-card');
-    return {
-        card,
-        id: card.dataset.id,
-        collection: card.dataset.collection,
-        role: card.dataset.role
-    };
-}
+    if (!card) return;
 
-async function apiCall(endpoint, body) {
-    try {
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        if (!data.success) alert('Error: ' + (data.error || 'Something went wrong.'));
-        return data;
-    } catch (err) {
-        alert('Network error: ' + err.message);
-        return { success: false };
+    // Direct reads from your EJS data attributes
+    const id = card.dataset.id;
+    const collection = card.dataset.collection;
+    
+    // Safely reads your email text line while cleaning up the "Email:" label prefix
+    const emailLine = card.querySelector('.email-line');
+    let emailText = '';
+    if (emailLine) {
+        emailText = emailLine.textContent.replace(/Email\s*:/i, '').trim();
+        if (emailText === 'N/A') emailText = '';
     }
-}
 
-// ── Delete User ──
-function deleteUser(btn) {
-    if (!confirm('Permanently delete this user? This cannot be undone.')) return;
+    // Reads whatever text is currently inside your <h3> tag
+    const nameHeading = card.querySelector('.user-info h3')?.textContent.trim() || '';
     
-    const { id, collection, card } = getCardData(btn);
-    
-    apiCall('/admin/users/delete', { id, collection }).then(data => {
-        if (data.success) {
-            card.remove(); 
-            showToast('User deleted successfully.', 'success');
-        }
-    });
-}
+    // Splits text safely if a full name happens to be stored inside u.firstName
+    const nameParts = nameHeading.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
 
-// ── Edit User ──
-function showEditModal(btn) {
-    const { id, collection, card } = getCardData(btn);
+    // Inserts values precisely into your matching modal input IDs
+    document.getElementById('editUserId').value = id || '';
+    document.getElementById('editUserCollection').value = collection || '';
+    document.getElementById('editFirstName').value = firstName;
+    document.getElementById('editLastName').value = lastName;
+    document.getElementById('editEmail').value = emailText;
 
-    const fullName = card.querySelector('.user-info h3')?.textContent.trim() || '';
-    const parts = fullName.split(' ');
-    const emailText = card.querySelector('.email-line')?.textContent.replace('Email:', '').trim() || '';
-
-    document.getElementById('editUserId').value = id;
-    document.getElementById('editUserCollection').value = collection;
-    document.getElementById('editFirstName').value = parts[0] || '';
-    document.getElementById('editLastName').value = parts.slice(1).join(' ') || '';
-    document.getElementById('editEmail').value = emailText === 'N/A' ? '' : emailText;
-
+    // Opens up your modal interface wrapper
     document.getElementById('editModal').classList.add('active');
-}
+};
 
-function saveEdit() {
+window.saveEdit = function() {
     const id = document.getElementById('editUserId').value;
     const collection = document.getElementById('editUserCollection').value;
     const firstName = document.getElementById('editFirstName').value.trim();
     const lastName = document.getElementById('editLastName').value.trim();
     const email = document.getElementById('editEmail').value.trim();
 
-    if (!firstName || !email) { 
-        alert('First name and email are required.'); return; 
+    if (!firstName || !email) {
+        alert('First name and email are strictly required.');
+        return;
     }
 
-    apiCall('/admin/users/edit', { id, collection, firstName, lastName, email }).then(data => {
+    fetch('/admin/users/edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, collection, firstName, lastName, email })
+    })
+    .then(res => res.json())
+    .then(data => {
         if (data.success) {
-            closeEditModal();
-            showToast('User updated successfully!', 'success');
+            window.closeEditModal();
             
-            // Update the card visually immediately
+            // Finds the exact user card in your DOM grid and updates it instantly
             const card = document.querySelector(`.user-card[data-id="${id}"]`);
             if (card) {
-                card.querySelector('.user-info h3').textContent = `${firstName} ${lastName}`.trim();
+                const nameHeading = card.querySelector('.user-info h3');
+                if (nameHeading) {
+                    nameHeading.textContent = `${firstName} ${lastName}`.trim();
+                } 
+                
                 const emailLine = card.querySelector('.email-line');
-                if (emailLine) emailLine.innerHTML = `<span class="email-label">Email:</span> ${email}`;
+                if (emailLine) {
+                    emailLine.innerHTML = `<span class="email-label">Email:</span> ${email}`;
+                }
             }
+            alert('User profile has been updated successfully!');
+        } else {
+            alert('Update failed: ' + (data.error || 'Unknown error occurred.'));
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network connection error trying to save.');
     });
-}
+};
 
-function closeEditModal() {
+window.closeEditModal = function() {
     document.getElementById('editModal').classList.remove('active');
-}
+};
 
-// ── Warning User ──
-function showWarningModal(btn) {
-    const { id, collection } = getCardData(btn);
-    currentUserId = id;
-    currentCollection = collection;
-    
+
+// ── 2. WARNING SYSTEM ACTIONS ──
+
+window.showWarningModal = function(btn) {
+    const card = btn.closest('.user-card');
+    if (!card) return;
+
+    currentWarningUserId = card.dataset.id;
+    currentWarningCollection = card.dataset.collection;
+
     document.getElementById('warningMsg').value = '';
     document.getElementById('warningModal').classList.add('active');
-}
+};
 
-function sendWarning() {
+window.sendWarning = function() {
     const message = document.getElementById('warningMsg').value.trim();
-    if (!message) { alert('Please enter a warning message.'); return; }
-    
-    apiCall('/admin/users/send-warning', {
-        id: currentUserId,
-        collection: currentCollection,
-        message
-    }).then(data => {
+    if (!message) {
+        alert('Please provide a short warning message description.');
+        return;
+    }
+
+    fetch('/admin/users/send-warning', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: currentWarningUserId,
+            collection: currentWarningCollection,
+            message: message
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
         if (data.success) {
-            closeWarningModal();
-            showToast('Warning sent successfully.', 'success');
+            window.closeWarningModal();
+            alert('Warning message deployed successfully.');
+        } else {
+            alert('Error dispatching warning: ' + (data.error || 'Submission error.'));
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network connection error trying to notify user.');
     });
-}
+};
 
-function closeWarningModal() {
+window.closeWarningModal = function() {
     document.getElementById('warningModal').classList.remove('active');
-    document.getElementById('warningMsg').value = '';
-    currentUserId = null;
-    currentCollection = null;
-}
+};
 
-// ── Tabs & Search Functionality ──
+
+// ── 3. DELETE ACTIONS ──
+
+window.deleteUser = function(btn) {
+    const card = btn.closest('.user-card');
+    if (!card) return;
+
+    const id = card.dataset.id;
+    const collection = card.dataset.collection;
+
+    if (!confirm('Are you absolutely sure you want to permanently delete this user?')) return;
+
+    fetch('/admin/users/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, collection })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            card.remove();
+            alert('User removed from the tracking grid database.');
+        } else {
+            alert('Delete failed: ' + (data.error || 'Server rejected request.'));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network connection failure during deletion query.');
+    });
+};
+
+
+// ── 4. TABS & FILTER ENGINE ──
+
 document.addEventListener('DOMContentLoaded', function () {
-    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabBtns = document.querySelectorAll('.filter-tabs .tab-btn');
     const searchInput = document.getElementById('userSearch');
-    
-    // Variables to track what is currently selected/typed
-    let currentTabFilter = 'all';
-    let currentSearchQuery = '';
+    const cards = document.querySelectorAll('.users-grid .user-card');
 
-    // Master function to apply BOTH filters at once
-    function applyFilters() {
-        document.querySelectorAll('.user-card').forEach(card => {
-            // FIX: If data-role is missing, grab data-collection instead (e.g., 'students')
-            let cardRole = (card.dataset.role || card.dataset.collection || '').toLowerCase();
-            
-            // Normalize both the card's role and the tab filter to singular words 
-            // (e.g., turning "students" into "student") to guarantee a match
-            if (cardRole.endsWith('s')) cardRole = cardRole.slice(0, -1);
-            
-            let filter = currentTabFilter;
-            if (filter.endsWith('s') && filter !== 'all') filter = filter.slice(0, -1);
+    let activeFilterTab = 'all';
+    let activeSearchQuery = '';
 
-            const cardText = card.textContent.toLowerCase();
-            
-            const matchesTab = (filter === 'all' || cardRole === filter);
-            const matchesSearch = (currentSearchQuery === '' || cardText.includes(currentSearchQuery));
+    function runInterfaceFilters() {
+        cards.forEach(card => {
+            const roleAttribute = (card.dataset.role || '').toLowerCase().trim();
+            const textContentDump = card.textContent.toLowerCase();
 
-            // Only show the card if it matches BOTH the tab AND the search box
+            const matchesTab = (activeFilterTab === 'all' || roleAttribute === activeFilterTab);
+            const matchesSearch = (activeSearchQuery === '' || textContentDump.includes(activeSearchQuery));
+
             if (matchesTab && matchesSearch) {
-                card.style.display = ''; 
+                card.style.display = '';
             } else {
-                card.style.display = 'none'; 
+                card.style.display = 'none';
             }
         });
     }
 
-    // 1. Listen for Tab Clicks
+    // Handles category changing across layout filtering tabs
     tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Update active styling
+        btn.addEventListener('click', function () {
             tabBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            this.classList.add('active');
 
-            // Update filter and run
-            currentTabFilter = btn.dataset.filter.toLowerCase();
-            applyFilters();
+            activeFilterTab = this.dataset.filter.toLowerCase().trim();
+            runInterfaceFilters();
         });
     });
 
-    // 2. Listen for Search Typing
+    // Listens to keyboard inputs typing inside search bar query field
     if (searchInput) {
         searchInput.addEventListener('input', function () {
-            currentSearchQuery = this.value.toLowerCase();
-            applyFilters();
+            activeSearchQuery = this.value.toLowerCase().trim();
+            runInterfaceFilters();
         });
     }
 
-    // Modal background close clicks
+    // Click on modal background overlay space to clear it out safely
     document.querySelectorAll('.um-modal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             if (e.target === this) {
                 this.classList.remove('active');
             }
         });
     });
 });
-
-// ── Toast Notifications ──
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `um-toast um-toast-${type}`;
-    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
-    document.body.appendChild(toast);
-
-    requestAnimationFrame(() => toast.classList.add('visible'));
-    setTimeout(() => {
-        toast.classList.remove('visible');
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
-}
