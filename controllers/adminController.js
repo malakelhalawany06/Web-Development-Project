@@ -1,7 +1,7 @@
 import { connectToDatabase } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcrypt';
-
+import { sendWarningEmail } from '../utils/emailService.js';
 async function getUserGrowthData(days) {
     try {
         const db = await connectToDatabase();
@@ -288,16 +288,49 @@ export const logoutAllDevices = async (req, res) => {
 export const sendWarning = async (req, res) => {
     try {
         const { id, collection, message } = req.body;
+        
+        if (!id || !collection || !message) {
+            return res.status(400).json({ success: false, error: 'Missing required parameters' });
+        }
+
         const db = await connectToDatabase();
+        
+        // Fetch user data to extract target name and email mapping coordinates
+        const user = await db.collection(collection).findOne({ _id: new ObjectId(id) });
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'Target user record not found' });
+        }
+
+        const userEmail = user.mail || user.email;
+        const userName = user.name || user.firstName || 'User';
+
+        if (!userEmail || userEmail === 'N/A') {
+            return res.status(400).json({ success: false, error: 'User does not have a valid registered email address' });
+        }
+
+        // Dispatch email wrapper
+        const emailResult = await sendWarningEmail(userEmail, userName, message);
+
+        // 2. Optimized failure evaluation logic line
+        if (!emailResult || !emailResult.success) {
+            return res.status(500).json({ 
+                success: false, 
+                error: emailResult?.error || 'Failed to send warning email out via SMTP handler' 
+            });
+        }
+
+        // 3. Document historical ledger entry to the warnings database collection
         await db.collection('warnings').insertOne({
             userId: new ObjectId(id),
             userCollection: collection,
             message,
             createdAt: new Date()
         });
+
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Warning notification handler crash logic:", err);
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 

@@ -110,6 +110,7 @@ window.sendWarning = function() {
         return;
     }
 
+    // This fetch cleanly maps parameters over to your updated adminController.js handler!
     fetch('/admin/users/send-warning', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +124,7 @@ window.sendWarning = function() {
     .then(data => {
         if (data.success) {
             window.closeWarningModal();
-            alert('Warning message deployed successfully.');
+            alert('Warning message deployed and email notification sent successfully.');
         } else {
             alert('Error dispatching warning: ' + (data.error || 'Submission error.'));
         }
