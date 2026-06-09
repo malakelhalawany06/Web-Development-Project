@@ -1,4 +1,4 @@
-// controllers/sharedController.js - FIXED to use the model
+// controllers/sharedController.js 
 import multer from 'multer';  
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../config/db.js';
@@ -7,7 +7,7 @@ import { createMaterial, getUserSharedMaterials } from '../models/SharedMaterial
 const upload = multer({ storage: multer.memoryStorage() });
 export const uploadMiddleware = upload.single('file');
 
-// Get user's own shared materials (history) - NOW USING THE MODEL
+// Get user's own shared materials (history) 
 export const getUserSharedMaterialsController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
@@ -45,7 +45,7 @@ export const createSharedMaterialController = async (req, res) => {
         let userType = 'student';
         let academicYear = null;
         
-        if (user) {
+        if (user) { 
             userType = 'instructor';
         } else {
             user = await db.collection('students').findOne({ 
@@ -96,7 +96,7 @@ export const createSharedMaterialController = async (req, res) => {
         
         const result = await db.collection('notes_files').insertOne(fileData);
         
-        // 2. Save to shared_materials (for history) - USING THE MODEL
+        // 2. Save to shared_materials (for history)
         await createMaterial({
             title: title,
             description: description || '',
