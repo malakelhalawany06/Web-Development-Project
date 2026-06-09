@@ -1,7 +1,3 @@
-// ========================
-// Q&A – per‑major default questions
-// ========================
-
 let questions = [];
 let currentUser = null;
 
@@ -9,10 +5,9 @@ function getStorageKey() {
   return currentUser ? `user_${currentUser.username}_qa_forum` : null;
 }
 
-// Generate default questions based on major (from your images)
 function generateDefaultQuestions(user) {
   const { firstName, lastName, major, academicYear, role } = user;
-  if (role === 'instructor') return []; // instructors get no default questions
+  if (role === 'instructor') return [];
 
   const yearNum = parseInt(academicYear) || 1;
   const author = `${firstName} ${lastName}`;
@@ -63,7 +58,6 @@ function generateDefaultQuestions(user) {
   return questions;
 }
 
-// Get current logged‑in user (no fallback)
 function getCurrentUser() {
   if (!window.UserManager) return null;
   if (window.UserManager.getAllUsers().length === 0) {
@@ -83,7 +77,6 @@ function loadData() {
   const stored = localStorage.getItem(key);
   if (stored) {
     questions = JSON.parse(stored);
-    // Check if first question's major matches current user's major (simple heuristic)
     const expectedTitle = generateDefaultQuestions(currentUser)[0]?.title;
     const firstTitle = questions[0]?.title;
     if (expectedTitle && firstTitle && !firstTitle.includes(expectedTitle.split('–')[0]?.trim())) {
@@ -163,7 +156,6 @@ function renderQuestions() {
     `;
   }).join('');
 
-  // Attach event listeners
   document.querySelectorAll('.question-title, .expand-icon').forEach(el => {
     el.addEventListener('click', (e) => {
       const id = parseInt(el.getAttribute('data-id'));
@@ -346,7 +338,6 @@ function setupFilters() {
   });
 }
 
-// Manual reset button (add to HTML if needed)
 function resetMyQuestions() {
   if (!currentUser) return;
   if (confirm(`Reset all questions for ${currentUser.firstName}? This will replace your current questions with default ones for your major.`)) {
@@ -369,7 +360,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAskForm();
   setupFilters();
 
-  // Optional: add reset button event if exists
   const resetBtn = document.getElementById("resetQuestionsBtn");
   if (resetBtn) resetBtn.addEventListener("click", resetMyQuestions);
 });

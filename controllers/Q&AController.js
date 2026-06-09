@@ -1,8 +1,6 @@
 import Question from '../models/Q&AModel.js';
 
-// Helper function to safely extract user data matching your database schema requirements
 function getActiveUser(req, res) {
-  // If app.js middleware found a real logged-in user session, use it!
   if (res.locals.user) {
     return {
       firstName: res.locals.user.firstName || res.locals.user.name || "Logged-in",
@@ -12,7 +10,6 @@ function getActiveUser(req, res) {
     };
   }
   
-  // Fallback fallback user for local developer testing when not logged in
   return {
     firstName: "Ahmed",
     lastName: "Khalid",
@@ -25,24 +22,19 @@ async function getQApage(req, res) {
   try {
     const currentFilter = req.query.tag || 'all';
     
-    // 1. Grab the current user (either logged-in or our fallback testing user)
     const currentUser = getActiveUser(req, res);
 
-    // 2. Build the filter: Lock it down to the user's exact Major and Academic Year
     let queryFilter = {
       'author.major': currentUser.major,
       'author.academicYear': currentUser.academicYear
     };
 
-    // 3. If they also clicked a tag sidebar/filter (like 'Calculus'), add it to the search
     if (currentFilter !== 'all') {
       queryFilter.tag = currentFilter;
     }
 
-    // 4. Fetch only the matching questions from MongoDB
     const questions = await Question.find(queryFilter).sort({ timestamp: -1 });
 
-    // 5. Render the page with the filtered list
     res.render('Q&A', { 
       questions, 
       currentFilter, 
@@ -59,19 +51,16 @@ async function addQuestion(req, res) {
   try {
     console.log("📨 Form Data Received by Backend:", req.body);
 
-    // Explicitly grab the frontend input names ('title', 'body', and 'tag')
     const title = req.body.title || req.body.questionTitle;
     const description = req.body.body || req.body.description || req.body.content; 
     const tag = req.body.tag || 'all';
 
     const currentUser = getActiveUser(req, res);
 
-    // Validation check
     if (!title || !description) {
       return res.status(400).send('Title and description are required.');
     }
 
-    // Save strictly to Mongoose
     await Question.create({
       title: title.trim(),
       description: description.trim(),
@@ -79,7 +68,6 @@ async function addQuestion(req, res) {
       author: currentUser
     });
     
-    // Redirect cleanly back to the forum dashboard
     res.redirect('/qa');
   } catch (err) {
     console.error("❌ Mongoose Save Error Details:", err);
@@ -126,7 +114,6 @@ async function deleteQuestion(req, res) {
   }
 }
 
-// Modern ES Module group export
 export default {
   getQApage,
   addQuestion,

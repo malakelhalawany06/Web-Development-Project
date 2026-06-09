@@ -1,6 +1,4 @@
-// ========================
-// REMINDERS – per‑user subjects from images
-// ========================
+
 
 let reminders = [];
 let currentUser = null;
@@ -9,7 +7,6 @@ function getStorageKey() {
   return currentUser ? `user_${currentUser.username}_reminders` : null;
 }
 
-// Subject map exactly from your images
 function getSubjectsForUser(user) {
   const { university, major, academicYear, role } = user;
   if (role === 'instructor' || !academicYear || academicYear === '') return [];
@@ -67,7 +64,6 @@ function getSubjectsForUser(user) {
   }
   let subjects = majorSubjects[yearNum];
   if (!subjects) {
-    // fallback to nearest lower year or year 1
     const years = Object.keys(majorSubjects).map(Number).sort((a,b)=>a-b);
     const closest = years.reduce((p,c) => (c <= yearNum ? c : p), 1);
     subjects = majorSubjects[closest];
@@ -107,7 +103,6 @@ function generateDefaultReminders(user) {
   return reminders;
 }
 
-// Get current logged-in user – no fallback!
 function getCurrentUser() {
   if (!window.UserManager) return null;
   if (window.UserManager.getAllUsers().length === 0) {
@@ -127,7 +122,6 @@ function loadReminders() {
   const stored = localStorage.getItem(key);
   if (stored) {
     reminders = JSON.parse(stored);
-    // Optional: verify that the first reminder matches expected subjects for this user
     const expectedSubjects = getSubjectsForUser(currentUser);
     const firstSubject = reminders[0]?.text.split(' – ')[0];
     if (expectedSubjects.length > 0 && !expectedSubjects.includes(firstSubject)) {
@@ -216,7 +210,7 @@ function renderReminders() {
       </div>
     `;
   }).join("");
-  // Attach listeners
+
   document.querySelectorAll('.reminder-check').forEach(cb => cb.addEventListener('change', (e) => { const id = parseInt(e.target.getAttribute('data-id')); toggleComplete(id, e.target.checked); }));
   document.querySelectorAll('.delete-reminder').forEach(btn => btn.addEventListener('click', (e) => { const id = parseInt(btn.getAttribute('data-id')); deleteReminder(id); }));
   document.querySelectorAll('.reminder-notes-toggle').forEach(btn => btn.addEventListener('click', (e) => { const id = parseInt(btn.getAttribute('data-id')); const notesDiv = document.getElementById(`notes-${id}`); if (notesDiv) notesDiv.classList.toggle('show'); }));
@@ -274,7 +268,7 @@ function setupSearch() {
   searchDiv.replaceWith(input);
 }
 
-// Manual reset button (add this to HTML if you want)
+
 function resetMyReminders() {
   if (!currentUser) return;
   if (confirm(`Reset all reminders for ${currentUser.firstName}? This will replace your current reminders with default subjects for your major.`)) {
