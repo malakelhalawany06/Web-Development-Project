@@ -14,7 +14,7 @@ export const getUserGroupsController = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-// controllers/groupController.js - Update createGroupController
+// controllers/groupController.js 
 export const createGroupController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
@@ -30,7 +30,7 @@ export const createGroupController = async (req, res) => {
             course,
             category: category || 'cs',
             major: major || 'Computer Science',
-            academic_year: academic_year || null,  // ← ADD THIS
+            academic_year: academic_year || null, 
             description,
             createdBy: req.session.userId
         });
@@ -65,8 +65,6 @@ export const leaveGroupController = async (req, res) => {
     }
 };
 
-// Get group details
-// controllers/groupController.js - Update this function
 export const getGroupDetailsController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
@@ -118,7 +116,7 @@ export const sendMessageController = async (req, res) => {
             );
         }
         
-        const newMessage = {
+        const newMessage = { //object for a message 
             senderId: req.session.userId,
             senderName: user?.name || 'User',
             text: text,
@@ -140,7 +138,7 @@ export const sendMessageController = async (req, res) => {
     }
 };
 
-// controllers/groupController.js - ADD THESE FUNCTIONS
+
 
 // Get group messages
 export const getGroupMessagesController = async (req, res) => {
@@ -225,9 +223,9 @@ export const addResourceController = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-// controllers/groupController.js - ADD THIS FUNCTION
 
-// Get group members
+
+// returns a list of all members in a specific study group, with their names formatted for display
 export const getGroupMembersController = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not logged in' });
     
