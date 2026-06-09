@@ -20,7 +20,7 @@ export async function createGroup(groupData) {
         createdBy: new ObjectId(groupData.createdBy),
         createdByName: creator?.name || 'Unknown',
         major: creator?.major || 'Computer Science',
-        academic_year: creator?.academic_year || null,  // ← ADD THIS FIELD
+        academic_year: creator?.academic_year || null,  
         members: [new ObjectId(groupData.createdBy)],
         memberNames: [creator?.name || 'Unknown'],
         status: 'active',
