@@ -2,10 +2,16 @@ import nodemailer from 'nodemailer';
 
 // Create a reusable transporter using the system's SMTP configuration
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // You can swap this out for Outlook, SendGrid, etc.
+    host: 'smtp.gmail.com', // Explicitly use Gmail's direct SMTP host
+    port: 465,              // Force the secure SSL port (Render leaves this open!)
+    secure: true,           // Must be true for port 465
     auth: {
-        user: process.env.EMAIL_USER, // Your system email address
-        pass: process.env.EMAIL_PASS  // Your system app password
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS  
+    },
+    // Optional: Tells Node to ignore strict local network certificate limits if they trip up
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
