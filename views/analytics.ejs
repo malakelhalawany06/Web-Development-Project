@@ -15,11 +15,10 @@
         <%- include('partials/sidebar-admin', { activePage: 'analytics' }) %>
 
         <div class="main">
-            <%- include('partials/topbar', { user: locals.user, userRole: userRole }) %>
+            <%- include('partials/topbar', { user: user, userRole: userRole }) %>
 
             <div class="content">
 
-                <!-- Stats Cards -->
                 <div class="analytics-grid">
                     <div class="stat-card">
                         <div class="stat-icon" style="background: rgba(59,130,246,0.1); color:#3b82f6;">
@@ -27,7 +26,7 @@
                         </div>
                         <div class="stat-details">
                             <h3>Total Users</h3>
-                            <div class="stat-number"><%= locals.totalUsers || 0 %></div>
+                            <div class="stat-number"><%= totalUsers || 0 %></div>
                             <div class="stat-trend positive">
                                 <i class="fas fa-chart-line"></i> All time
                             </div>
@@ -40,7 +39,7 @@
                         </div>
                         <div class="stat-details">
                             <h3>Students</h3>
-                            <div class="stat-number"><%= locals.totalStudents || 0 %></div>
+                            <div class="stat-number"><%= totalStudents || 0 %></div>
                             <div class="stat-trend positive">
                                 <i class="fas fa-user-graduate"></i> Active learners
                             </div>
@@ -53,28 +52,14 @@
                         </div>
                         <div class="stat-details">
                             <h3>Instructors</h3>
-                            <div class="stat-number"><%= locals.totalInstructors || 0 %></div>
+                            <div class="stat-number"><%= totalInstructors || 0 %></div>
                             <div class="stat-trend positive">
                                 <i class="fas fa-star"></i> Content creators
                             </div>
                         </div>
                     </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(239,68,68,0.1); color:#ef4444;">
-                            <i class="fas fa-circle-user"></i>
-                        </div>
-                        <div class="stat-details">
-                            <h3>Active Now</h3>
-                            <div class="stat-number"><%= locals.activeUsers || 0 %></div>
-                            <div class="stat-trend">
-                                <i class="fas fa-clock"></i> Last 5 minutes
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Growth Chart -->
                 <div class="panel chart-panel">
                     <div class="panel-header">
                         <div class="panel-title">
@@ -92,7 +77,6 @@
                     </div>
                 </div>
 
-                <!-- Distribution + Activity -->
                 <div class="stats-row">
                     <div class="panel stats-panel">
                         <div class="panel-header">
@@ -136,19 +120,14 @@
                     </div>
                 </div>
 
-            </div><!-- end .content -->
-        </div><!-- end .main -->
-    </div><!-- end .layout -->
-
-    <script>
+            </div></div></div><script>
         window.initialStats = {
-            totalUsers: <%= locals.totalUsers || 0 %>,
-            totalStudents: <%= locals.totalStudents || 0 %>,
-            totalInstructors: <%= locals.totalInstructors || 0 %>,
-            activeUsers: <%= locals.activeUsers || 0 %>
+            totalUsers: <%= typeof totalUsers !== 'undefined' ? totalUsers : 0 %>,
+            totalStudents: <%= typeof totalStudents !== 'undefined' ? totalStudents : 0 %>,
+            totalInstructors: <%= typeof totalInstructors !== 'undefined' ? totalInstructors : 0 %>
         };
-        window.chartData = <%- JSON.stringify(locals.chartData || { labels: [], data: [] }) %>;
-        window.recentActivities = <%- JSON.stringify(locals.recentActivities || []) %>;
+        window.chartData = <%- JSON.stringify(typeof chartData !== 'undefined' ? chartData : { labels: [], data: [] }) %>;
+        window.recentActivities = <%- JSON.stringify(typeof recentActivities !== 'undefined' ? recentActivities : []) %>;
     </script>
     <script src="/js/analytics.js"></script>
 </body>

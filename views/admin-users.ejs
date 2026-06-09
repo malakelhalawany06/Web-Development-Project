@@ -62,7 +62,7 @@
                                         <% } %>
                                     </div>
                                     <div class="user-info">
-                                        <h3><%= u.firstName %></h3>
+                                        <h3><%= u.firstName %> <%= u.lastName || '' %></h3>
                                         <span class="username">@<%= u.username || (u.email ? u.email.split('@')[0] : 'user') %></span>
                                     </div>
                                 </div>

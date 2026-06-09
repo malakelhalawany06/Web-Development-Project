@@ -12,39 +12,7 @@ async function loadChartData(period) {
             growthChart.data.datasets[0].data = data;
             growthChart.update();
         } else {
-            const ctx = document.getElementById('growthChart').getContext('2d');
-            growthChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'New Users',
-                        data,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59,130,246,0.08)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#3b82f6',
-                        pointRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: {
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#888' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#888' }
-                        }
-                    }
-                }
-            });
+            createChart(labels, data);
         }
     } catch (err) {
         console.error('Chart load error:', err);
@@ -57,6 +25,42 @@ async function loadChartData(period) {
             ctx.fillText('Failed to load chart data.', 20, 50);
         }
     }
+}
+
+function createChart(labels, data) {
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    growthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'New Users',
+                data,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,0.08)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#3b82f6',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#888' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#888' }
+                }
+            }
+        }
+    });
 }
 
 function escapeHtml(str) {
@@ -98,8 +102,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Initialize Chart using preloaded database variables
+    if (window.chartData && window.chartData.labels && window.chartData.labels.length > 0) {
+        createChart(window.chartData.labels, window.chartData.data);
+    } else {
+        loadChartData(7);
+    }
+
     // Chart toggle buttons
-    loadChartData(7);
     document.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
