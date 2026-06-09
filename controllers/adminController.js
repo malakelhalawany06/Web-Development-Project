@@ -3,41 +3,62 @@ import { ObjectId } from 'mongodb';
 import bcrypt from 'bcrypt';
 
 async function getUserGrowthData(days) {
-    const db = await connectToDatabase();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    startDate.setHours(0, 0, 0, 0);
+    try {
+        const db = await connectToDatabase();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        startDate.setHours(0, 0, 0, 0);
 
-    const pipeline = [
-        { $match: { createdAt: { $gte: startDate } } },
-        {
-            $group: {
-                _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                count: { $sum: 1 }
+        const pipeline = [
+            { 
+                $match: { 
+                    $or: [
+                        { createdAt: { $gte: startDate } },
+                        { _id: { $gte: ObjectId.createFromTime(startDate.getTime() / 1000) } }
+                    ]
+                } 
+            },
+            {
+                $group: {
+                    _id: { 
+                        $dateToString: { 
+                            format: "%Y-%m-%d", 
+                            date: { $ifNull: ["$createdAt", { $toDate: "$_id" }] } 
+                        } 
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ];
+
+        const studentGrowth = await db.collection('students').aggregate(pipeline).toArray();
+        const instructorGrowth = await db.collection('instructors').aggregate(pipeline).toArray();
+
+        const merged = new Map();
+        const totalGrowth = [...studentGrowth, ...instructorGrowth];
+        
+        totalGrowth.forEach(item => {
+            if (item && item._id) {
+                merged.set(item._id, (merged.get(item._id) || 0) + item.count);
             }
-        },
-        { $sort: { _id: 1 } }
-    ];
+        });
 
-    const studentGrowth = await db.collection('students').aggregate(pipeline).toArray();
-    const instructorGrowth = await db.collection('instructors').aggregate(pipeline).toArray();
+        const labels = [];
+        const data = [];
+        for (let i = 0; i < days; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+            const dateStr = date.toISOString().split('T')[0];
+            labels.push(dateStr);
+            data.push(merged.get(dateStr) || 0);
+        }
 
-    const merged = new Map();
-    [...studentGrowth, ...instructorGrowth].forEach(item => {
-        merged.set(item._id, (merged.get(item._id) || 0) + item.count);
-    });
-
-    const labels = [];
-    const data = [];
-    for (let i = 0; i < days; i++) {
-        const date = new Date(startDate);
-        date.setDate(startDate.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
-        labels.push(dateStr);
-        data.push(merged.get(dateStr) || 0);
+        return { labels, data };
+    } catch (error) {
+        console.error("Error in getUserGrowthData aggregation:", error);
+        return { labels: [], data: [] };
     }
-
-    return { labels, data };
 }
 
 // ==================== PAGE CONTROLLERS ====================
@@ -83,10 +104,6 @@ export const getAnalytics = async (req, res) => {
 
         const totalUsers = totalStudents + totalInstructors;
 
-        const activeUsers = await db.collection('students').countDocuments({
-            lastActive: { $gte: new Date(Date.now() - 5 * 60 * 1000) }
-        });
-
         const pendingAccounts = await db.collection('students').countDocuments({
             status: 'pending'
         });
@@ -118,7 +135,6 @@ export const getAnalytics = async (req, res) => {
             totalUsers,
             totalStudents,
             totalInstructors,
-            activeUsers,
             pendingAccounts,
             chartData,
             recentActivities
@@ -175,7 +191,6 @@ export const getUserManagement = async (req, res) => {
 
 // ==================== API CONTROLLERS ====================
 
-// NEW: Edit function that saves data directly to the database
 export const editUser = async (req, res) => {
     try {
         const { id, collection, firstName, lastName, email } = req.body;
@@ -218,7 +233,6 @@ export const updateUserStatus = async (req, res) => {
     }
 };
 
-// FIXED: Deletes the user correctly
 export const deleteUser = async (req, res) => {
     try {
         const { id, collection } = req.body;

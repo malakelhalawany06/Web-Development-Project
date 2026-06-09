@@ -3,7 +3,7 @@ import { connectToDatabase } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 
 const COLLECTION = 'study_groups';
-// models/Group.js - Update createGroup to include academic_year
+
 export async function createGroup(groupData) {
     const db = await connectToDatabase();
     
@@ -20,7 +20,7 @@ export async function createGroup(groupData) {
         createdBy: new ObjectId(groupData.createdBy),
         createdByName: creator?.name || 'Unknown',
         major: creator?.major || 'Computer Science',
-        academic_year: creator?.academic_year || null,  // ← ADD THIS FIELD
+        academic_year: creator?.academic_year || null,  
         members: [new ObjectId(groupData.createdBy)],
         memberNames: [creator?.name || 'Unknown'],
         status: 'active',
@@ -36,7 +36,7 @@ export async function createGroup(groupData) {
     const result = await db.collection('study_groups').insertOne(newGroup);
     return { _id: result.insertedId, ...newGroup };
 }
-// models/Group.js - Update getUserGroups to filter by major AND academic_year
+
 export async function getUserGroups(userId) {
     const db = await connectToDatabase();
     
@@ -70,7 +70,7 @@ export async function getUserGroups(userId) {
     
     return allGroups;
 }
-// models/Group.js - Update joinGroup function
+
 export async function joinGroup(groupId, userId) {
     const db = await connectToDatabase();
     
@@ -119,7 +119,7 @@ export async function leaveGroup(groupId, userId) {
     
     return result;
 }
-// models/Group.js - Update this function
+
 export async function getGroupById(groupId) {
     const db = await connectToDatabase();
     const group = await db.collection('study_groups').findOne({ 

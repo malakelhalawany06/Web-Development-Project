@@ -59,11 +59,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ currentPassword, newPassword })
-                    });const response = await fetch('/personal-info/change-password', { // <-- FIXED endpoint
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ currentPassword, newPassword })
-});
+                    });
 
                     const result = await response.json();
                     if (response.ok) {
@@ -85,21 +81,19 @@
         const profileForm = document.getElementById('profileForm');
         if (!profileForm) return;
 
-        profileForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
+        // Listen for the form submission
+        profileForm.addEventListener('submit', function(e) {
+            
+            // 1. Grab all the input values from the page
             const firstName = document.getElementById('fname')?.value.trim();
             const lastName = document.getElementById('lname')?.value.trim();
-            const year = document.getElementById('year')?.value.trim();
             const email = document.getElementById('email')?.value.trim();
-            const username = document.getElementById('username')?.value.trim();
-            const major = document.getElementById('major')?.value;
-            const uni = document.getElementById('uni')?.value;
+            const yearInput = document.getElementById('year');
 
             let emailRegex = /^[\w.-]+@([\w-]+\.)+[\w-]{2,}$/;
             let valid = true;
 
-            // First Name Validation Check
+            // 2. Run your input validation checks
             if (!firstName) {
                 showError('fnameError', 'You must enter a first name');
                 valid = false;
@@ -110,7 +104,6 @@
                 clearError('fnameError');
             }
 
-            // Last Name Validation Check
             if (!lastName) {
                 showError('lnameError', 'You must enter a last name');
                 valid = false;
@@ -121,24 +114,17 @@
                 clearError('lnameError');
             }
 
-            // Academic Year Input Check
-            // Inside your public/js/personalInfo.js validation block check:
-const yearInput = document.getElementById('year');
+            if (yearInput && yearInput.offsetParent !== null) {
+                if (!yearInput.value.trim()) {
+                    showError('yearError', 'Please enter a valid academic year track.');
+                    valid = false;
+                } else {
+                    clearError('yearError');
+                }
+            } else {
+                clearError('yearError');
+            }
 
-// Only run strict verification if the year field exists and is visible on screen!
-if (yearInput && yearInput.offsetParent !== null) {
-    if (!yearInput.value.trim()) {
-        showError('yearError', 'Please enter a valid academic year track.');
-        valid = false;
-    } else {
-        clearError('yearError');
-    }
-} else {
-    // If hidden or missing (for instructors), bypass validation entirely
-    clearError('yearError');
-}
-
-            // Email Address Format Check
             if (!email || !emailRegex.test(email)) {
                 showError('emailError', 'Invalid email structure format.');
                 valid = false;
@@ -146,29 +132,17 @@ if (yearInput && yearInput.offsetParent !== null) {
                 clearError('emailError');
             }
 
-            if (!valid) return;
-
-            try {
-               const response = await fetch('/personal-info/update', { // <-- FIXED endpoint
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fname: firstName, lname: lastName, username, email, major, year, uni })
-});
-
-                const result = await response.json();
-                if (response.ok) {
-                    const saveBtn = document.getElementById('saveChangesBtn');
-                    if (saveBtn) {
-                        const baseText = saveBtn.textContent;
-                        saveBtn.textContent = '✓ Profile Saved!';
-                        setTimeout(() => { saveBtn.textContent = baseText; }, 1500);
-                    }
-                } else {
-                    alert(result.error || 'General transaction modification error.');
-                }
-            } catch (err) {
-                console.error(err);
+            // 3. THE CRITICAL LOGIC POINT:
+            // If the data is BAD (valid is false), we call e.preventDefault() to block the save.
+            if (!valid) {
+                e.preventDefault(); 
+                return;
             }
+
+            // If the data is GOOD (valid is true), we DO NOT block it. 
+            // We just let the function finish cleanly. 
+            // The browser will natively submit the form to your backend,
+            // and your backend's res.redirect('/profile') will finally handle the page swap!
         });
     }
 
@@ -181,4 +155,3 @@ if (yearInput && yearInput.offsetParent !== null) {
         if (el) el.textContent = "";
     }
 })();
-
