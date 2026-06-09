@@ -6,7 +6,23 @@ import dotenv from 'dotenv';
 import { connectToDatabase } from './config/db.js';
 import { findById } from './models/userModel.js';
 import mongoose from 'mongoose'; // ✅ Global Mongoose import
+import multer from 'multer'; // or: const multer = require('multer'); if using CommonJS
 
+// 1. Configure where to save files and what to name them
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/avatars/'); // The folder path where images will live
+    },
+    filename: function (req, file, cb) {
+        // Creates a unique name: userid-timestamp.jpg
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = file.originalname.substring(file.originalname.lastIndexOf('.'));
+        cb(null, 'avatar-' + uniqueSuffix + ext);
+    }
+});
+
+// 2. DEFINE THE MISSING VARIABLE: Initialize multer with our storage settings
+const upload = multer({ storage: storage });
 // Route Imports
 import authRoutes from './routes/authRoutes.js';
 import pageRoutes from './routes/pageRoutes.js';
@@ -84,7 +100,10 @@ app.use('/', pageRoutes);
 //  FIX: Mount it explicitly with the /profile prefix
 app.use('/profile', profileRoutes);       // Mounts front page layout views
 app.use('/personal-info', profileRoutes); // Base URL path is now /profile
-
+app.post('/api/user/upload-avatar', upload.single('avatar'), (req, res) => {
+    // Your upload handling logic here
+    res.json({ success: true, url: `/uploads/avatars/${req.file.filename}` });
+});
 // 🎓 MOUNTED: GPA & Project Manager Controllers (View pages + Engine APIs)
 app.use('/', gpaRoutes);
 app.use('/', projectManagerRoutes);
