@@ -1,4 +1,4 @@
-// routes/fileRoutes.js - CLEANED VERSION
+// routes/fileRoutes.js
 import express from 'express';
 import { 
     getSharedFilesController,
