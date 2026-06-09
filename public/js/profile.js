@@ -46,11 +46,11 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('avatar', file);
 
             try {
-                // Submit the asset directly to our backend express route API
-                const response = await fetch('/api/user/upload-avatar', {
-                    method: 'POST',
-                    body: formData
-                });
+               
+const response = await fetch('/api/upload-avatar', { 
+    method: 'POST',
+    body: formData
+});
 
                 const result = await response.json();
 
