@@ -4,10 +4,7 @@ import { ObjectId } from 'mongodb';
 
 const COLLECTION = 'notes_files';
 
-/**
- * Create a new file/note
- */
-// models/File.js - UPDATE the createFile function
+
 export async function createFile(fileData) {
     const db = await connectToDatabase();
     
@@ -17,8 +14,8 @@ export async function createFile(fileData) {
         fileName: fileData.fileName,
         fileSize: fileData.fileSize,
         fileIcon: fileData.fileIcon || '📄',
-        fileType: fileData.fileType || '',        // ADD THIS
-        fileData: fileData.fileData || null,      // ADD THIS - CRITICAL!
+        fileType: fileData.fileType || '',        
+        fileData: fileData.fileData || null,      
         course: fileData.course,
         uploadedBy: new ObjectId(fileData.uploadedBy),
         sharedWith: [],
@@ -74,20 +71,57 @@ export async function getFileById(fileId) {
  */
 export async function deleteFile(fileId, userId) {
     const db = await connectToDatabase();
-    const oid = new ObjectId(userId);
-    const uid = userId.toString();
-
-    return db.collection('notes_files').deleteOne({
-        _id: new ObjectId(fileId),
-        $or: [
-            { uploadedBy: oid },
-            { uploadedBy: uid },
-            { sharedById: oid },
-            { sharedById: uid }
-        ]
+    
+    // Get the file
+    const file = await db.collection('notes_files').findOne({ 
+        _id: new ObjectId(fileId) 
     });
+    
+    if (!file) {
+        throw new Error('File not found');
+    }
+    
+    // Check if user is the owner
+    const isOwner = file.sharedById?.toString() === userId;
+    
+    if (isOwner) {
+        // OWNER: Permanently delete from database
+        
+        // 1. Clean up any hide records for this file
+        await db.collection('hidden_files').deleteMany({
+            fileId: new ObjectId(fileId)
+        });
+        
+        // 2. Delete the actual file from notes_files
+        const result = await db.collection('notes_files').deleteOne({ 
+            _id: new ObjectId(fileId) 
+        });
+        
+        return result;
+        
+    } else {
+        // NON-OWNER: Just hide from their view
+        
+        // Check if already hidden
+        const existing = await db.collection('hidden_files').findOne({
+            fileId: new ObjectId(fileId),
+            userId: new ObjectId(userId)
+        });
+        
+        if (existing) {
+            throw new Error('File already hidden');
+        }
+        
+        // Add to hidden_files collection
+        const result = await db.collection('hidden_files').insertOne({
+            fileId: new ObjectId(fileId),
+            userId: new ObjectId(userId),
+            hiddenAt: new Date()
+        });
+        
+        return result;
+    }
 }
-
 /**
  * Share a file with another user
  */
@@ -102,9 +136,6 @@ export async function shareFile(fileId, targetUserId) {
     return result;
 }
 
-/**
- * Get files shared with a user
- */
 export async function getSharedFiles(userId) {
     const db = await connectToDatabase();
     
@@ -115,11 +146,7 @@ export async function getSharedFiles(userId) {
     return files;
 }
 
-/**
- * Add a shared file (from Shared Materials page)
- */
-// models/File.js - Make sure addSharedFile saves year as number
-// models/File.js - Update addSharedFile
+
 export async function addSharedFile(fileData) {
     const db = await connectToDatabase();
     
@@ -131,7 +158,7 @@ export async function addSharedFile(fileData) {
         fileName: fileData.fileName,
         fileSize: fileData.fileSize,
         fileIcon: fileData.fileIcon || '📄',
-         fileType: fileData.fileType || '',        // ADD THIS
+         fileType: fileData.fileType || '',        
         fileData: fileData.fileData || null,   
         course: fileData.course,
         sharedBy: fileData.sharedBy,
