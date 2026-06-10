@@ -2,22 +2,11 @@ import nodemailer from 'nodemailer';
 
 // Create a reusable transporter using the system's SMTP configuration
 const transporter = nodemailer.createTransport({
-    // 🔥 FIXED: Force IPv4 routing by specifying 'smtp.gmail.com' and adding family: 4
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    connectionTimeout: 10000, // 10 seconds timeout limit
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    // 💡 THIS IS THE MAGIC LINE: Forces Node.js to use IPv4 instead of IPv6
-    family: 4, 
-    tls: {
-        rejectUnauthorized: false
-    }
+    service: 'gmail', // You can swap this out for Outlook, SendGrid, etc.
+    auth: {
+        user: process.env.EMAIL_USER, // Your system email address
+        pass: process.env.EMAIL_PASS  // Your system app password
+    }
 });
 
 /**
